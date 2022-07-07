@@ -1,10 +1,9 @@
 ;; Definition of a List data structure with various methods for it.
 
-;; The declaration is disabled for now due to a bug
-;; ;; Declaration of List data structure
-;; (: List (-> $a Type))
-;; (: Nil (List $a))
-;; (: Cons (-> $a (List $a) (List $a)))
+;; Declaration of List data structure
+(: List (-> $a Type))
+(: Nil (List $a))
+(: Cons (-> $a (List $a) (List $a)))
 
 ;; Define conditional
 (= (if True $x $y) $x)
