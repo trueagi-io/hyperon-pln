@@ -17,7 +17,7 @@
        (Cons $head (insert $x $tail))))
 
 ;; Test insert
-!(println! ("Test insert"))
+!(println! ("============ Test insert ============"))
 !(println! (insert 1 Nil))
 !(println! (insert 2 (insert 1 Nil)))
 !(println! (insert 3 (insert 2 (insert 1 Nil))))
@@ -27,7 +27,7 @@
 (= (sort (Cons $head $tail)) (insert $head (sort $tail)))
 
 ;; Test sort
-!(println! ("Test sort"))
+!(println! ("============ Test sort ============"))
 !(println! (sort (Cons 1 Nil)))
 !(println! (sort (Cons 2 (Cons 1 Nil))))
 !(println! (sort (Cons 3 (Cons 1 (Cons 2 Nil)))))
@@ -37,7 +37,7 @@
 (= (elem $x (Cons $head $tail)) (if (== $x $head) True (elem $x $tail)))
 
 ;; Test elem
-!(println! ("Test elem"))
+!(println! ("============ Test elem ============"))
 !(println! (elem 1 (Cons 3 (Cons 1 (Cons 2 Nil)))))
 !(println! (elem 5 (Cons 3 (Cons 1 (Cons 2 Nil)))))
 
@@ -50,7 +50,7 @@
 (= (uniq $l) (uniq_ Nil $l))
 
 ;; Test uniq
-!(println! ("Test uniq"))
+!(println! ("============ Test uniq ============"))
 !(println! (uniq (Cons 2 (Cons 3 (Cons 1 (Cons 2 Nil))))))
 !(println! (uniq (Cons 2 (Cons 3 (Cons 3 (Cons 2 Nil))))))
 
@@ -66,8 +66,8 @@
            (Cons $head (insert_uniq $x $tail)))))
 
 ;; Test insert_uniq
-!(println! ("Test insert_uniq"))
-!(println! (insert_uniq 1 Nil))
+!(println! ("============ Test insert_uniq ============"))
+!(println! (== (insert_uniq 1 Nil) (Cons 1 Nil)))
 !(println! (insert_uniq 2 (insert_uniq 1 Nil)))
 !(println! (insert_uniq 3 (insert_uniq 2 (insert_uniq 1 Nil))))
 !(println! (insert_uniq 2 (insert_uniq 3 (insert_uniq 2 (insert_uniq 1 Nil)))))
