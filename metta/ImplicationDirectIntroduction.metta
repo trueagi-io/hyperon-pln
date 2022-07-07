@@ -32,10 +32,10 @@
 (: B (-> Bool TruthValue))
 
 ;; First order probability TV constructor, i.e. mere probability.
-(: Pr (-> Float TruthValue))
+(: Pr (-> Number TruthValue))
 
 ;; Second order probability TV constructor, i.e. probability and count.
-(: PrCnt (-> Float Float TruthValue))
+(: PrCnt (-> Number Number TruthValue))
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Rule Definition ;;
@@ -63,10 +63,11 @@
 (= (PA) (≞ (P A) (B True)))
 (= (QA) (≞ (Q A) (B False)))
 
+;; Formula
+!(formula True False)
+
 ;; Forward inference step
-(= (fis) (match &self (⊢ (PA) (QA) $conclusion) $conclusion))
-!(println! (fis))
+!(match &self (⊢ (PA) (QA) $conclusion) $conclusion)
 
 ;; Backward inference step
-(= (bis) (match &self (⊢ $p1 $p2 (≞ (→ P Q) $tv)) $tv))
-!(println! (bis))
+!(match &self (⊢ $p1 $p2 (≞ (→ P Q) $tv)) (S $p1 $p2 $tv))
