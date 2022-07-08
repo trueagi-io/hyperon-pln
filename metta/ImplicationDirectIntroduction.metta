@@ -48,7 +48,7 @@
    (≞ (→ $P $Q) (formula $p $q)))
 
 ;; Define rule formula
-(= (formula False _)
+(= (formula False $_)
    (PrCnt 1.0 0.0))
 (= (formula True True)
    (PrCnt 1.0 1.0))
