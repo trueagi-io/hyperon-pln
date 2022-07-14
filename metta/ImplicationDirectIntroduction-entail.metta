@@ -38,6 +38,12 @@
 ;; Second order probability TV constructor, i.e. probability and count.
 (: PrCnt (-> Number Number TruthValue))
 
+;; Evidence type
+(: Evidence (-> Set Type))
+
+;; Evidential TruthValue type
+(: EvidentialTruthValue (-> TruthValue Evidence Type))
+
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Rule Definition ;;
 ;;;;;;;;;;;;;;;;;;;;;
