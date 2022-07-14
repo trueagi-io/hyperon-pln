@@ -1,4 +1,5 @@
-;; MeTTa port of the Implication Direct Introduction PLN Rule
+;; MeTTa port of the Implication Direct Introduction PLN rule, encoded
+;; as the entail relationship, ⊢
 ;;
 ;; (≞ (P a₁) p₁)
 ;; ...
@@ -29,7 +30,7 @@
 (: TruthValue Type)
 
 ;; Boolean TV constructor
-(: B (-> Bool TruthValue))
+(: Bl (-> Bool TruthValue))
 
 ;; First order probability TV constructor, i.e. mere probability.
 (: Pr (-> Number TruthValue))
@@ -43,8 +44,8 @@
 
 ;; Define rule.  Only two premises for now.  NEXT: support an
 ;; arbitrary number of permises, probably using induction.
-(⊢ (≞ ($P $a) (B $p))
-   (≞ ($Q $a) (B $q))
+(⊢ (≞ ($P $a) (Bl $p))
+   (≞ ($Q $a) (Bl $q))
    (≞ (→ $P $Q) (formula $p $q)))
 
 ;; Define rule formula
@@ -60,8 +61,8 @@
 ;;;;;;;;;;
 
 ;; KB
-(= (PA) (≞ (P A) (B True)))
-(= (QA) (≞ (Q A) (B False)))
+(= (PA) (≞ (P A) (Bl True)))
+(= (QA) (≞ (Q A) (Bl False)))
 
 ;; Formula
 !(formula True False)
