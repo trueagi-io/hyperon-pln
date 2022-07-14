@@ -79,7 +79,6 @@
 
 ;; Test insert_uniq
 !("============ Test insert_uniq ============")
-!(== (insert_uniq 1 Nil) (Cons 1 Nil))
 !(insert_uniq 2 (insert_uniq 1 Nil))
 !(insert_uniq 3 (insert_uniq 2 (insert_uniq 1 Nil)))
 !(insert_uniq 2 (insert_uniq 3 (insert_uniq 2 (insert_uniq 1 Nil))))
