@@ -3,8 +3,9 @@
 ;; constructor Cons takes an additional argument encoding a proof that
 ;; the element to append is less than the head.
 (: Set (-> $a Type))
-(: Nil (Set $a))
-(: Cons (-> $a SetProof Set Set))	; NEXT
+(: Empty (Set $a))
+(: Singleton (-> $a (Set $a)))
+(: Prepend (-> $a (SetProof (Set $a)) (Set $a)) ; NEXT
 
 ;; Proof type encoding that the appended element is less than the head
 ;; of the set
