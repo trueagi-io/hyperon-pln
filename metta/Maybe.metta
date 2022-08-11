@@ -3,12 +3,8 @@
 (: Nothing (Maybe $a))
 (: Just (-> $a (Maybe $a)))
 
-;; Overload some operators
-(= (< (Just $x) (Just $y)) (< $x $y))
-(= (< (Just $x) Nothing) False)
-(= (< Nothing (Just $x)) True)
-
-;; Test
-!(< (Just 10) (Just 20))
-!(< (Just 10) Nothing)
-!(< Nothing (Just 10))
+;; Define greater than operator for Maybe (overloading is not
+;; supported at this point).
+(= (Maybe< (Just $x) (Just $y)) (< $x $y))
+(= (Maybe< (Just $x) Nothing) False)
+(= (Maybe< Nothing (Just $x)) True)
