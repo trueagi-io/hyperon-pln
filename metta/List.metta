@@ -18,32 +18,15 @@
        (Cons $x (Cons $head $tail))
        (Cons $head (insert $x $tail))))
 
-;; Test insert
-!("============ Test insert ============")
-!(insert 1 Nil)
-!(insert 2 (insert 1 Nil))
-!(insert 3 (insert 2 (insert 1 Nil)))
-
 ;; Sort a list
 (: sort (-> (List $a) (List $a)))
 (= (sort Nil) Nil)
 (= (sort (Cons $head $tail)) (insert $head (sort $tail)))
 
-;; Test sort
-!("============ Test sort ============")
-!(sort (Cons 1 Nil))
-!(sort (Cons 2 (Cons 1 Nil)))
-!(sort (Cons 3 (Cons 1 (Cons 2 Nil))))
-
 ;; Check if an element is in a list (sorted or not)
 (: elem (-> $a (List $a) Bool))
 (= (elem $x Nil) False)
 (= (elem $x (Cons $head $tail)) (if (== $x $head) True (elem $x $tail)))
-
-;; Test elem
-!("============ Test elem ============")
-!(elem 1 (Cons 3 (Cons 1 (Cons 2 Nil))))
-!(elem 5 (Cons 3 (Cons 1 (Cons 2 Nil))))
 
 ;; Remove duplicates from a list
 (: uniq_ (-> (List $a) (List $a) (List $a)))
@@ -54,11 +37,6 @@
        (Cons $head (uniq_ (Cons $head $acc) $tail))))
 (: uniq (-> (List $a) (List $a)))
 (= (uniq $l) (uniq_ Nil $l))
-
-;; Test uniq
-!("============ Test uniq ============")
-!(uniq (Cons 2 (Cons 3 (Cons 1 (Cons 2 Nil)))))
-!(uniq (Cons 2 (Cons 3 (Cons 3 (Cons 2 Nil)))))
 
 ;; Insert an element in a presumably sorted list without duplicate.
 ;; Only insert if the element is not already in the list as to produce
@@ -71,9 +49,3 @@
        (if (< $x $head)
            (Cons $x (Cons $head $tail))
            (Cons $head (insert_uniq $x $tail)))))
-
-;; Test insert_uniq
-!("============ Test insert_uniq ============")
-!(insert_uniq 2 (insert_uniq 1 Nil))
-!(insert_uniq 3 (insert_uniq 2 (insert_uniq 1 Nil)))
-!(insert_uniq 2 (insert_uniq 3 (insert_uniq 2 (insert_uniq 1 Nil))))
