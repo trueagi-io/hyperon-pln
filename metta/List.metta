@@ -1,19 +1,14 @@
-;; Definition of a List data structure with various methods for it.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Definition of a List data structure with various methods for it. ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Import modules
+!(import! &self "IfThenElse.metta")
 
 ;; Declaration of List data structure
 (: List (-> $a Type))
 (: Nil (List $a))
 (: Cons (-> $a (List $a) (List $a)))
-
-;; Define conditional
-(: if (-> Bool $a $a $a))
-(= (if True $x $y) $x)
-(= (if False $x $y) $y)
-
-;; Test if
-!("============ Test if ============")
-!((if True A B))
-!((if False A B))
 
 ;; Insert an element to a presumably sorted list, remains sorted.
 (: insert (-> $a (List $a) (List $a)))
