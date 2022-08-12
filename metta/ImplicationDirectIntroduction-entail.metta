@@ -22,27 +22,8 @@
 ;; NEXT: keep track of the evidence.  Could be stored in ≞, ⊢ or the
 ;; truth value.
 
-;;;;;;;;;;;;;;;;;;;;;;
-;; Truth Value Type ;;
-;;;;;;;;;;;;;;;;;;;;;;
-
-;; TruthValue type
-(: TruthValue Type)
-
-;; Boolean TV constructor
-(: Bl (-> Bool TruthValue))
-
-;; First order probability TV constructor, i.e. mere probability.
-(: Pr (-> Number TruthValue))
-
-;; Second order probability TV constructor, i.e. probability and count.
-(: PrCnt (-> Number Number TruthValue))
-
-;; Evidence type
-(: Evidence (-> Set Type))
-
-;; Evidential TruthValue type
-(: EvidentialTruthValue (-> TruthValue Evidence Type))
+;; Import TruthValue
+!(import &self "TruthValue.metta")
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Rule Definition ;;
