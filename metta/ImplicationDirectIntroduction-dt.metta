@@ -1,0 +1,42 @@
+;; MeTTa port of the Implication Direct Introduction PLN rule, encoded
+;; as dependent types, i.e. propositions as types.
+;;
+;; See ImplicationDirectIntroduction-entail.metta for more detail on a
+;; pseudo formal description.
+;;
+;; In the case of dependent types, inference rules are constructors of
+;; the propositions to be proven.  Then a proof is an tree composed of
+;; calls of such constructors.
+;;
+;; For instance assuming two inference rules
+;;
+;; ImplicationDirectIntroduction (IDI, for short)
+;; Deduction (DED, for short)
+;;
+;; The following inference tree
+;;
+;; ...            ...
+;; -----(IDI)     -----(IDI)
+;; P → Q          Q → R
+;; ---------------------(DED)
+;;         P → R
+;;
+;; is represented by the following MeTTa expression
+;;
+;; (Deduction
+;;    (ImplicationDirectIntroduction ...)
+;;    (ImplicationDirectIntroduction ...))
+;;
+;; where the premises of ImplicationDirectIntroduction are left
+;; undefined for now.
+;;
+;; How such propositions as types can be defined still remains to be
+;; determined but ideally it may look something like
+;;
+;; (: Deduction
+;;    (-> (≞ (→ $P $Q) $TV1)
+;;        (≞ (→ $Q $R) $TV2)
+;;        (≞ (→ $P $R) (formula $TV1 $TV2))))
+;;
+;; where ≞, → are dependent types, and formula is just a regular metta
+;; function.
