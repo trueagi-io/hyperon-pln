@@ -5,17 +5,12 @@
 (: Set (-> $a Type))
 (: Empty (Set $a))
 (: Singleton (-> $a (Set $a)))
-(: Prepend (-> $a (SetProof (Set $a)) (Set $a)) ; NEXT
+(: Prepend (-> $a (Set $a) ElemLTHeadPrf (Set $a)))
 
 ;; Proof type encoding that the appended element is less than the head
-;; of the set
-;; NEXT
-(: SetProof Type)
-
-;; Define conditional
-(: if (-> Bool $a $a $a))
-(= (if True $x $y) $x)
-(= (if False $x $y) $y)
+;; of the set.  Such proof is a dummy axiom for now.
+(: ElemLTHeadPrf Type)
+(: Dummy ElemLTHeadPrf)
 
 ;; Check if an element is in a set.  TODO: optimize using the fact
 ;; that it is a set.
