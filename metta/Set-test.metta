@@ -6,9 +6,9 @@
 !(elem 1 Empty)
 !(elem 1 (Singleton 1))
 !(elem 1 (Singleton 2))
-!(elem 1 (Prepend 1 (Singleton 2) Dum))
-!(elem 1 (Prepend 2 (Singleton 3) Dum))
-!(elem 2 (Prepend 1 (Prepend 2 (Singleton 3) Dum) Dum))
+!(elem 1 (Prepend 1 (Singleton 2) (believe_me)))
+!(elem 1 (Prepend 2 (Singleton 3) (believe_me)))
+!(elem 2 (Prepend 1 (Prepend 2 (Singleton 3) (believe_me)) (believe_me)))
 
 ;; Test insert
 !("============ Test insert ============")

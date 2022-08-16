@@ -1,10 +1,11 @@
-;; Import IfThenElse
+;; Import modules
 !(import! &self "IfThenElse.metta")
+!(import! &self "BelieveMe.metta")
 
 ;; Proof type encoding that the appended element is less than the head
-;; of the set.  Such proof is a dummy axiom for now.
+;; of the set.  No constructors defined yet.  In the mean time one can
+;; use `believe_me` instead.
 (: ElemLTHeadPrf Type)
-(: Dum ElemLTHeadPrf)
 
 ;; Definition of a set data structure.  Under the hood it is a sorted
 ;; list without duplicates.  In order to guaranty that, the
@@ -20,7 +21,7 @@
 (: elem (-> $a (Set $a) Bool))
 (= (elem $x Empty) False)
 (= (elem $x (Singleton $y)) (== $x $y))
-(= (elem $x (Prepend $head $tail Dum))
+(= (elem $x (Prepend $head $tail $prf))
    (if (== $x $head) True (elem $x $tail)))
 
 ;; Insert an element into a set.  Only insert if the element is not
@@ -32,13 +33,13 @@
    (if (== $x $y)
        (Singleton $y)
        (if (< $x $y)
-           (Prepend $x (Singleton $y) Dum)
-           (Prepend $y (Singleton $x) Dum))))
+           (Prepend $x (Singleton $y) (believe_me))
+           (Prepend $y (Singleton $x) (believe_me)))))
 (= (insert $x (Prepend $head $tail $prf))
    (if (== $x $head)
        (Prepend $head $tail $prf)
        (if (< $x $head)
-           (Prepend $x (Prepend $head $tail $prf) Dum)
-           (Prepend $head (insert $x $tail) Dum))))
+           (Prepend $x (Prepend $head $tail $prf) (believe_me))
+           (Prepend $head (insert $x $tail) (believe_me)))))
 
 ;; TODO: Prove that `insert` preserves order and uniqueness
