@@ -3,5 +3,5 @@
 
 ;; Test if
 !("============ Test if ============")
-!((if True A B))
-!((if False A B))
+!(if True A B)
+!(if False A B)
