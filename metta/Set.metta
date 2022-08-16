@@ -1,3 +1,11 @@
+;; Import IfThenElse
+!(import! &self "IfThenElse.metta")
+
+;; Proof type encoding that the appended element is less than the head
+;; of the set.  Such proof is a dummy axiom for now.
+(: ElemLTHeadPrf Type)
+(: Dum ElemLTHeadPrf)
+
 ;; Definition of a set data structure.  Under the hood it is a sorted
 ;; list without duplicates.  In order to guaranty that, the
 ;; constructor Cons takes an additional argument encoding a proof that
@@ -7,37 +15,30 @@
 (: Singleton (-> $a (Set $a)))
 (: Prepend (-> $a (Set $a) ElemLTHeadPrf (Set $a)))
 
-;; Proof type encoding that the appended element is less than the head
-;; of the set.  Such proof is a dummy axiom for now.
-(: ElemLTHeadPrf Type)
-(: Dummy ElemLTHeadPrf)
-
 ;; Check if an element is in a set.  TODO: optimize using the fact
 ;; that it is a set.
-(: elem (-> $a (List $a) Bool))
-(= (elem $x Nil) False)
-(= (elem $x (Cons $head $tail)) (if (== $x $head) True (elem $x $tail)))
+(: elem (-> $a (Set $a) Bool))
+(= (elem $x Empty) False)
+(= (elem $x (Singleton $y)) (== $x $y))
+(= (elem $x (Prepend $head $tail Dum))
+   (if (== $x $head) True (elem $x $tail)))
 
-;; Test elem
-!("============ Test elem ============")
-!(elem 1 (Cons 3 (Cons 1 (Cons 2 Nil))))
-!(elem 5 (Cons 3 (Cons 1 (Cons 2 Nil))))
-
-;; Insert an element in a set.  Only insert if the element is not
+;; Insert an element into a set.  Only insert if the element is not
 ;; already in the set as to produce a set, i.e. a sorted list without
 ;; duplicate.
-;; NEXT: Prove that it preserves order and uniqueness
-(: insert (-> $a (List $a) (List $a)))
-(= (insert $x Nil) (Cons $x Nil))
-(= (insert $x (Cons $head $tail))
+(: insert (-> $a (Set $a) (Set $a)))
+(= (insert $x Empty) (Singleton $x))
+(= (insert $x (Singleton $y))
+   (if (== $x $y)
+       (Singleton $y)
+       (if (< $x $y)
+           (Prepend $x (Singleton $y) Dum)
+           (Prepend $y (Singleton $x) Dum))))
+(= (insert $x (Prepend $head $tail $prf))
    (if (== $x $head)
-       (Cons $head $tail)
+       (Prepend $head $tail $prf)
        (if (< $x $head)
-           (Cons $x (Cons $head $tail))
-           (Cons $head (insert $x $tail)))))
+           (Prepend $x (Prepend $head $tail $prf) Dum)
+           (Prepend $head (insert $x $tail) Dum))))
 
-;; Test insert
-!("============ Test insert ============")
-!(insert 2 (insert 1 Nil))
-!(insert 3 (insert 2 (insert 1 Nil)))
-!(insert 2 (insert 3 (insert 2 (insert 1 Nil))))
+;; TODO: Prove that `insert` preserves order and uniqueness
