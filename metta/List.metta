@@ -5,7 +5,7 @@
 ;; Import modules
 !(import! &self "IfThenElse.metta")
 
-;; Declaration of List data structure
+;; Declaration of List data type and constructors
 (: List (-> $a Type))
 (: Nil (List $a))
 (: Cons (-> $a (List $a) (List $a)))
