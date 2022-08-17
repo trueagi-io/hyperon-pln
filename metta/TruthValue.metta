@@ -103,4 +103,4 @@
 (: confidence (-> TruthValue Number))
 (= (confidence (Bl $_)) 1.0)
 (= (confidence (Pr $_)) 1.0)
-(= (confidence (PrCnt $_ $cnt)) (/ $cnt ($cnt + 1)))
+(= (confidence (PrCnt $_ $cnt)) (/ $cnt (+ $cnt 1)))
