@@ -15,13 +15,13 @@
 ;; count.  The second order probability is distributed according to a
 ;; beta distribution.  The first argument of the constructor
 ;; represents the mode of the second order distribution.
+;; TODO: instead of PrCnt maybe we want positive and negative counts.
 (: PrCnt (-> Number Number TruthValue))
 
-;; TODO: instead of PrCnt maybe we want positive and negative counts.
-
-;; Evidential TruthValue type and constructor
-(: EvidentialTruthValue Type)
-(: ETV (-> (Set $a) TruthValue EvidentialTruthValue))
+;; Evidential truth value constructor.  Takes a set of pieces of
+;; evidence ascribed to a truth value to form an evidential truth
+;; value, itself of type TruthValue.
+(: ETV (-> (Set $a) TruthValue TruthValue))
 
 ;; TODO: at that point it is unclear how granular types should be.
 ;; That is should we define Evidence as
@@ -50,6 +50,7 @@
 (= (mode (Bl False)) 0.0)
 (= (mode (Pr $pr)) $pr)
 (= (mode (PrCnt $pr $_)) $pr)
+(= (mode (ETV $ev $tv)) (mode $tv))
 
 ;; Return the total count of a truth value.  For truth values not
 ;; capturing a notion of confidence, such as Bl or Pr then the count
@@ -61,6 +62,7 @@
 (= (count (Bl $_)) 10000000.0)
 (= (count (Pr $_)) 10000000.0)
 (= (count (PrCnt $_ $cnt)) $cnt)
+(= (count (ETV $ev $tv)) (count $tv))
 
 ;; Return the positive count of a truth value.
 (: pos_count (-> TruthValue Number))
@@ -92,6 +94,7 @@
    (let* (($a (post_alpha (PrCnt $pr $cnt)))
           ($b (post_beta (PrCnt $pr $cnt))))
      (\ $a (+ $a $b))))
+(= (mean (ETV $ev $tv)) (mean $tv))
 
 ;; Return the confidence of a truth value.  For truth values not
 ;; capturing a notion of confidence, such as Bl or Pr then the
@@ -104,3 +107,4 @@
 (= (confidence (Bl $_)) 1.0)
 (= (confidence (Pr $_)) 1.0)
 (= (confidence (PrCnt $_ $cnt)) (/ $cnt (+ $cnt 1)))
+(= (confidence (ETV $ev $tv)) (confidence $tv))

@@ -39,7 +39,23 @@
 ;; ⊢
 ;; p→q ≞ (ETV (insert a ev) tv)
 ;;
-;; where tv is calculated as follows
+;; where tv is calculated as defined further below.
+(⊢ ;; Premises
+   (≞ ($p $a) $patv)
+   (≞ ($q $a) $qatv)
+   (≞ (→ $p $q) (ETV $ev $pqtv))
+   (∉ $a $ev)
+   ;; Conclusion
+   (≞ (→ $p $q) (ETV (insert $a $ev) (formula $ptv $qtv $pqtv))))
+
+;; NEXT: add equality like
+;;
+;; (= (⊢ ....) ....)
+;;
+;; to relate inference tree and inference rules
+
+;; Rule formula, where tv, the resulting truth value is calculated as
+;; follows
 ;;
 ;; tv = (pos_cnt + pb*qb) / (cnt + pb)
 ;;
@@ -49,15 +65,6 @@
 ;;       qb is 1 if qatv is (Bl True), 0 otherwise
 ;;
 ;; For now it is assumed that patv and qatv are boolean truth values.
-(⊢ ;; Premises
-   (≞ ($p $a) $patv)
-   (≞ ($q $a) $qatv)
-   (≞ (→ $p $q) (ETV $ev $pqtv))
-   (∉ $a $ev)
-   ;; Conclusion
-   (≞ (→ $p $q) (ETV (insert $a $ev) (formula $ptv $qtv $pqtv))))
-
-;; Define rule formula (see comment above)
 (= (formula $ptv $qtv $pqtv)
    (let* (($pb (mode $ptv))
           ($qb (mode $qtv))
