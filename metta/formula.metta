@@ -7,18 +7,18 @@
   (max $l (min $u $x)))
 
 ;; Define max
-(= (max $a $b) (if (> $a $b) $a $b)) 
+(= (max $a $b) (if (> $a $b) $a $b))
 
 ;; Define min
 (= (min $a $b) (if (< $a $b) $a $b))
 
 ;; Define <=
 (: <= (-> $a $a Bool))
-(= (<= $a $b) (or (< $a $b) (== $a $b))) 
+(= (<= $a $b) (or (< $a $b) (== $a $b)))
 
 ;; Define >=
 (: >= (-> $a $a Bool))
-(= (>= $a $b) (or (> $a $b) (== $a $b))) 
+(= (>= $a $b) (or (> $a $b) (== $a $b)))
 
 ; Consistency Conditions
 (= (smallest-intersection-probability $sA $sB)

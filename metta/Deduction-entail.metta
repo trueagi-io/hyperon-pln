@@ -9,7 +9,7 @@
 ;; ⊢
 ;; (≞ (→ P R) TV)
 ;;
-;; where ptv, qtv, rtv, tv1 and tv2 are truth values of the 
+;; where ptv, qtv, rtv, tv1 and tv2 are truth values of the
 ;; premises P, Q, R, (→ P Q) and (→ Q R) respectively.
 ;; TV represents the resulting truth value of the conclusion.
 
