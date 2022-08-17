@@ -14,11 +14,6 @@
 ;; (resp. (Q aᵢ)) has been observed as True or False, and tv
 ;; represents the resulting truth value of the conclusion.
 ;;
-;; The equality symbol ≞ is specifically used to represent the measure
-;; of an event, may this measure be boolean, probabilistic (first or
-;; second order), or otherwise.  The idea is to not conflate event and
-;; measure to avoid downstream contradictions.
-;;
 ;; NEXT: keep track of the evidence.  Could be stored in ≞, ⊢ or the
 ;; truth value.
 
