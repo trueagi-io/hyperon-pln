@@ -3,7 +3,7 @@
 !(import! &self "IfThenElse.metta")
 
 ;; Limit an number to be within a certain range
-(= (limit $x $l $u)
+(= (clamp $x $l $u)
   (max $l (min $u $x)))
 
 ;; Define max
@@ -22,10 +22,10 @@
 
 ; Consistency Conditions
 (= (smallest-intersection-probability $sA $sB)
-  (limit (/ (- (+ $sA $sB) 1) $sA) 0 1))
+  (clamp (/ (- (+ $sA $sB) 1) $sA) 0 1))
 
 (= (largest-intersection-probability $sA $sB)
-  (limit (/ $sB $sA) 0 1))
+  (clamp (/ $sB $sA) 0 1))
 
 (= (conditional-probability-consistency $sA $sB $sAB)
   (and (< 0 $sA)
