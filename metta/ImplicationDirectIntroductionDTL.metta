@@ -1,7 +1,7 @@
 ;; MeTTa port of the Implication Direct Introduction PLN rule, encoded
 ;; as dependent types, i.e. propositions as types.
 ;;
-;; See ImplicationDirectIntroduction-entail.metta for more detail on a
+;; See ImplicationDirectIntroductionEntail.metta for more detail on a
 ;; pseudo formal description.
 ;;
 ;; In the case of dependent types, inference rules are constructors of
