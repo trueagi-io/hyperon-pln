@@ -13,12 +13,10 @@
 ;; where pᵢ (resp. qᵢ) are of boolean type representing whether (P aᵢ)
 ;; (resp. (Q aᵢ)) has been observed as True or False, and tv
 ;; represents the resulting truth value of the conclusion.
-;;
-;; NEXT: keep track of the evidence.  Could be stored in ≞, ⊢ or the
-;; truth value.
 
-;; Import TruthValue
+;; Import modules
 !(import! &self "TruthValue.metta")
+!(import! &self "Set.metta")
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Rule Definition ;;
@@ -61,28 +59,17 @@
 
 ;; Define rule formula (see comment above)
 (= (formula $ptv $qtv $pqtv)
-   (let $pb (mode $ptv)
-     (let $qb (mode $qtv)
-       (/ (+ (pos_count $pqtv) (* $pb $qb))
-          (+ (count $pqtv) $pb)))))
+   (let* (($pb (mode $ptv))
+          ($qb (mode $qtv))
+          ($cnt (+ (count $pqtv) $pb)))
+     (if (< 0 $cnt)
+         (PrCnt (/ (+ (pos_count $pqtv) (* $pb $qb)) $cnt) $cnt)
+         (PrCnt 1 0))))
 
-;;;;;;;;;;
-;; Test ;;
-;;;;;;;;;;
-
-;; NEXT
-
-;; ;; KB
-;; (= (PA) (≞ (P A) (Bl True)))
-;; (= (QA) (≞ (Q A) (Bl False)))
-
-;; ;; Formula
-;; !(formula True False)
-
-;; ;; Forward inference step
-;; !(let $pa (PA)
-;;    (let $qa (QA)
-;;      (match &self (⊢ $pa $qa $conclusion) $conclusion)))
-
-;; ;; Backward inference step
-;; !(match &self (⊢ $p1 $p2 (≞ (→ P Q) $tv)) (S $p1 $p2 $tv))
+;; Version without let, just for testing if the multiple paths come from let
+;; (= (formula $ptv $qtv $pqtv)
+;;    (if (< 0 (+ (count $pqtv) (mode $ptv)))
+;;        (PrCnt (/ (+ (pos_count $pqtv) (* (mode $ptv) (mode $qtv)))
+;;                  (+ (count $pqtv) (mode $ptv)))
+;;               (+ (count $pqtv) (mode $ptv)))
+;;        (PrCnt 1 0)))

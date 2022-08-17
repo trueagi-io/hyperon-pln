@@ -9,7 +9,7 @@
 ;; ⊢
 ;; (≞ (→ P R) TV)
 ;;
-;; where ptv, qtv, rtv, tv1 and tv2 are truth values of the 
+;; where ptv, qtv, rtv, tv1 and tv2 are truth values of the
 ;; premises P, Q, R, (→ P Q) and (→ Q R) respectively.
 ;; TV represents the resulting truth value of the conclusion.
 
@@ -17,17 +17,17 @@
 !(import! &self "TruthValue.metta")
 
 ;; Import helper functions
-!(import! &self "formula.metta")
+!(import! &self "Formula.metta")
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Rule Definition ;;
 ;;;;;;;;;;;;;;;;;;;;;
 
-(⊢ ;; premises 
-   (≞ ($P $a) $ptv)
-   (≞ ($Q $a) $qtv)
-   (≞ ($R $a) $qtv)
-   (≞ (→ $P $Q) $pqtv) 
+(⊢ ;; premises
+   (≞ $P $ptv)
+   (≞ $Q $qtv)
+   (≞ $R $rtv)
+   (≞ (→ $P $Q) $pqtv)
    (≞ (→ $Q $R) $qrtv)
    ;; conclusion
    (≞ (→ $P $R) (formula ($ptv $qtv $rtv $pqtv $qrtv))))
