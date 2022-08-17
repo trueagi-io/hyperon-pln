@@ -14,8 +14,9 @@
 ;; (resp. (Q aᵢ)) has been observed as True or False, and tv
 ;; represents the resulting truth value of the conclusion.
 
-;; Import TruthValue
+;; Import modules
 !(import! &self "TruthValue.metta")
+!(import! &self "Set.metta")
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Rule Definition ;;
