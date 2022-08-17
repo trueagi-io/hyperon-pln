@@ -23,11 +23,11 @@
 ;; Rule Definition ;;
 ;;;;;;;;;;;;;;;;;;;;;
 
-(⊢ ;; premises 
-   (≞ ($P $a) $ptv)
-   (≞ ($Q $a) $qtv)
-   (≞ ($R $a) $qtv)
-   (≞ (→ $P $Q) $pqtv) 
+(⊢ ;; premises
+   (≞ $P $ptv)
+   (≞ $Q $qtv)
+   (≞ $R $rtv)
+   (≞ (→ $P $Q) $pqtv)
    (≞ (→ $Q $R) $qrtv)
    ;; conclusion
    (≞ (→ $P $R) (formula ($ptv $qtv $rtv $pqtv $qrtv))))
