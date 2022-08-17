@@ -13,9 +13,6 @@
 ;; where pᵢ (resp. qᵢ) are of boolean type representing whether (P aᵢ)
 ;; (resp. (Q aᵢ)) has been observed as True or False, and tv
 ;; represents the resulting truth value of the conclusion.
-;;
-;; NEXT: keep track of the evidence.  Could be stored in ≞, ⊢ or the
-;; truth value.
 
 ;; Import TruthValue
 !(import! &self "TruthValue.metta")
@@ -70,19 +67,17 @@
 ;; Test ;;
 ;;;;;;;;;;
 
-;; NEXT
+;; KB
+(= (PA) (≞ (P A) (Bl True)))
+(= (QA) (≞ (Q A) (Bl False)))
 
-;; ;; KB
-;; (= (PA) (≞ (P A) (Bl True)))
-;; (= (QA) (≞ (Q A) (Bl False)))
+;; Formula
+!(formula True False)
 
-;; ;; Formula
-;; !(formula True False)
+;; Forward inference step
+!(let $pa (PA)
+   (let $qa (QA)
+     (match &self (⊢ $pa $qa $conclusion) $conclusion)))
 
-;; ;; Forward inference step
-;; !(let $pa (PA)
-;;    (let $qa (QA)
-;;      (match &self (⊢ $pa $qa $conclusion) $conclusion)))
-
-;; ;; Backward inference step
-;; !(match &self (⊢ $p1 $p2 (≞ (→ P Q) $tv)) (S $p1 $p2 $tv))
+;; Backward inference step
+!(match &self (⊢ $p1 $p2 (≞ (→ P Q) $tv)) (S $p1 $p2 $tv))
