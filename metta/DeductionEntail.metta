@@ -17,7 +17,7 @@
 !(import! &self "TruthValue.metta")
 
 ;; Import helper functions
-!(import! &self "formula.metta")
+!(import! &self "Formula.metta")
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Rule Definition ;;
