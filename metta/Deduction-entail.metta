@@ -7,39 +7,51 @@
 ;; (≞ (→ P Q) tv1)
 ;; (≞ (→ Q R) tv2)
 ;; ⊢
-;; (≞ (→ P R) tv)
+;; (≞ (→ P R) TV)
 ;;
-;; where ptv, qtv and rtv are of boolean type representing whether P, Q and R has been observed as True or False. tv1 and tv2 represents the truth value for the implication (→ P Q) and (→ Q R) respectively. tv represents the resulting truth value of the conclusion.
+;; where ptv, qtv, rtv, tv1 and tv2 are truth values of the 
+;; premises P, Q, R, (→ P Q) and (→ Q R) respectively.
+;; TV represents the resulting truth value of the conclusion.
 
 ;; Import TruthValue
-(import &self "TruthValue.metta")
+!(import! &self "TruthValue.metta")
+
+;; Import helper functions
+!(import! &self "formula.metta")
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Rule Definition ;;
 ;;;;;;;;;;;;;;;;;;;;;
 
-;; Define rule
-(⊢ (≞ (→ $P $Q) (PrCnt $sPQ $cPQ)) 
-   (≞ (→ $Q $R) (PrCnt $sQR $cQR))
-   (≞ (→ $P $R) (formula ($P $Q $R (→ $P $Q) (→ $Q $R)))))
+(⊢ ;; premises 
+   (≞ ($P $a) $ptv)
+   (≞ ($Q $a) $qtv)
+   (≞ ($R $a) $qtv)
+   (≞ (→ $P $Q) $pqtv) 
+   (≞ (→ $Q $R) $qrtv)
+   ;; conclusion
+   (≞ (→ $P $R) (formula ($ptv $qtv $rtv $pqtv $qrtv))))
 
 ;; TODO: Implement Deduction formula
-(= (formula ($P $Q $R $PQ $QR)) (PrCnt 1 0))
+(= (formula ($ptv $qtv $rtv $pqtv $qrtv)) (PrCnt 1 0))
 
 ;;;;;;;;;;
 ;; Test ;;
 ;;;;;;;;;;
 
-(= (AB) (≞ (→ A B) (PrCnt 1 0)))
-(= (BC) (≞ (→ B C) (PrCnt 1 0)))
+(= (P) (≞ (P a) (PrCnt 1 0)))
+(= (Q) (≞ (Q a) (PrCnt 1 0)))
+(= (R) (≞ (R a) (PrCnt 1 0)))
+(= (PQ) (≞ (→ P Q) (PrCnt 0.345 0.91941)))
+(= (QR) (≞ (→ Q R) (PrCnt 0.5 0.91941)))
 
 ;; Forward chain
-;; BUG?
-!(match &self (⊢ (AB) (BC) $res) $res) ; didn't work
-
-; work around
-!(match &self (, (= (AB) $ab) (= (BC) $bc))
-    (match &self (⊢ $ab $bc $res) $res))
+!(let* (($p (P))
+        ($q (Q))
+        ($r (R))
+        ($pq (PQ))
+        ($qr (QR)))
+    (match &self (⊢ $p $q $r $pq $qr $res) $res))
 
 ;; Backward chain
-!(match &self (⊢ $ab $bc (≞ (→ A C) $tv)) (S $ab $bc $tv))
+!(match &self (⊢ $p $q $r $pq $qr (≞ (→ P R) $tv)) (S $p $q $r $pq $qr $tv))
