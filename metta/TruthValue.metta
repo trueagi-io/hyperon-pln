@@ -15,9 +15,8 @@
 ;; count.  The second order probability is distributed according to a
 ;; beta distribution.  The first argument of the constructor
 ;; represents the mode of the second order distribution.
-(: PrCnt (-> Number Number TruthValue))
-
 ;; TODO: instead of PrCnt maybe we want positive and negative counts.
+(: PrCnt (-> Number Number TruthValue))
 
 ;; Evidential truth value constructor.  Takes a set of pieces of
 ;; evidence ascribed to a truth value to form an evidential truth
