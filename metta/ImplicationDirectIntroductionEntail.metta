@@ -62,5 +62,14 @@
    (let* (($pb (mode $ptv))
           ($qb (mode $qtv))
           ($cnt (+ (count $pqtv) $pb)))
-     (PrCnt (/ (+ (pos_count $pqtv) (* $pb $qb)) $cnt) $cnt)))
+     (if (< 0 $cnt)
+         (PrCnt (/ (+ (pos_count $pqtv) (* $pb $qb)) $cnt) $cnt)
+         (PrCnt 1 0))))
 
+;; Version without let, just for testing if the multiple paths come from let
+;; (= (formula $ptv $qtv $pqtv)
+;;    (if (< 0 (+ (count $pqtv) (mode $ptv)))
+;;        (PrCnt (/ (+ (pos_count $pqtv) (* (mode $ptv) (mode $qtv)))
+;;                  (+ (count $pqtv) (mode $ptv)))
+;;               (+ (count $pqtv) (mode $ptv)))
+;;        (PrCnt 1 0)))
