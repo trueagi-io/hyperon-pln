@@ -58,10 +58,10 @@
 
 ;; Define rule formula (see comment above)
 (= (formula $ptv $qtv $pqtv)
-   (let $pb (mode $ptv)
-     (let $qb (mode $qtv)
-       (/ (+ (pos_count $pqtv) (* $pb $qb))
-          (+ (count $pqtv) $pb)))))
+   (let* (($pb (mode $ptv))
+          ($qb (mode $qtv))
+          ($cnt (+ (count $pqtv) $pb)))
+     (PrCnt (/ (+ (pos_count $pqtv) (* $pb $qb)) $cnt) $cnt)))
 
 ;;;;;;;;;;
 ;; Test ;;

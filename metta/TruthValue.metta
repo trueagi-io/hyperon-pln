@@ -89,9 +89,9 @@
 (= (mean (Bl False)) 0.0)
 (= (mean (Pr $pr)) $pr)
 (= (mean (PrCnt $pr $cnt))
-   (let $a (post_alpha (PrCnt $pr $cnt))
-     (let $b (post_beta (PrCnt $pr $cnt))
-       (\ $a (+ $a $b)))))
+   (let* (($a (post_alpha (PrCnt $pr $cnt)))
+          ($b (post_beta (PrCnt $pr $cnt))))
+     (\ $a (+ $a $b))))
 
 ;; Return the confidence of a truth value.  For truth values not
 ;; capturing a notion of confidence, such as Bl or Pr then the
