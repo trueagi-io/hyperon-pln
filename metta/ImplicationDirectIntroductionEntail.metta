@@ -63,21 +63,3 @@
           ($cnt (+ (count $pqtv) $pb)))
      (PrCnt (/ (+ (pos_count $pqtv) (* $pb $qb)) $cnt) $cnt)))
 
-;;;;;;;;;;
-;; Test ;;
-;;;;;;;;;;
-
-;; KB
-(= (PA) (≞ (P A) (Bl True)))
-(= (QA) (≞ (Q A) (Bl False)))
-
-;; Formula
-!(formula True False)
-
-;; Forward inference step
-!(let $pa (PA)
-   (let $qa (QA)
-     (match &self (⊢ $pa $qa $conclusion) $conclusion)))
-
-;; Backward inference step
-!(match &self (⊢ $p1 $p2 (≞ (→ P Q) $tv)) (S $p1 $p2 $tv))
