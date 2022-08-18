@@ -27,6 +27,7 @@
 ;; Insert an element into a set.  Only insert if the element is not
 ;; already in the set as to produce a set, i.e. a sorted list without
 ;; duplicate.
+;; TODO: Prove that `insert` preserves order and uniqueness
 (: insert (-> $a (Set $a) (Set $a)))
 (= (insert $x Empty) (Singleton $x))
 (= (insert $x (Singleton $y))
@@ -41,5 +42,3 @@
        (if (< $x $head)
            (Prepend $x (Prepend $head $tail $prf) (believe_me))
            (Prepend $head (insert $x $tail) (believe_me)))))
-
-;; TODO: Prove that `insert` preserves order and uniqueness
