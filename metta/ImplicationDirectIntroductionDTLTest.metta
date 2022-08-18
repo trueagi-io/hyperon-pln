@@ -3,9 +3,9 @@
 
 ;; Test axiom
 !("========== Test axiom ==========")
-(: test_axiom (≞ (→ P Q) (ETV Empty (PrCnt 1 0))))
-(= test_axiom IDIAxiom)
-!(test_axiom)
+(: axiom_prf (≞ (→ P Q) (ETV Empty (PrCnt 1 0))))
+(= axiom_prf IDIAxiom)
+!(axiom_prf)
 
 ;; Background knowledge
 (: P42T (≞ (P 42) (Bl True)))
@@ -20,6 +20,6 @@
 ;;------------------------------------------------------------------------------------------ (IDIInduction)
 ;;                                                P→Q ≞ $etv
 !("========== Test inductive rule ==========")
-(: test_induction (≞ (→ P Q) $etv))
-(= test_induction (IDIInduction P42 NQ42 IDIAxiom NotInEmpty))
-!(test_induction)
+(: induction_prf (≞ (→ P Q) $etv))
+(= induction_prf (IDIInduction P42 NQ42 IDIAxiom NotInEmpty))
+!(induction_prf)
