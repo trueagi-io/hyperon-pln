@@ -17,6 +17,7 @@
 ;; Import modules
 !(import! &self "TruthValue.metta")
 !(import! &self "Set.metta")
+!(import! &self "ImplicationDirectIntroductionFormula.metta")
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Rule Definition ;;
@@ -46,37 +47,10 @@
    (≞ (→ $p $q) (ETV $ev $pqtv))
    (∉ $a $ev)
    ;; Conclusion
-   (≞ (→ $p $q) (ETV (insert $a $ev) (formula $ptv $qtv $pqtv))))
+   (≞ (→ $p $q) (ETV (insert $a $ev) (idi_formula $patv $qtv $pqtv))))
 
 ;; NEXT: add equality like
 ;;
 ;; (= (⊢ ....) ....)
 ;;
 ;; to relate inference tree and inference rules
-
-;; Rule formula, where tv, the resulting truth value is calculated as
-;; follows
-;;
-;; tv = (pos_cnt + pb*qb) / (cnt + pb)
-;;
-;; where pos_cnt is the positive count of pqtv
-;;       cnt is the total count of pqtv
-;;       pb is 1 if patv is (Bl True), 0 otherwise
-;;       qb is 1 if qatv is (Bl True), 0 otherwise
-;;
-;; For now it is assumed that patv and qatv are boolean truth values.
-(= (formula $ptv $qtv $pqtv)
-   (let* (($pb (mode $ptv))
-          ($qb (mode $qtv))
-          ($cnt (+ (count $pqtv) $pb)))
-     (if (< 0 $cnt)
-         (PrCnt (/ (+ (pos_count $pqtv) (* $pb $qb)) $cnt) $cnt)
-         (PrCnt 1 0))))
-
-;; Version without let, just for testing if the multiple paths come from let
-;; (= (formula $ptv $qtv $pqtv)
-;;    (if (< 0 (+ (count $pqtv) (mode $ptv)))
-;;        (PrCnt (/ (+ (pos_count $pqtv) (* (mode $ptv) (mode $qtv)))
-;;                  (+ (count $pqtv) (mode $ptv)))
-;;               (+ (count $pqtv) (mode $ptv)))
-;;        (PrCnt 1 0)))
