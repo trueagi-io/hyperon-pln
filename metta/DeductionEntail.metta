@@ -24,34 +24,29 @@
 ;;;;;;;;;;;;;;;;;;;;;
 
 (⊢ ;; premises
-   (≞ $P $ptv)
-   (≞ $Q $qtv)
-   (≞ $R $rtv)
+   (≞ ($P $a) $ptv)
+   (≞ ($Q $a) $qtv)
+   (≞ ($R $a) $rtv)
    (≞ (→ $P $Q) $pqtv)
    (≞ (→ $Q $R) $qrtv)
    ;; conclusion
    (≞ (→ $P $R) (formula ($ptv $qtv $rtv $pqtv $qrtv))))
 
-;; TODO: Implement Deduction formula
-(= (formula ($ptv $qtv $rtv $pqtv $qrtv)) (PrCnt 1 0))
-
-;;;;;;;;;;
-;; Test ;;
-;;;;;;;;;;
-
-(= (P) (≞ (P a) (PrCnt 1 0)))
-(= (Q) (≞ (Q a) (PrCnt 1 0)))
-(= (R) (≞ (R a) (PrCnt 1 0)))
-(= (PQ) (≞ (→ P Q) (PrCnt 0.345 0.91941)))
-(= (QR) (≞ (→ Q R) (PrCnt 0.5 0.91941)))
-
-;; Forward chain
-!(let* (($p (P))
-        ($q (Q))
-        ($r (R))
-        ($pq (PQ))
-        ($qr (QR)))
-    (match &self (⊢ $p $q $r $pq $qr $res) $res))
-
-;; Backward chain
-!(match &self (⊢ $p $q $r $pq $qr (≞ (→ P R) $tv)) (S $p $q $r $pq $qr $tv))
+(= (formula ($ptv $qtv $rtv $pqtv $qrtv))
+    (let* 
+        (($cP (confidence $ptv))
+         ($cQ (confidence $qtv))
+         ($cR (confidence $rtv))
+         ($cPQ (confidence $pqtv))
+         ($cQR (confidence $qrtv))
+         ($sPQ (mode $pqtv))
+         ($sQR (mode $qrtv))
+         ($sP  (mode $ptv))
+         ($sQ (mode $qtv))
+         ($sR (mode $rtv)))
+        (let* 
+            (($sPR (simple-deduction-strength-formula $sP $sQ $sR $sPQ $sQR))
+             ($cPR (min $cP (min $cQ (min $cR (min $cPQ $cQR))))))
+            (if (== $sPR 0)
+                (PrCnt 1 0)
+                (PrCnt $sPR $cPR)))))
