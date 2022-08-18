@@ -24,9 +24,9 @@
 ;;;;;;;;;;;;;;;;;;;;;
 
 (⊢ ;; premises
-   (≞ ($P $a) $ptv)
-   (≞ ($Q $a) $qtv)
-   (≞ ($R $a) $rtv)
+   (≞ $P $ptv)
+   (≞ $Q $qtv)
+   (≞ $R $rtv)
    (≞ (→ $P $Q) $pqtv)
    (≞ (→ $Q $R) $qrtv)
    ;; conclusion

@@ -1,9 +1,9 @@
 ;; Test Deduction Entail Rule
 !(import! &self "DeductionEntail.metta")
 
-(= (P) (≞ (P a) (PrCnt 1 0.1)))
-(= (Q) (≞ (Q a) (PrCnt 1 0.1)))
-(= (R) (≞ (R a) (PrCnt 1 0.1)))
+(= (P) (≞ P (PrCnt 1 0.1)))
+(= (Q) (≞ Q (PrCnt 1 0.1)))
+(= (R) (≞ R (PrCnt 1 0.1)))
 (= (PQ) (≞ (→ P Q) (PrCnt 1 0.5)))
 (= (QR) (≞ (→ Q R) (PrCnt 1 0.5)))
 
