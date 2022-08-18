@@ -22,6 +22,10 @@
 ;; Methods ;;
 ;;;;;;;;;;;;;
 
+;; Access the truth value of an evidential truth value.
+(: tv (-> EvidentialTruthValue TruthValue))
+(= (tv (ETC $ev $tv)) $tv)
+
 ;; Return the first order probability mode of the second order
 ;; distribution associated to an evidential truth value.
 (: etv_mode (-> EvidentialTruthValue Number))
