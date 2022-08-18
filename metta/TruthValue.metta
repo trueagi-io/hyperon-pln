@@ -11,6 +11,7 @@
 ;;;;;;;;;;;;;;;;;;
 
 ;; Boolean TV constructor
+;; TODO: alternatively we could have (: ⊤ TruthValue) and (: ⊥ TruthValue)
 (: Bl (-> Bool TruthValue))
 
 ;; First order probability TV constructor, i.e. mere probability.
