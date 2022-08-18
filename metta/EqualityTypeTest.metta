@@ -7,11 +7,11 @@
 
 ;; Define dummy functions to type check equality type
 (: foo (-> (=== 42 42) Bool))
-(= (foo prf) True)
+(= (foo $prf) True)
 (: bar (-> (=== True True) Bool))
-(= (bar prf) True)
+(= (bar $prf) True)
 (: baz (-> (=== 42 True) Bool))
-(= (baz prf) False)
+(= (baz $prf) False)
 
 ;; Test equality type
 !(foo (Refl T42))
