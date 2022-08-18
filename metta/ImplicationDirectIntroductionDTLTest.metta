@@ -3,21 +3,23 @@
 
 ;; Test axiom
 !("========== Test axiom ==========")
-(: test_axiom (-> (≞ (→ P Q) (ETV Empty (PrCnt 1 0)))))
-(= (test_axiom) IDIAxiom)
-!(test_axiom)
+(: axiom_prf (≞ (→ P Q) (ETV Empty (PrCnt 1 0))))
+(= axiom_prf IDIAxiom)
+!(axiom_prf)
 
-;; NEXT: find out why the following also works
-;; (: test_axiom (≞ (→ P Q) (ETV Empty (PrCnt 0 0))))
-;; (= (test_axiom) IDIAxiom)
-;; !(test_axiom)
+;; Background knowledge
+(: P42T (≞ (P 42) (Bl True)))
+(: Q42F (≞ (Q 42) (Bl False)))
 
 ;; Test inductive rule
+;;
+;; Build the following inference tree
+;;
+;;---------- (P42T)  ---------- (Q42F)  ------------------ (IDIAxiom)   ------- (NotInEmpty)
+;;(P 42) ≞ ⊤         (Q 42) ≞ ⊥         P → Q ≞ (∅  <1 0>)              42 ∉ ∅
+;;------------------------------------------------------------------------------------------ (IDIInduction)
+;;                                                P→Q ≞ $etv
 !("========== Test inductive rule ==========")
-(: test_induction (-> (≞ (→ P Q) $tv)))
-(= (test_induction) ;; NEXT
-;; !(let* (($pa (≞ (P 42) (Bl True)))
-;;         ($qa (≞ (Q 42) (Bl False)))
-;;         ($pq (≞ (→ P Q) (ETV Empty (PrCnt 1 0))))
-;;         ($an (∉ 42 Empty)))
-;;    (match &self (⊢ $pa $qa $pq $an $conclusion) $conclusion))
+(: induction_prf (≞ (→ P Q) $etv))
+(= induction_prf (IDIInduction P42 NQ42 IDIAxiom NotInEmpty))
+!(induction_prf)

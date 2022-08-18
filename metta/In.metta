@@ -1,9 +1,9 @@
 ;; Import modules
 !(import! "Set.metta")
 
-;; Type representing whether an element is in (or not) a set
+;; Type representing whether an element is or not in a set
 (: ∈ (-> $a (Set $a) Type))
 (: ∉ (-> $a (Set $a) Type))
 
-;; Constructor for ∉
-;; NEXT
+;; Constructors for ∉
+(: NotInEmpty (∉ $x Empty))
