@@ -17,6 +17,7 @@
 ;; Import modules
 !(import! &self "TruthValue.metta")
 !(import! &self "Set.metta")
+!(import! &self "ImplicationDirectIntroductionFormula.metta")
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Rule Definition ;;
@@ -32,7 +33,9 @@
 ;; Directly present in the atomspace.
 (≞ (→ $p $q) (ETV Empty (PrCnt 1 0)))
 
-;; NEXT
+;; NEXT: see MeTTa examples such as b2_backchain.metta,
+;; b3_direct.metta, b4_nonterm.metta, c3_pln_stv.metta,
+;; d1_custom_types.metta and d3_typed_pln.metta for inspiration.
 
 ;; Recursive case (inductive rule):
 ;;
@@ -43,36 +46,29 @@
 ;; ⊢
 ;; p→q ≞ (ETV (insert a ev) tv)
 ;;
-;; where tv is calculated as defined further below.
-(⊢ ;; Premises
-   (≞ ($p $a) $patv)
-   (≞ ($q $a) $qatv)
-   (≞ (→ $p $q) (ETV $ev $pqtv))
-   (∉ $a $ev)
-   ;; Conclusion
-   (≞ (→ $p $q) (ETV (insert $a $ev) (formula $ptv $qtv $pqtv))))
-
-;; Rule formula, where tv, the resulting truth value is calculated as
-;; follows
+;; where tv is calculated by idi_formula defined in
+;; ImplicationDirectIntroductionFormula.metta.
 ;;
-;; tv = (pos_cnt + pb*qb) / (cnt + pb)
+;; Two versions are defined, forward and backward.
+
+;; Backward: this could be what we want, the non-determinism allows to
+;; have the same left hand side expression being reached through
+;; multiple paths.
 ;;
-;; where pos_cnt is the positive count of pqtv
-;;       cnt is the total count of pqtv
-;;       pb is 1 if patv is (Bl True), 0 otherwise
-;;       qb is 1 if qatv is (Bl True), 0 otherwise
-;;
-;; For now it is assumed that patv and qatv are boolean truth values.
-(= (formula $ptv $qtv $pqtv)
-   (let* (($pb (mode $ptv))
-          ($qb (mode $qtv))
-          ($cnt (+ (count $pqtv) $pb)))
-     (if (< 0 $cnt)
-         (PrCnt (/ (+ (pos_count $pqtv) (* $pb $qb)) $cnt) $cnt)
-         (PrCnt 1 0))))
+;; Unfortunately, the interpreter cannot unify the left hand side of
+;; the equality because it contains function calls, as opposed to just
+;; constructors.
+(= (≞ (→ $p $q) (ETV (insert $a $ev) (idi_formula $patv $qatv $pqtv)))
+   (, (≞ ($p $a) $patv)
+      (≞ ($q $a) $qatv)
+      (≞ (→ $p $q) (ETV $ev $pqtv))
+      (∉ $a $ev)))
 
-
-
-;; See MeTTa examples such as b2_backchain.metta, b3_direct.metta,
-;; b4_nonterm.metta, c3_pln_stv.metta, d1_custom_types.metta and
-;; d3_typed_pln.metta for inspiration.
+;; Forward: in that case the multiplicity of paths is obtained by
+;; having multiple path pointing to the same right hand side
+;; expression.
+(= (, (≞ ($p $a) $patv)
+      (≞ ($q $a) $qatv)
+      (≞ (→ $p $q) (ETV $ev $pqtv))
+      (∉ $a $ev))
+    (≞ (→ $p $q) (ETV (insert $a $ev) (idi_formula $patv $qatv $pqtv))))
