@@ -1,5 +1,5 @@
 ;; MeTTa port for deduction PLN rule
-;; as the entail relationship, ⊢
+;; using match
 ;;
 ;; (≞ P ptv)
 ;; (≞ Q qtv)
@@ -23,11 +23,15 @@
 ;; Rule Definition ;;
 ;;;;;;;;;;;;;;;;;;;;;
 
-(⊢ ;; premises
-   (≞ $P $ptv)
-   (≞ $Q $qtv)
-   (≞ $R $rtv)
-   (≞ (→ $P $Q) $pqtv)
-   (≞ (→ $Q $R) $qrtv)
-   ;; conclusion
-   (≞ (→ $P $R) (formula ($ptv $qtv $rtv $pqtv $qrtv))))
+;; The rule is coded as a match query
+(: deduction_match (-> Atom))
+(= (deduction_match)
+   (match &self
+     ;; Premises
+     (, (≞ $p $ptv)
+        (≞ $q $qtv)
+        (≞ $r $rtv)
+        (≞ (→ $p $q) $pqtv)
+        (≞ (→ $q $r) $qrtv))
+     ;; Conclusion
+     (≞ (→ $p $q) (formula ($ptv $qtv $rtv $pqtv $qrtv)))))
