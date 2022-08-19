@@ -42,8 +42,8 @@
 ;; function.
 
 ;; Import modules
-!(import! &self "TruthValue.metta")
 !(import! &self "Set.metta")
+!(import! &self "EvidentialTruthValue.metta")
 !(import! &self "ImplicationDirectIntroductionFormula.metta")
 
 ;;;;;;;;;;;;;;;;;;;;;

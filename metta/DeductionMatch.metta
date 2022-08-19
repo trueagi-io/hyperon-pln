@@ -13,11 +13,8 @@
 ;; premises P, Q, R, (→ P Q) and (→ Q R) respectively.
 ;; TV represents the resulting truth value of the conclusion.
 
-;; Import TruthValue
-!(import! &self "TruthValue.metta")
-
 ;; Import formula functions
-!(import! &self "Formula.metta")
+!(import! &self "DeductionFormula.metta")
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Rule Definition ;;
@@ -34,4 +31,4 @@
         (≞ (→ $p $q) $pqtv)
         (≞ (→ $q $r) $qrtv))
      ;; Conclusion
-     (≞ (→ $p $q) (formula ($ptv $qtv $rtv $pqtv $qrtv)))))
+     (≞ (→ $p $q) (ded_formula ($ptv $qtv $rtv $pqtv $qrtv)))))

@@ -1,24 +1,8 @@
-;; TODO: add description
+;; Formula and other functions used for the deduction rule
 
-!(import! &self "IfThenElse.metta")
-
-;; Limit an number to be within a certain range
-(= (clamp $x $l $u)
-  (max $l (min $u $x)))
-
-;; Define max
-(= (max $a $b) (if (> $a $b) $a $b))
-
-;; Define min
-(= (min $a $b) (if (< $a $b) $a $b))
-
-;; Define <=
-(: <= (-> $a $a Bool))
-(= (<= $a $b) (or (< $a $b) (== $a $b)))
-
-;; Define >=
-(: >= (-> $a $a Bool))
-(= (>= $a $b) (or (> $a $b) (== $a $b)))
+;; Import modules
+!(import! &self "TruthValue.metta")
+!(import! &self "Num.metta")
 
 ; Consistency Conditions
 (= (smallest-intersection-probability $sA $sB)
@@ -48,8 +32,8 @@
      0))
 
 ;; Deduction formula
-(= (formula ($ptv $qtv $rtv $pqtv $qrtv))
-    (let* 
+(= (ded_formula ($ptv $qtv $rtv $pqtv $qrtv))
+    (let*
         (($cP (confidence $ptv))
          ($cQ (confidence $qtv))
          ($cR (confidence $rtv))
@@ -60,7 +44,7 @@
          ($sP  (mode $ptv))
          ($sQ (mode $qtv))
          ($sR (mode $rtv)))
-        (let* 
+        (let*
             (($sPR (simple-deduction-strength-formula $sP $sQ $sR $sPQ $sQR))
              ($cPR (min $cP (min $cQ (min $cR (min $cPQ $cQR))))))
             (if (== $sPR 0)
