@@ -3,7 +3,7 @@
 
 ;; Test formula
 !("========== Test formula ==========")
-!(formula (Bl True) (Bl False) (PrCnt 1 0))
+!(idi_formula (Bl True) (Bl False) (PrCnt 1 0))
 
 ;; Test axiom
 !("========== Test axiom ==========")

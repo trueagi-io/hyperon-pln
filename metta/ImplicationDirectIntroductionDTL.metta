@@ -36,7 +36,7 @@
 ;; (: Deduction
 ;;    (-> (≞ (→ $P $Q) $TV1)
 ;;        (≞ (→ $Q $R) $TV2)
-;;        (≞ (→ $P $R) (formula $TV1 $TV2))))
+;;        (≞ (→ $P $R) (ded_formula $TV1 $TV2))))
 ;;
 ;; where ≞, → are dependent types, and formula is just a regular metta
 ;; function.
