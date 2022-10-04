@@ -1,3 +1,17 @@
+;; MeTTa port for deduction PLN rule
+;; as DTL (Dependent Type Language)
+;;
+;; (≞ P ptv)
+;; (≞ Q qtv)
+;; (≞ R rtv)
+;; (≞ (→ P Q) tv1)
+;; (≞ (→ Q R) tv2)
+;; ⊢
+;; (≞ (→ P R) TV)
+;;
+;; where ptv, qtv, rtv, tv1 and tv2 are truth values of the
+;; premises P, Q, R, (→ P Q) and (→ Q R) respectively.
+;; TV represents the resulting truth value of the conclusion.
 
 !(import! &self "DeductionFormula.metta")
 
@@ -8,17 +22,3 @@
         (≞ (→ $p $q) $pqtv)
         (≞ (→ $q $r) $qrtv)
         (≞ (→ $p $r) (ded_formula ($ptv $qtv $rtv $pqtv $qrtv)))))
-
-;; Test 
-(: implicationDeduction_pfr (≞ (→ P R) $tv))
-
-;; kb
-(= (P) (≞ P (PrCnt 1 0.1)))
-(= (Q) (≞ Q (PrCnt 1 0.1)))
-(= (R) (≞ R (PrCnt 1 0.1)))
-(= (PQ) (≞ (→ P Q) (PrCnt 1 0.5)))
-(= (QR) (≞ (→ Q R) (PrCnt 1 0.5)))
-
-(= implicationDeduction_pfr (ImplicationDeduction (P) (Q) (R) (PQ) (QR)))
-
-!(implicationDeduction_pfr)
