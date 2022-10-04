@@ -20,11 +20,21 @@
 ;; Rule Definition ;;
 ;;;;;;;;;;;;;;;;;;;;;
 
-;; 
-
+;; Forward
 (= (, (≞ $p $ptv)
       (≞ $q $qtv)
       (≞ $r $rtv)
       (≞ (→ $p $q) $pqtv)
       (≞ (→ $q $r) $qrtv))
     (≞ (→ $p $r) (ded_formula ($ptv $qtv $rtv $pqtv $qrtv))))
+
+;; Backward
+;; Unfortunately this won't work, the interpreter cannot unify the left hand side of
+;; the equality because it contains function calls, as opposed to just constructors.
+
+(= (≞ (→ $p $r) (ded_formula ($ptv $qtv $rtv $pqtv $qrtv))) 
+   (, (≞ $p $ptv)
+      (≞ $q $qtv)
+      (≞ $r $rtv)
+      (≞ (→ $p $q) $pqtv)
+      (≞ (→ $q $r) $qrtv)))
