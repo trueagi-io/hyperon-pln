@@ -1,26 +1,25 @@
-;; Test Deduction DTL
+;; type definitions checker
+!(pragma! type-check auto)
 
+;; equality type definition
+(: = (-> $t $t Type))
+
+;; Import the rule
 !(import! &self "DeductionDTL.metta")
+!(import! &self "MeasEq.metta")
 
+(: Predicate Type)
+(: → (-> Predicate Predicate Type))
+(: P Predicate)
+(: R Predicate)
+(: Q Predicate)
+(: p (≞ P (PrCnt 1 0.1)))
+(: r (≞ R (PrCnt 1 0.1)))
+(: q (≞ Q (PrCnt 1 0.1)))
+(: pq (≞ (→ P Q) (PrCnt 1 0.5)))
+(: qr (≞ (→ Q R) (PrCnt 1 0.5)))
+
+;; P→R prf
 (: pr_prf (-> (≞ (→ P R) $tv)))
-
-;; kb
-(= (P) (≞ P (PrCnt 1 0.1)))
-(= (Q) (≞ Q (PrCnt 1 0.1)))
-(= (R) (≞ R (PrCnt 1 0.1)))
-(= (PQ) (≞ (→ P Q) (PrCnt 1 0.5)))
-(= (QR) (≞ (→ Q R) (PrCnt 1 0.5)))
-
-(= (pr_prf) (ImplicationDeduction (P) (Q) (R) (PQ) (QR)))
-
+(= (pr_prf) (ImplicationDeduction p q r pq qr))
 !(pr_prf)
-
-;; more kb
-(= (S) (≞ S (PrCnt 1 0.1)))
-(= (RS) (≞ (→ R S) (PrCnt 1 0.5)))
-
-(: ps_prf (-> (≞ (→ P S) $tv)))
-
-(= (ps_prf) (ImplicationDeduction (P) (R) (S) (pr_prf) (RS)))
-
-!(ps_prf)
