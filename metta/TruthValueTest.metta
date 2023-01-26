@@ -1,2 +1,2 @@
 ;; Import TruthValue
-!(import! &self "TruthValue.metta")
+!(import! &self TruthValue.metta)

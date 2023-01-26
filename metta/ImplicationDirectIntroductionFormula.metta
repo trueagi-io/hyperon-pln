@@ -1,7 +1,7 @@
 ;; Formula for the inductive Implication Direct Introduction rule.
 
 ;; Import modules
-!(import! &self "TruthValue.metta")
+!(import! &self TruthValue.metta)
 
 ;; Given the following rule
 ;;

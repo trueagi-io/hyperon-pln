@@ -14,7 +14,7 @@
 ;; TV represents the resulting truth value of the conclusion.
 
 ;; Import formula functions
-!(import! &self "DeductionFormula.metta")
+!(import! &self DeductionFormula.metta)
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Rule Definition ;;

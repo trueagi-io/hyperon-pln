@@ -1,4 +1,4 @@
-!(import! &self "Maybe.metta")
+!(import! &self Maybe.metta)
 
 ;; Test Maybe
 !(Maybe< (Just 10) (Just 20))

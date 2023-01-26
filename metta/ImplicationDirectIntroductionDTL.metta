@@ -42,9 +42,9 @@
 ;; function.
 
 ;; Import modules
-!(import! &self "Set.metta")
-!(import! &self "EvidentialTruthValue.metta")
-!(import! &self "ImplicationDirectIntroductionFormula.metta")
+!(import! &self Set.metta)
+!(import! &self EvidentialTruthValue.metta)
+!(import! &self ImplicationDirectIntroductionFormula.metta)
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Rule Definition ;;

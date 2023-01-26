@@ -2,9 +2,6 @@
 ;; Definition of a List data structure with various methods for it. ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Import modules
-!(import! &self "IfThenElse.metta")
-
 ;; Declaration of List data type and constructors
 (: List (-> $a Type))
 (: Nil (List $a))

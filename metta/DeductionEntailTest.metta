@@ -1,5 +1,5 @@
 ;; Test Deduction Entail Rule
-!(import! &self "DeductionEntail.metta")
+!(import! &self DeductionEntail.metta)
 
 (= (P) (≞ P (PrCnt 1 0.1)))
 (= (Q) (≞ Q (PrCnt 1 0.1)))

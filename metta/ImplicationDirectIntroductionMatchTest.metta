@@ -1,4 +1,4 @@
 ;; Test Implication Direct Introduction Match Rule
-!(import! &self "ImplicationDirectIntroductionMatch.metta")
+!(import! &self ImplicationDirectIntroductionMatch.metta)
 
 ;; NEXT

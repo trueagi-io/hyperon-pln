@@ -1,5 +1,5 @@
 ;; Test Deduction match Rule
-!(import! &self "DeductionMatch.metta")
+!(import! &self DeductionMatch.metta)
 
 (≞ P (PrCnt 1 0.1))
 (≞ Q (PrCnt 1 0.1))

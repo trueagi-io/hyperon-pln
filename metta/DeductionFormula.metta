@@ -1,8 +1,8 @@
 ;; Formula and other functions used for the deduction rule
 
 ;; Import modules
-!(import! &self "TruthValue.metta")
-!(import! &self "Num.metta")
+!(import! &self TruthValue.metta)
+!(import! &self Num.metta)
 
 ; Consistency Conditions
 (= (smallest-intersection-probability $sA $sB)

@@ -1,5 +1,5 @@
 ;; Import List
-!(import! &self "List.metta")
+!(import! &self List.metta)
 
 ;; Test insert
 !("============ Test insert ============")

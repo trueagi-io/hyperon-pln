@@ -1,5 +1,5 @@
 ;; Test Implication Direct Introduction DTL Rule
-!(import! &self "ImplicationDirectIntroductionDTL.metta")
+!(import! &self ImplicationDirectIntroductionDTL.metta)
 
 ;; Test axiom
 !("========== Test axiom ==========")

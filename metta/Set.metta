@@ -1,5 +1,5 @@
 ;; Import modules
-!(import! &self "BelieveMe.metta")
+!(import! &self BelieveMe.metta)
 
 ;; Proof type encoding that the appended element is less than the head
 ;; of the set.  No constructors defined yet.  In the mean time one can

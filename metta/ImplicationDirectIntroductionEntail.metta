@@ -15,10 +15,9 @@
 ;; represents the resulting truth value of the conclusion.
 
 ;; Import modules
-!(import! &self "Set.metta")
-!(import! &self "EvidentialTruthValue.metta")
-!(import! &self "ImplicationDirectIntroductionFormula.metta")
-
+!(import! &self Set.metta)
+!(import! &self EvidentialTruthValue.metta)
+!(import! &self ImplicationDirectIntroductionFormula.metta)
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Rule Definition ;;
 ;;;;;;;;;;;;;;;;;;;;;

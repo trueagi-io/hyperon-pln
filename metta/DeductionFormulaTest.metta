@@ -1,4 +1,4 @@
-!(import! &self "DeductionFormula.metta")
+!(import! &self DeductionFormula.metta)
 
 ;; Test
 !(assertEqualToResult (max 3 4) (4))

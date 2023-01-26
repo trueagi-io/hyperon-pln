@@ -1,7 +1,5 @@
 ;; Collection of functions operating on numbers
 
-!(import! &self "IfThenElse.metta")
-
 ;; Define max
 (= (max $a $b) (if (> $a $b) $a $b))
 

@@ -5,7 +5,7 @@
 ;;
 ;; Time is discrete for now.
 
-!(import! &self "EvidentialTruthValue.metta")
+!(import! &self EvidentialTruthValue.metta)
 
 ;;;;;;;;;;;
 ;; Types ;;

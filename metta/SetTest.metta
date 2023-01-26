@@ -1,5 +1,5 @@
 ;; Import Set
-!(import! &self "Set.metta")
+!(import! &self Set.metta)
 
 ;; Test elem
 !("============ Test elem ============")

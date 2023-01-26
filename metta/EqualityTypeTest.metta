@@ -1,5 +1,5 @@
 ;; Import ===
-!(import! &self "EqualityType.metta")
+!(import! &self EqualityType.metta)
 
 ;; Define various subterms
 (: TTrue True)
