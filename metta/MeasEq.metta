@@ -6,4 +6,4 @@
 ;; measure which can lead to contradictions.
 
 ;; Define ≞ as a dependent type, assigning a truth value to an event.
-(: ≞ (-> $ev $tv Type))
+(: ≞ (-> $event $tv Type))
