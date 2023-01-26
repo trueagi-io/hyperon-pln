@@ -1,5 +1,4 @@
 ;; Import modules
-!(import! &self "IfThenElse.metta")
 !(import! &self "BelieveMe.metta")
 
 ;; Proof type encoding that the appended element is less than the head

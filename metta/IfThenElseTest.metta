@@ -1,5 +1,5 @@
-;; Import if then else conditional
-!(import! &self "IfThenElse.metta")
+;; Disable importing if then else conditional as it is a built-in
+;; !(import! &self IfThenElse.metta)
 
 ;; Test if
 !("============ Test if ============")

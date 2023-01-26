@@ -1,3 +1,5 @@
+;; Note that now if is a built-in
+
 ;; Define if then else conditional
 (: if (-> Bool $a $a $a))
 (= (if True $x $y) $x)
