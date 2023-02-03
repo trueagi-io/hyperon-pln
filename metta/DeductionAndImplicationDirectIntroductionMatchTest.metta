@@ -1,6 +1,7 @@
 ; DeductionMatch and ImplicationDirectionIntroductionMatch
 
 !(import! &self "ImplicationDirectIntroductionMatch.metta")
+!(import! &self "DeductionFormula.metta")
 
 ; P->Q is obtained with ImplicationDirectIntroduction
 (≞ (P 42) (Bl True))
