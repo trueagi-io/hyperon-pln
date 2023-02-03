@@ -41,7 +41,7 @@
          ($cQR (confidence $qrtv))
          ($sPQ (mode $pqtv))
          ($sQR (mode $qrtv))
-         ($sP  (mode $ptv))
+         ($sP (mode $ptv))
          ($sQ (mode $qtv))
          ($sR (mode $rtv)))
         (let*
