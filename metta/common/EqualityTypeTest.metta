@@ -14,7 +14,7 @@
 (= (baz $prf) False)
 
 ;; Test equality type
-!(foo (Refl T42))
-!(bar (Refl T42))
-!(bar (Refl TTrue))
-!(baz (Refl T42))
+!(foo (Refl T42))                       ; Should succeed
+!(bar (Refl T42))                       ; Should fail
+!(bar (Refl TTrue))                     ; Should succeed
+!(baz (Refl T42))                       ; Should fail

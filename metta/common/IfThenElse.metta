@@ -1,4 +1,4 @@
-;; Note that now if is a built-in
+;; No longer useful as it is a built-in
 
 ;; Define if then else conditional
 (: if (-> Bool $a $a $a))
