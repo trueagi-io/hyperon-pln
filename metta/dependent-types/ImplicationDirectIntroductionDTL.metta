@@ -1,0 +1,80 @@
+;; MeTTa port of the Implication Direct Introduction PLN rule, encoded
+;; as dependent types, i.e. propositions as types.
+;;
+;; See ImplicationDirectIntroductionEntail.metta for more detail on a
+;; pseudo formal description.
+;;
+;; In the case of dependent types, inference rules are constructors of
+;; the propositions to be proven.  Then a proof is an tree composed of
+;; calls of such constructors.
+;;
+;; For instance assuming two inference rules
+;;
+;; ImplicationDirectIntroduction (IDI, for short)
+;; Deduction (DED, for short)
+;;
+;; The following inference tree
+;;
+;; ...            ...
+;; -----(IDI)     -----(IDI)
+;; P → Q          Q → R
+;; ---------------------(DED)
+;;         P → R
+;;
+;; is represented by the following MeTTa expression
+;;
+;; (Deduction
+;;    (ImplicationDirectIntroduction ...)
+;;    (ImplicationDirectIntroduction ...))
+;;
+;; where the premises of ImplicationDirectIntroduction are left
+;; undefined for now.
+;;
+;; How such propositions as types can be defined still remains to be
+;; determined but ideally it may look something like
+;;
+;; (: Deduction
+;;    (-> (≞ (→ $P $Q) $TV1)
+;;        (≞ (→ $Q $R) $TV2)
+;;        (≞ (→ $P $R) (ded_formula $TV1 $TV2))))
+;;
+;; where ≞, → are dependent types, and formula is just a regular metta
+;; function.
+
+;; Import modules
+!(import! &self ../common/Set.metta)
+!(import! &self ../common/EvidentialTruthValue.metta)
+!(import! &self ../common/ImplicationDirectIntroductionFormula.metta)
+
+;;;;;;;;;;;;;;;;;;;;;
+;; Rule Definition ;;
+;;;;;;;;;;;;;;;;;;;;;
+
+;; All rules are implemented as constructors of propositions encoded
+;; as types.
+
+;; To deal with an abritrary number of pieces of evidence the rule is
+;; defined inductively.
+
+;; Base case (axiomatic rule):
+;;
+;; p→q ≞ (ETV Empty (PrCnt 1 0))
+(: IDIAxiom
+   (≞ (→ $p $q) (ETV Empty (PrCnt 1 0))))
+
+;; Recursive case (inductive rule):
+;;
+;; (p a) ≞ patv
+;; (q a) ≞ qatv
+;; p→q ≞ (ETV ev pqtv)
+;; a ∉ ev
+;; ⊢
+;; p→q ≞ (ETV (insert a ev) tv)
+;;
+;; where tv is calculated as defined further below.
+(: IDIInduction
+   (-> (≞ ($p $a) $patv)
+       (≞ ($q $a) $qatv)
+       (≞ (→ $p $q) (ETV $ev $pqtv))
+       (∉ $a $ev)
+       (≞ (→ $p $q) (ETV (insert $a $ev) (idi_formula $ptv $qtv $pqtv)))))
