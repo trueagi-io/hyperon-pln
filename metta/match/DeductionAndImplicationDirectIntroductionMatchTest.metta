@@ -1,7 +1,7 @@
 ; DeductionMatch and ImplicationDirectionIntroductionMatch
 
 !(import! &self ImplicationDirectIntroductionMatch.metta)
-!(import! &self DeductionFormula.metta)
+!(import! &self ../common/DeductionFormula.metta)
 
 ; P->Q is obtained with ImplicationDirectIntroduction
 (≞ (P 42) (Bl True))
@@ -17,13 +17,17 @@
 (≞ R (PrCnt 1 0.1))
 (≞ (→ Q R) (PrCnt 1 0.5))
 
-(let* (($pq (idi_induction)))
-       (match &self
-            ;; Premises
-            (, (≞ $p $ptv)
-               (≞ $q $qtv)
-               (≞ $r $rtv)
-               $pq
-               (≞ (→ $q $r) $qrtv))
-            ;; Conclusion
-            (≞ (→ $p $r) (ded_formula $ptv $qtv $rtv $pqtv $qrtv))))
+(= (TV (≞ $e (ETV $s $tv))) $tv)
+
+!(let* 
+   (($pq (idi_induction &self))
+    ($pqtv (TV $pq)))
+   (match &self
+      ;; Premises
+      (, (≞ $p $ptv)
+         (≞ $q $qtv)
+         (≞ $r $rtv)
+         $pq
+         (≞ (→ $q $r) $qrtv))
+      ;; Conclusion
+      (≞ (→ $p $r) (ded_formula $ptv $qtv $rtv $pqtv $qrtv))))
