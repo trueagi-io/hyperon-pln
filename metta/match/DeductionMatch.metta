@@ -21,9 +21,9 @@
 ;;;;;;;;;;;;;;;;;;;;;
 
 ;; The rule is coded as a match query
-(: deduction_match (-> Atom))
-(= (deduction_match)
-   (match &self
+(: deduction_match (-> $kb Atom))
+(= (deduction_match $kb)
+   (match $kb
      ;; Premises
      (, (≞ $p $ptv)
         (≞ $q $qtv)

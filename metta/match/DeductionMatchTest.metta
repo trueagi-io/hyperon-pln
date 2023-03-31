@@ -7,5 +7,5 @@
 (≞ (→ P Q) (PrCnt 1 0.5))
 (≞ (→ Q R) (PrCnt 1 0.5))
 
-!(deduction_match)
+!(deduction_match &self)
 
