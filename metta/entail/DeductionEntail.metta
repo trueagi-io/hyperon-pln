@@ -27,4 +27,4 @@
    (≞ (→ $P $Q) $pqtv)
    (≞ (→ $Q $R) $qrtv)
    ;; conclusion
-   (≞ (→ $P $R) (ded_formula ($ptv $qtv $rtv $pqtv $qrtv))))
+   (≞ (→ $P $R) (ded_formula $ptv $qtv $rtv $pqtv $qrtv)))
