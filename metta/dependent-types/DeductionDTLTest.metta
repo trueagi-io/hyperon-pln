@@ -23,3 +23,4 @@
 (: pr_prf (-> (≞ (→ P R) $tv)))
 (= (pr_prf) (ImplicationDeduction p q r pq qr))
 !(pr_prf)
+!(get-type pr_prf)

@@ -32,7 +32,7 @@
      0))
 
 ;; Deduction formula
-(= (ded_formula ($ptv $qtv $rtv $pqtv $qrtv))
+(= (ded_formula $ptv $qtv $rtv $pqtv $qrtv)
     (let*
         (($cP (confidence $ptv))
          ($cQ (confidence $qtv))
