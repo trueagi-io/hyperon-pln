@@ -17,17 +17,18 @@
 (≞ R (PrCnt 1 0.1))
 (≞ (→ Q R) (PrCnt 1 0.5))
 
+;; TODO: implement it in evidentialTV file.
 (= (TV (≞ $e (ETV $s $tv))) $tv)
 
-!(let* 
-   (($pq (idi_induction &self))
-    ($pqtv (TV $pq)))
-   (match &self
+!(case (idi_induction &self) (
+   ($x (match &self
       ;; Premises
       (, (≞ $p $ptv)
          (≞ $q $qtv)
          (≞ $r $rtv)
-         $pq
+         (≞ (→ $p $q) $pqtv)
          (≞ (→ $q $r) $qrtv))
       ;; Conclusion
-      (≞ (→ $p $r) (ded_formula $ptv $qtv $rtv $pqtv $qrtv))))
+      (≞ (→ $p $r) (ded_formula $ptv $qtv $rtv (TV $x) $qrtv))))
+   (%void% None)
+))
