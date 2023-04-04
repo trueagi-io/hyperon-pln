@@ -45,13 +45,13 @@
 ;; where tv is calculated as defined further below.
 ;;
 ;; The rule is coded as a match query
-(: idi_induction (-> Atom))
-(= (idi_induction)
-   (match &self
+(: idi_induction (-> $kb Atom))
+(= (idi_induction $kb)
+   (match $kb
      ;; Premises
      (, (≞ ($p $a) $patv)
         (≞ ($q $a) $qatv)
         (≞ (→ $p $q) (ETV $ev $pqtv))
         (∉ $a $ev))
      ;; Conclusion
-     (≞ (→ $p $q) (ETV (insert $a $ev) (idi_formula $ptv $qtv $pqtv)))))
+     (≞ (→ $p $q) (ETV (insert $a $ev) (idi_formula $patv $qatv $pqtv)))))
