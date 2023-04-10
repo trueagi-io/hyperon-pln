@@ -1,34 +1,31 @@
 ; DeductionMatch and ImplicationDirectionIntroductionMatch
 
 !(import! &self ImplicationDirectIntroductionMatch.metta)
-!(import! &self ../common/DeductionFormula.metta)
+!(import! &self DeductionMatch.metta)
 
-; P->Q is obtained with ImplicationDirectIntroduction
+; Use IDI rule to infer P->Q based on the following,
 (≞ (P 42) (Bl True))
 (≞ (Q 42) (Bl False))
-(≞ (→ P Q) (ETV Empty (PrCnt 1 0)))
 (∉ 42 Empty)
 
 ; Q->R is already in the atomspace
-; Deduction can take the output of 1. using let*
+(≞ (→ Q R) (PrCnt 1 0.5))
 
+; Predicates
 (≞ P (PrCnt 1 0.1))
 (≞ Q (PrCnt 1 0.5))
 (≞ R (PrCnt 1 0.1))
-(≞ (→ Q R) (PrCnt 1 0.5))
 
-;; TODO: implement it in evidentialTV file.
-(= (TV (≞ $e (ETV $s $tv))) $tv)
-
-!(case (idi_induction &self) (
-   ($x (match &self
-      ;; Premises
-      (, (≞ $p $ptv)
-         (≞ $q $qtv)
-         (≞ $r $rtv)
-         (≞ (→ $p $q) $pqtv)
-         (≞ (→ $q $r) $qrtv))
-      ;; Conclusion
-      (≞ (→ $p $r) (ded_formula $ptv $qtv $rtv (TV $x) $qrtv))))
-   (%void% None)
-))
+; Matching query to do IDI and deduction rules
+!(let* (($prem1 (≞ $p $ptv))
+        ($prem2 (≞ $q $qtv))
+        ($prem3 (≞ $r $rtv))
+        ($prem4 (≞ ($p $a) $patv))
+        ($prem5 (≞ ($q $a) $qatv))
+        ($prem6 (∉ $a $ev))
+        ($prem7 (≞ (→ $q $r) $qrtv)))
+    (match &self
+     ;; Premises
+     (, $prem1 $prem2 $prem3 $prem4 $prem5 $prem6 $prem7)
+     ;; Conclusion 
+     (deduction $prem1 $prem2 $prem3 (idi_induction $prem4 $prem5 (idi_axiom) $prem6) $prem7)))

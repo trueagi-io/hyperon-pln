@@ -6,4 +6,4 @@
 (≞ (→ P Q) (ETV Empty (PrCnt 1 0)))
 (∉ 42 Empty)
 
-!(idi_induction &self)
+!(idi_induction_match &self)

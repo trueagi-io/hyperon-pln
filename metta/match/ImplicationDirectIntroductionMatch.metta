@@ -31,7 +31,8 @@
 ;; p→q ≞ (ETV Empty (PrCnt 1 0))
 ;;
 ;; Directly present in the atomspace.
-(⊢ (≞ (→ $p $q) (ETV Empty (PrCnt 1 0))))
+(= (idi_axiom) 
+   (≞ (→ $p $q) (ETV Empty (PrCnt 1 0))))
 
 ;; Recursive case (inductive rule):
 ;;
@@ -42,16 +43,24 @@
 ;; ⊢
 ;; p→q ≞ (ETV (insert a ev) tv)
 ;;
-;; where tv is calculated as defined further below.
+;; where tv is calculated as defined in the idi_formula.
 ;;
-;; The rule is coded as a match query
-(: idi_induction (-> $kb Atom))
-(= (idi_induction $kb)
-   (match $kb
-     ;; Premises
-     (, (≞ ($p $a) $patv)
-        (≞ ($q $a) $qatv)
-        (≞ (→ $p $q) (ETV $ev $pqtv))
-        (∉ $a $ev))
-     ;; Conclusion
-     (≞ (→ $p $q) (ETV (insert $a $ev) (idi_formula $patv $qatv $pqtv)))))
+;; IDI rule as a function
+(= (idi_induction (≞ ($p $a) $patv)
+                  (≞ ($q $a) $qatv)
+                  (≞ (→ $p $q) (ETV $ev $pqtv))
+                  (∉ $a $ev))
+   (≞ (→ $p $q) (ETV (insert $a $ev) (idi_formula $patv $qatv $pqtv))))
+
+; Corresponding matching query of IDI rule
+(: idi_induction_match (-> $kb Atom))
+(= (idi_induction_match $kb)
+   (let* (($prem1 (≞ ($p $a) $patv))
+          ($prem2 (≞ ($q $a) $qatv))
+          ($prem3 (≞ (→ $p $q) (ETV $ev $pqtv)))
+          ($prem4 (∉ $a $ev)))
+     (match $kb
+       ;; Premises
+       (, $prem1 $prem2 $prem3 $prem4)  
+       ;; Conclusion
+       (idi_induction $prem1 $prem2 $prem3 $prem4))))
