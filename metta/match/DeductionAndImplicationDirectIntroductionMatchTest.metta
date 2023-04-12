@@ -17,15 +17,18 @@
 (≞ R (PrCnt 1 0.1))
 
 ; Matching query to do IDI and deduction rules
-!(let* (($prem1 (≞ $p $ptv))
-        ($prem2 (≞ $q $qtv))
-        ($prem3 (≞ $r $rtv))
-        ($prem4 (≞ ($p $a) $patv))
-        ($prem5 (≞ ($q $a) $qatv))
-        ($prem6 (∉ $a $ev))
-        ($prem7 (≞ (→ $q $r) $qrtv)))
-    (match &self
-     ;; Premises
-     (, $prem1 $prem2 $prem3 $prem4 $prem5 $prem6 $prem7)
-     ;; Conclusion 
-     (deduction $prem1 $prem2 $prem3 (idi_induction $prem4 $prem5 (idi_axiom) $prem6) $prem7)))
+!(match &self
+    ;; Premises
+    (, (≞ $p $ptv)
+       (≞ $q $qtv)
+       (≞ $r $rtv)
+       (≞ ($p $a) $patv)
+       (≞ ($q $a) $qatv)
+       (∉ $a $ev)
+       (≞ (→ $q $r) $qrtv))
+    ;; Conclusion 
+    (deduction (≞ $p $ptv) 
+               (≞ $q $qtv)
+               (≞ $r $rtv)
+               (idi_induction (≞ ($p $a) $patv) (≞ ($q $a) $qatv) (idi_axiom) (∉ $a $ev)) 
+               (≞ (→ $q $r) $qrtv)))

@@ -53,14 +53,19 @@
    (≞ (→ $p $q) (ETV (insert $a $ev) (idi_formula $patv $qatv $pqtv))))
 
 ; Corresponding matching query of IDI rule
+;;; There is a bug with MeTTa interpreter in using let* for this matching query, 
+; as it matches ($p $a), ($q $a) with (= (idi_induction_match $kb) ...) pattern. 
+; Thus the interpreter gets in aninfinite loop. The solution given by Alexey is 
+; to set Type (: ≞ (-> Atom Atom Atom)), but using such Type causes the evaluations 
+; inside the conclusion to don't get reduced. So, I am not using let* until gets fixed.
+;;; 
 (: idi_induction_match (-> $kb Atom))
 (= (idi_induction_match $kb)
-   (let* (($prem1 (≞ ($p $a) $patv))
-          ($prem2 (≞ ($q $a) $qatv))
-          ($prem3 (≞ (→ $p $q) (ETV $ev $pqtv)))
-          ($prem4 (∉ $a $ev)))
-     (match $kb
-       ;; Premises
-       (, $prem1 $prem2 $prem3 $prem4)  
-       ;; Conclusion
-       (idi_induction $prem1 $prem2 $prem3 $prem4))))
+   (match $kb
+      ;; Premises
+      (, (≞ ($p $a) $patv)
+         (≞ ($q $a) $qatv)
+         (≞ (→ $p $q) (ETV $ev $pqtv))
+         (∉ $a $ev))  
+      ;; Conclusion
+      (idi_induction (≞ ($p $a) $patv) (≞ ($q $a) $qatv) (≞ (→ $p $q) (ETV $ev $pqtv)) (∉ $a $ev))))
