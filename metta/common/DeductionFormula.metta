@@ -5,18 +5,22 @@
 !(import! &self Num.metta)
 
 ; Consistency Conditions
+(: smallest-intersection-probability (-> Number Number Number))
 (= (smallest-intersection-probability $sA $sB)
   (clamp (/ (- (+ $sA $sB) 1) $sA) 0 1))
 
+(: largest-intersection-probability (-> Number Number Number))
 (= (largest-intersection-probability $sA $sB)
   (clamp (/ $sB $sA) 0 1))
 
+(: conditional-probability-consistency (-> Number Number Number Bool))
 (= (conditional-probability-consistency $sA $sB $sAB)
   (and (< 0 $sA)
        (and (<= (smallest-intersection-probability $sA $sB) $sAB)
             (<= $sAB (largest-intersection-probability $sA $sB)))))
 
 ;; Main Formula
+(: simple-deduction-strength-formula (-> Number Number Number Number Number Number))
 (= (simple-deduction-strength-formula $sA $sB $sC $sAB $sBC)
   (if
      (and
