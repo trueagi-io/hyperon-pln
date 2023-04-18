@@ -6,7 +6,6 @@
 
 ;; Import the rule
 !(import! &self DeductionDTL.metta)
-!(import! &self ../common/MeasEq.metta)
 
 (: Predicate Type)
 (: → (-> Predicate Predicate Type))
