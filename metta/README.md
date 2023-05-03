@@ -8,3 +8,4 @@ organized into the following folders:
 - equal: rule is represented using MeTTa equality =;
 - dependent-types: rule is represented as type constructor;
 - common: definitions common to some or all ways.
+- synthesis: experiments with program synthesis.
