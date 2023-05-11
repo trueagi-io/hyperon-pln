@@ -5,30 +5,21 @@
 (= (rules) (: . (-> (-> $b $c) (-> $a $b) (-> $a $c))))
 
 ;; Define set of facts
-(= (facts) (superpose ((: f (-> Number String)) (: f' (-> Number String)) (: g (-> String Bool)))))
+(= (facts) (superpose ((: f (-> Number String))
+                       (: g (-> String Bool))
+                       (: h (-> Bool Number)))))
 
-;; Define backward chaining target
-(= (target) (-> Number Bool))
-
-;; Single-step backward chainer, using rules, facts and target
-!(let* (((: $rule (-> $premise1 $premise2 $conclusion)) (rules))
-        ((: $fact1 $premise1) (facts))
-        ((: $fact2 $premise2) (facts))
-        ($target (target))
-        ($conclusion $target))
-  (: ($rule $fact1 $fact2) $target))
-
-;; Multi-step backward chainer, using rules and facts
-(: bc (-> Atom Nat Atom))
-(= (bc $query Z) (let $query (facts) $query))
-(= (bc $query (S $k)) (let* (((: $rule-term (-> $premise1 $premise2 $conclusion)) (rules))
-                             ((: $query-term $query-type) $query)
-                             ;; NEXT
-                             ($query (: ($rule-term (bc (: $blabla1 $premise1) $k) (bc (: $blabla2 $premise2) $k)))))
-                        $query))
-
-;; Test multi-step backward chainer
-!(bc (: $term $type) Z)
-!(bc (: $term (-> Number String)) Z)
-!(bc (: $term (-> Number Bool)) Z)
-!(bc (: $term (-> Number Bool)) (S Z))
+;; Given a query under the form (: TERM TYPE), enumerate all programs
+;; up to a given depth that are consistent with the query, using rules
+;; and facts.
+(: syn (-> Atom Nat Atom))
+(= (syn $query Z) (let $query (facts) $query))
+(= (syn $query (S $k)) (let $query (facts) $query))
+(= (syn $query (S $k)) (let* (((: $rule (-> $premise1 $premise2 $conclusion)) (rules))
+                              ((: ($rule $prf1 $prf2) $conclusion) $query)
+                              ((: $prf1 $premise1) (syn (: $prf1 $premise1) $k))
+                              ((: $prf2 $premise2) (syn (: $prf2 $premise2) $k))
+                              ; TODO: remove the following once the
+                              ; unifier bug has be fixed
+                              ((: ($rule $prf1 $prf2) $conclusion) $query))
+                         $query))
