@@ -2,7 +2,7 @@
 ;; evidence.
 
 !(import! &self TruthValue.metta)
-!(import! &self Set.metta)
+!(import! &self ../Set.metta)
 
 ;;;;;;;;;;
 ;; Type ;;
@@ -24,7 +24,7 @@
 
 ;; Access the truth value of an evidential truth value.
 (: tv (-> EvidentialTruthValue TruthValue))
-(= (tv (ETC $ev $tv)) $tv)
+(= (tv (ETV $ev $tv)) $tv)
 
 ;; Return the first order probability mode of the second order
 ;; distribution associated to an evidential truth value.
