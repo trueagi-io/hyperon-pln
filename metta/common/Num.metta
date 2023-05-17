@@ -1,22 +1,32 @@
 ;; Collection of functions operating on numbers
 
 ;; Define max
-(= (max $a $b) (if (> $a $b) $a $b))
+(: max (-> $a $a $a))
+(= (max $x $y) (if (> $x $y) $x $y))
 
 ;; Define min
-(= (min $a $b) (if (< $a $b) $a $b))
+(: min (-> $a $a $a))
+(= (min $x $y) (if (< $x $y) $x $y))
 
 ;; Clamp an number to be within a certain range
-(= (clamp $x $l $u)
-  (max $l (min $u $x)))
+(: clamp (-> $a $a $a $a))
+(= (clamp $x $l $u) (max $l (min $u $x)))
+
+;; Define abs
+(: abs (-> $a $a))
+(= (abs $x) (if (< $x 0) (* -1 $x) $x))
 
 ;; Define <=
 (: <= (-> $a $a Bool))
-(= (<= $a $b) (or (< $a $b) (== $a $b)))
+(= (<= $x $y) (or (< $x $y) (== $x $y)))
 
 ;; Define >=
 (: >= (-> $a $a Bool))
-(= (>= $a $b) (or (> $a $b) (== $a $b)))
+(= (>= $x $y) (or (> $x $y) (== $x $y)))
+
+;; Define approximatively equal
+(: approxEq (-> $a $a $a Bool))
+(= (approxEq $x $y $epsilon) (<= (abs (- $x $y)) $epsilon))
 
 ;; Define Nat
 (: Nat Type)
