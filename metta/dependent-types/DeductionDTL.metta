@@ -13,10 +13,10 @@
 ;; premises P, Q, R, (→ P Q) and (→ Q R) respectively.
 ;; TV represents the resulting truth value of the conclusion.
 
-!(import! &self ../common/DeductionFormula.metta)
-!(import! &self ../common/MeasEq.metta)
+!(import! &self ../common/formula/DeductionFormula.metta)
+!(import! &self ../common/truthvalue/MeasEq.metta)
 
-(: ImplicationDeduction
+(: Deduction
     (-> (≞ $p $ptv)
         (≞ $q $qtv)
         (≞ $r $rtv)

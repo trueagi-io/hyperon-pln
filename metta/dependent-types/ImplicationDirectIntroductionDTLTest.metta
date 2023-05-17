@@ -15,10 +15,10 @@
 ;;
 ;; Build the following inference tree
 ;;
-;;---------- (P42T)  ---------- (Q42F)  ------------------ (IDIAxiom)   ------- (NotInEmpty)
-;;(P 42) ≞ ⊤         (Q 42) ≞ ⊥         P → Q ≞ (∅, <1 0>)              42 ∉ ∅
-;;------------------------------------------------------------------------------------------ (IDIInduction)
-;;                                                P→Q ≞ $etv
+;; ----------(P42T)   ----------(Q42F)   ------------------(IDIAxiom)    ------(NotInEmpty)
+;; (P 42) ≞ ⊤         (Q 42) ≞ ⊥         P → Q ≞ (∅, <1 0>)              42 ∉ ∅
+;; -----------------------------------------------------------------------------------------(IDIInduction)
+;;                                          P → Q ≞ $etv
 !("========== Test inductive rule ==========")
 (: induction_prf (≞ (→ P Q) $etv))
 (= induction_prf (IDIInduction P42 NQ42 IDIAxiom NotInEmpty))
