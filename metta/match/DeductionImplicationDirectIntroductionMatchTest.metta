@@ -26,9 +26,9 @@
        (≞ ($q $a) $qatv)
        (∉ $a $ev)
        (≞ (→ $q $r) $qrtv))
-    ;; Conclusion 
-    (deduction (≞ $p $ptv) 
+    ;; Conclusion
+    (deduction (≞ $p $ptv)
                (≞ $q $qtv)
                (≞ $r $rtv)
-               (idi_induction (≞ ($p $a) $patv) (≞ ($q $a) $qatv) (idi_axiom) (∉ $a $ev)) 
+               (idi_induction (≞ ($p $a) $patv) (≞ ($q $a) $qatv) (idi_axiom) (∉ $a $ev))
                (≞ (→ $q $r) $qrtv)))
