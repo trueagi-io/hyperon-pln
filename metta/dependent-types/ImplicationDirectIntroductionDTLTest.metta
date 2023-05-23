@@ -9,8 +9,8 @@
 !(get-type axiom_prf)
 
 ;; Background knowledge
-(: P42T (≞ (P 42) (Bl True)))
-(: Q42F (≞ (Q 42) (Bl False)))
+(: P42m (≞ (P 42) (Bl True)))
+(: Q42m (≞ (Q 42) (Bl False)))
 
 ;; Test inductive rule
 ;;
@@ -22,6 +22,6 @@
 ;;                                          P → Q ≞ $etv
 !("========== Test inductive rule ==========")
 (: induction_prf (≞ (→ P Q) $etv))
-(= induction_prf (IDIInduction P42 NQ42 IDIAxiom NotInEmpty))
+(= induction_prf (IDIInduction P42m Q42m IDIAxiom NotInEmpty))
 !(induction_prf)
 !(get-type induction_prf)
