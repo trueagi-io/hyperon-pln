@@ -6,6 +6,7 @@
 (: axiom_prf (≞ (→ P Q) (ETV Empty (PrCnt 1 0))))
 (= axiom_prf IDIAxiom)
 !(axiom_prf)
+!(get-type axiom_prf)
 
 ;; Background knowledge
 (: P42T (≞ (P 42) (Bl True)))
@@ -23,3 +24,4 @@
 (: induction_prf (≞ (→ P Q) $etv))
 (= induction_prf (IDIInduction P42 NQ42 IDIAxiom NotInEmpty))
 !(induction_prf)
+!(get-type induction_prf)
