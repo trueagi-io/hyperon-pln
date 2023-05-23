@@ -42,7 +42,6 @@
 ;; function.
 
 ;; Import modules
-!(import! &self ../common/Set.metta)
 !(import! &self ../common/truthvalue/EvidentialTruthValue.metta)
 !(import! &self ../common/formula/ImplicationDirectIntroductionFormula.metta)
 
