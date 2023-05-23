@@ -13,21 +13,21 @@
 (: P Predicate)
 (: Q Predicate)
 (: R Predicate)
-(: p (≞ P (STV 1 0.1)))
-(: q (≞ Q (STV 1 0.1)))
-(: r (≞ R (STV 1 0.1)))
-(: pq (≞ (→ P Q) (STV 1 0.5)))
-(: qr (≞ (→ Q R) (STV 1 0.5)))
+(: Pm (≞ P (STV 1 0.1)))
+(: Qm (≞ Q (STV 1 0.1)))
+(: Rm (≞ R (STV 1 0.1)))
+(: PQm (≞ (→ P Q) (STV 1 0.5)))
+(: QRm (≞ (→ Q R) (STV 1 0.5)))
 
 ;; Test deduction rule
 ;;
 ;; Build the following inference tree
 ;;
-;; ----------(p)  ----------(q)  ----------(r)  --------------(pq)  --------------(qr)
-;; P ≞ <1 0.1>    Q ≞ <1 0.1>    R ≞ <1 0.1>    P → Q ≞ <1 0.5>     Q → R ≞ <1 0.5>
-;; ---------------------------------------------------------------------- ---------(Deduction)
-;;                                     P → R ≞ $tv
-(: pr (≞ (→ P R) $tv))
-(= pr (Deduction p q r pq qr))
-!(pr)
-!(get-type pr)
+;; ----------(Pm)  ----------(Qm)  ----------(Rm)  --------------(PQm)  --------------(QRm)
+;; P ≞ <1 0.1>     Q ≞ <1 0.1>     R ≞ <1 0.1>     P → Q ≞ <1 0.5>      Q → R ≞ <1 0.5>
+;; -----------------------------------------------------------------------------------(Deduction)
+;;                                         P → R ≞ $tv
+(: deduction_prf (≞ (→ P R) $tv))
+(= deduction_prf (Deduction Pm Qm Rm PQm QRm))
+!(deduction_prf)
+!(get-type deduction_prf)
