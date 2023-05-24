@@ -24,3 +24,8 @@ thus by extension reasoning, in MeTTa.
   synthesis via let.  It shows that forward chaining, backward
   chaining, type inference and more can be accomplished with this
   simple technique.
+
+- `Synthesize.metta`: Fully fledged program synthesizer based on
+  `synthesize-via-let.metta`.
+
+- `SynthesizeTest.metta`: Tests for `Synthesizer.metta`.
