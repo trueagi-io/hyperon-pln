@@ -14,7 +14,7 @@
 !(record syn ((: $term $type) (S Z)))              ; (: f (-> Number String)), ..., (: (. f h) (-> Bool String)), ...
 !(record syn ((: (. (. g f) h) (-> $in Bool)) (fromNumber 2))) ; (: (. (. g f) h) (-> Bool Bool)) (fromNumber 3))
 !(record syn ((: (. $g h) (-> $in String)) (fromNumber 3))) ; (: (. f h) (-> Bool String))
-!(record syn ((: (. $g h) (-> $in Bool)) (fromNumber 3)))   ; No answer
+!(record syn ((: (. $g h) (-> Number $out)) (fromNumber 3)))   ; No answer
 !(record syn ((: (. g $f) (-> $in String)) (fromNumber 3))) ; No answer
 !(record syn ((: (. g $f) (-> $in Bool)) (fromNumber 3)))   ; (: (. g f) (-> Number Bool)), (: (. g (. f h)) (-> Bool Bool)), (: (. g (. f (. h g))) (-> String Bool))
 !(record syn ((: $term $type) (fromNumber 4)))     ; Too long to list
