@@ -25,3 +25,4 @@
 (= induction_prf (IDIInduction P42m Q42m IDIAxiom NotInEmpty))
 !(induction_prf)
 !(get-type induction_prf)
+;; NEXT: use synthesizer to infer the type, then ultimately the proof tree

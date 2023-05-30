@@ -26,3 +26,4 @@
 (= deduction_idi_prf (Deduction Pm Qm Rm (IDIInduction P42m Q42m IDIAxiom NotInEmpty) QRm))
 !(deduction_idi_prf)
 !(get-type deduction_idi_prf)
+;; NEXT: use synthesizer to infer the type, then ultimately the proof tree
