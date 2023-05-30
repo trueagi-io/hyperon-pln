@@ -1,9 +1,6 @@
 ;; Import modules
 !(import! &self synthesize-via-let.metta)
-
-;; Given a function call, (f x), produce record(s) of that function
-;; call, (≘ f x (f x)).  ≘ is the MeTTa equivalent of ExecutionLink.
-(= (record $f $args) (≘ $f $args (let ($arg1 $arg2) $args ($f $arg1 $arg2))))
+!(import! &self ../common/Record.metta)
 
 ;; Test program synthesizer
 !(record syn ((: $term $type) Z))                  ; (: f (-> Number String)), (: g (-> String Bool)), (: h (-> Bool Number))
