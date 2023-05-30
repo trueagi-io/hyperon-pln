@@ -4,20 +4,35 @@
 ;; Equality type definition
 (: = (-> $t $t Type))
 
-;; Import the rule
+;; Import modules
 !(import! &self DeductionDTL.metta)
+!(import! &self ../synthesis/Synthesize.metta)
+!(import! &self ../common/Record.metta)
 
-;; Background knowledge
+;; Knowledge base
 (: Predicate Type)
 (: → (-> Predicate Predicate Type))
 (: P Predicate)
 (: Q Predicate)
 (: R Predicate)
-(: Pm (≞ P (STV 1 0.1)))
-(: Qm (≞ Q (STV 1 0.1)))
-(: Rm (≞ R (STV 1 0.1)))
-(: PQm (≞ (→ P Q) (STV 1 0.5)))
-(: QRm (≞ (→ Q R) (STV 1 0.5)))
+(: kb (-> Atom))
+(= (kb) (superpose ((: Pm (≞ P (STV 1 0.1)))
+                    (: Qm (≞ Q (STV 1 0.1)))
+                    (: Rm (≞ R (STV 1 0.1)))
+                    (: PQm (≞ (→ P Q) (STV 1 0.5)))
+                    (: QRm (≞ (→ Q R) (STV 1 0.5))))))
+
+;; Rule base
+;; (: rb (-> Atom))
+(= (rb)
+   (: Deduction
+    (-> (≞ $p $ptv)
+        (≞ $q $qtv)
+        (≞ $r $rtv)
+        (≞ (→ $p $q) $pqtv)
+        (≞ (→ $q $r) $qrtv)
+        (≞ (→ $p $r) $tv)) (ded_formula $ptv $qtv $rtv $pqtv $qrtv)))))
+;; (match &self (: Deduction $type) (: Deduction $type)))
 
 ;; Test deduction rule
 ;;
@@ -31,3 +46,8 @@
 (= deduction_prf (Deduction Pm Qm Rm PQm QRm))
 !(deduction_prf)
 !(get-type deduction_prf)
+
+;; Test chainer
+!(record synthesize ((: $proof (≞ (→ P Q) $tv)) Z kb rb))
+!(record synthesize ((: $proof (≞ (→ Q R) $tv)) Z kb rb))
+!(record synthesize ((: $proof (≞ (→ P R) $tv)) (S Z) kb rb))
