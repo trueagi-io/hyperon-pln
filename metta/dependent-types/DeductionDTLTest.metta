@@ -31,7 +31,7 @@
         (≞ $r $rtv)
         (≞ (→ $p $q) $pqtv)
         (≞ (→ $q $r) $qrtv)
-        (≞ (→ $p $r) $tv)) (ded_formula $ptv $qtv $rtv $pqtv $qrtv)))))
+        (≞ (→ $p $r) (ded_formula $ptv $qtv $rtv $pqtv $qrtv)))))
 ;; (match &self (: Deduction $type) (: Deduction $type)))
 
 ;; Test deduction rule
