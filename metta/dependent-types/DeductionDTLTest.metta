@@ -1,8 +1,8 @@
-;; Type definitions checker
-!(pragma! type-check auto)
+;; ;; Type definitions checker
+;; !(pragma! type-check auto)
 
-;; Equality type definition
-(: = (-> $t $t Type))
+;; ;; Equality type definition
+;; (: = (-> $t $t Type))
 
 ;; Import modules
 !(import! &self DeductionDTL.metta)
