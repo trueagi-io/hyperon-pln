@@ -13,13 +13,16 @@
 ;; premises P, Q, R, (→ P Q) and (→ Q R) respectively.
 ;; TV represents the resulting truth value of the conclusion.
 
-!(import! &self ../common/formula/DeductionFormula.metta)
+;; Import modules
 !(import! &self ../common/truthvalue/MeasEq.metta)
+!(import! &self ../common/formula/DeductionFormula.metta)
 
-(: Deduction
-    (-> (≞ $p $ptv)
-        (≞ $q $qtv)
-        (≞ $r $rtv)
-        (≞ (→ $p $q) $pqtv)
-        (≞ (→ $q $r) $qrtv)
-        (≞ (→ $p $r) (ded_formula $ptv $qtv $rtv $pqtv $qrtv))))
+(: deduction-rule (-> Atom))
+(= (deduction-rule)
+   (: Deduction
+      (-> (≞ $p $ptv)
+          (≞ $q $qtv)
+          (≞ $r $rtv)
+          (≞ (→ $p $q) $pqtv)
+          (≞ (→ $q $r) $qrtv)
+          (≞ (→ $p $r) (deduction $ptv $qtv $rtv $pqtv $qrtv)))))
