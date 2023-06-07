@@ -38,7 +38,7 @@
    (let* (((: $ructor (-> $premise $conclusion)) ($rule))
           ((: ($ructor $proof) $conclusion) $query)
           ((: $proof $premise) (synthesize (: $proof $premise) $k $axiom $rule)))
-          $query))
+     $query))
 ;; Binary rule
 (= (synthesize $query (S $k) $axiom $rule)
    (let* (((: $ructor (-> $premise1 $premise2 $conclusion)) ($rule))
