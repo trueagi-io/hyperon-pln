@@ -56,7 +56,7 @@
      $query))
 ;; Quaternary rule
 (= (synthesize $query (S $k) $axiom $rule)
-   (let* (((: $ructor (-> $premise1 $premise2 $premise3 premise4 $conclusion)) ($rule))
+   (let* (((: $ructor (-> $premise1 $premise2 $premise3 $premise4 $conclusion)) ($rule))
           ((: ($ructor $proof1 $proof2 $proof3 $proof4) $conclusion) $query)
           ((: $proof1 $premise1) (synthesize (: $proof1 $premise1) $k $axiom $rule))
           ((: $proof2 $premise2) (synthesize (: $proof2 $premise2) $k $axiom $rule))
