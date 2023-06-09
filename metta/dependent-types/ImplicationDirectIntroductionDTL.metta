@@ -72,9 +72,11 @@
 ;; p→q ≞ (ETV (insert a ev) tv)
 ;;
 ;; where tv is calculated as defined further below.
-(: IDIInduction
-   (-> (≞ ($p $a) $patv)
-       (≞ ($q $a) $qatv)
-       (≞ (→ $p $q) (ETV $ev $pqtv))
-       (∉ $a $ev)
-       (≞ (→ $p $q) (ETV (insert $a $ev) (idi_formula $ptv $qtv $pqtv)))))
+(: implication-direct-introduction-rule (-> Atom))
+(= (implication-direct-introduction-rule)
+   (: IDIInduction
+      (-> (≞ ($p $a) (Bl $pa))
+          (≞ ($q $a) (Bl $qa))
+          (≞ (→ $p $q) (ETV $ev $pqtv))
+          (∉ $a $ev)
+          (≞ (→ $p $q) (ETV (insert $a $ev) (direct_introduction $pa $qa $pqtv))))))
