@@ -28,4 +28,7 @@ thus by extension reasoning, in MeTTa.
 - `Synthesize.metta`: Fully fledged program synthesizer based on
   `synthesize-via-let.metta`.
 
-- `SynthesizeTest.metta`: Tests for `Synthesizer.metta`.
+- `SynthesizeTest.metta`: Tests for `Synthesize.metta`.
+
+- `SelfContainedSynthesizeTest.metta`: Self-contained version of
+  `SynthesizeTest.metta`.
