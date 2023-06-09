@@ -36,12 +36,17 @@
 ;;                                          P → R ≞ $tv
 
 ;; The following is disabled till the type checker supports running functions inside types
+;; ! "===== Test type checker on deduction rule ====="
 ;; (: deduction_prf (≞ (→ P R) $tv))
 ;; (= deduction_prf (Deduction Pm Qm Rm PQm QRm))
 ;; !(deduction_prf)
 ;; !(get-type deduction_prf)
 
-;; Test chainer
+;; Test synthesizer
+! "===== Test synthesizer ===="
 !(record synthesize ((: $proof (≞ (→ P Q) $tv)) Z kb rb)) ; (: PQm (≞ (→ P Q) (STV 0.8 0.4)))
 !(record synthesize ((: $proof (≞ (→ Q R) $tv)) Z kb rb)) ; (: QRm (≞ (→ Q R) (STV 0.9 0.5)))
 !(record synthesize ((: $proof (≞ (→ P R) $tv)) (S Z) kb rb)) ; (: (Deduction Pm Qm Rm PQm QRm) (≞ (→ P R) (STV 0.8 0.1)))
+
+;; ;; TODO: fix the following
+;; !(record synthesize ((: $proof (≞ (→ P R) (STV $s $c))) (S Z) kb rb)) ; (: (Deduction Pm Qm Rm PQm QRm) (≞ (→ P R) (STV 0.8 0.1)))

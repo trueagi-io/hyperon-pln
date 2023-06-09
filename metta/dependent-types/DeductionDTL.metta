@@ -17,6 +17,7 @@
 !(import! &self ../common/truthvalue/MeasEq.metta)
 !(import! &self ../common/formula/DeductionFormula.metta)
 
+;; Define deduction rule
 (: deduction-rule (-> Atom))
 (= (deduction-rule)
    (: Deduction
