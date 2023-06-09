@@ -68,6 +68,29 @@
                                  (max-count)
                                  (/ (* $conf (lookahead)) (- 1.0 $conf))))
 
+;; Increment the given count by 1
+(: inc-count (-> Number Number))
+(= (inc-count $cnt) (+ 1 $cnt))
+
+;; Increment the corresponding count of the given confidence by 1 and
+;; return the confidence of that corresponding incremented count.
+(: inc-confidence (-> Number Number))
+(= (inc-confidence $conf) (count->confidence (inc-count (confidence->count $conf))))
+
+;; Return the strength of a truth value, given that its count has been
+;; incremented by one but its positive count has not.
+;;
+;; The formula is derived from new_s = s*cnt / (cnt + 1), where cnt is
+;; the count of the original truth value, that is cnt = c*k / (1-c).
+;; Thus
+;;
+;; new_s = (s*c*k / (1-c)) / (c*k / (1-c) + 1)
+;;       = (s*c*k / (1-c)) / ((c*k + 1-c) / (1-c))
+;;       = (s*c*k) / (c*k + 1-c)
+(: inc-count-strength (-> Number Number Number))
+(= (inc-count-strength $s $c)
+   (/ (* $s (* $c (lookahead))) (- (+ (* $c (lookahead)) 1) $c)))
+
 ;; Return the first order probability mode of the second order
 ;; distribution associated to a truth value.
 (: mode (-> TruthValue Number))
