@@ -57,9 +57,10 @@
 
 ;; Base case (axiomatic rule):
 ;;
-;; p→q ≞ (ETV Empty (PrCnt 1 0))
-(: IDIAxiom
-   (≞ (→ $p $q) (ETV Empty (PrCnt 1 0))))
+;; p→q ≞ (ETV ∅ (STV 1 0))
+(: implication-direct-introduction-axiom (-> Atom))
+(= (implication-direct-introduction-axiom)
+   (: IDIAxiom (≞ (→ $p $q) (ETV ∅ (STV 1 0)))))
 
 ;; Recursive case (inductive rule):
 ;;

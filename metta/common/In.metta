@@ -6,4 +6,4 @@
 (: ∉ (-> $a (Set $a) Type))
 
 ;; Constructors for ∉
-(: NotInEmpty (∉ $x Empty))
+(: NotInEmpty (∉ $x ∅))
