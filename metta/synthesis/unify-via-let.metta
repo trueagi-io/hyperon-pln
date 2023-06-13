@@ -1,7 +1,7 @@
 ;; Simple unification
 !(let (Link A $y) (Link $x B) (Link $x $y))
 
-;; Simple unification using type operator
+;; Simple unification with the arrow operator
 !(let (-> A $y) (-> $x B) (-> $x $y))
 
 ;; Unify a term with the result of function (right-handside)
@@ -18,4 +18,3 @@
 
 ;; Unify a term with the result of function (left-handside)
 !(let* (($z (g $y)) ($z (f $x))) $z)
-

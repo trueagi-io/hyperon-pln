@@ -1,25 +1,52 @@
-;; type definitions checker
-!(pragma! type-check auto)
+;; ;; Type definitions checker
+;; !(pragma! type-check auto)
 
-;; equality type definition
-(: = (-> $t $t Type))
+;; ;; Equality type definition
+;; (: = (-> $t $t Type))
 
-;; Import the rule
+;; Import modules
 !(import! &self DeductionDTL.metta)
+!(import! &self ../synthesis/Synthesize.metta)
+!(import! &self ../common/Record.metta)
 
+;; Knowledge base
 (: Predicate Type)
 (: → (-> Predicate Predicate Type))
 (: P Predicate)
-(: R Predicate)
 (: Q Predicate)
-(: p (≞ P (PrCnt 1 0.1)))
-(: r (≞ R (PrCnt 1 0.1)))
-(: q (≞ Q (PrCnt 1 0.1)))
-(: pq (≞ (→ P Q) (PrCnt 1 0.5)))
-(: qr (≞ (→ Q R) (PrCnt 1 0.5)))
+(: R Predicate)
+(: kb (-> Atom))
+(= (kb) (superpose ((: Pm (≞ P (STV 0.5 0.1)))
+                    (: Qm (≞ Q (STV 0.6 0.2)))
+                    (: Rm (≞ R (STV 0.7 0.3)))
+                    (: PQm (≞ (→ P Q) (STV 0.8 0.4)))
+                    (: QRm (≞ (→ Q R) (STV 0.9 0.5))))))
 
-;; P→R prf
-(: pr_prf (-> (≞ (→ P R) $tv)))
-(= (pr_prf) (ImplicationDeduction p q r pq qr))
-!(pr_prf)
-!(get-type pr_prf)
+;; Rule base
+(: rb (-> Atom))
+(= (rb) (deduction-rule))
+
+;; Test deduction rule
+;;
+;; Build the following inference tree
+;;
+;; ------------(Pm)  ----------(Qm)  ------------(Rm)  ------------  --(PQm)  ----------------(QRm)
+;; P ≞ <0.5 0.1>     Q ≞ <0.6 0.2>   R ≞ <0.7 0.1>     P → Q ≞ <0.8 0.5>      Q → R ≞ <0.9 0.5>
+;; -------------------------------------------------------------------------------------------(Deduction)
+;;                                          P → R ≞ $tv
+
+;; The following is disabled till the type checker supports running functions inside types
+;; ! "===== Test type checker on deduction rule ====="
+;; (: deduction_prf (≞ (→ P R) $tv))
+;; (= deduction_prf (Deduction Pm Qm Rm PQm QRm))
+;; !(deduction_prf)
+;; !(get-type deduction_prf)
+
+;; Test synthesizer
+! "===== Test synthesizer ===="
+!(record synthesize ((: $proof (≞ (→ P Q) $tv)) Z kb rb)) ; (: PQm (≞ (→ P Q) (STV 0.8 0.4)))
+!(record synthesize ((: $proof (≞ (→ Q R) $tv)) Z kb rb)) ; (: QRm (≞ (→ Q R) (STV 0.9 0.5)))
+!(record synthesize ((: $proof (≞ (→ P R) $tv)) (S Z) kb rb)) ; (: (Deduction Pm Qm Rm PQm QRm) (≞ (→ P R) (STV 0.8 0.1)))
+
+;; ;; TODO: fix the following
+;; !(record synthesize ((: $proof (≞ (→ P R) (STV $s $c))) (S Z) kb rb)) ; (: (Deduction Pm Qm Rm PQm QRm) (≞ (→ P R) (STV 0.8 0.1)))

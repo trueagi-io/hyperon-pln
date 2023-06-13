@@ -11,14 +11,14 @@
 ;; constructor Cons takes an additional argument encoding a proof that
 ;; the element to append is less than the head.
 (: Set (-> $a Type))
-(: Empty (Set $a))
+(: ∅ (Set $a))
 (: Singleton (-> $a (Set $a)))
 (: Prepend (-> $a (Set $a) ElemLTHeadPrf (Set $a)))
 
 ;; Check if an element is in a set.  TODO: optimize using the fact
 ;; that it is a set.
 (: elem (-> $a (Set $a) Bool))
-(= (elem $x Empty) False)
+(= (elem $x ∅) False)
 (= (elem $x (Singleton $y)) (== $x $y))
 (= (elem $x (Prepend $head $tail $prf))
    (if (== $x $head) True (elem $x $tail)))
@@ -28,7 +28,7 @@
 ;; duplicate.
 ;; TODO: Prove that `insert` preserves order and uniqueness
 (: insert (-> $a (Set $a) (Set $a)))
-(= (insert $x Empty) (Singleton $x))
+(= (insert $x ∅) (Singleton $x))
 (= (insert $x (Singleton $y))
    (if (== $x $y)
        (Singleton $y)

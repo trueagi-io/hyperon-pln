@@ -13,13 +13,9 @@
 ;; up to a given depth that are consistent with the query, using rules
 ;; and facts.
 (: syn (-> Atom Nat Atom))
-(= (syn $query Z) (let $query (facts) $query))
-(= (syn $query (S $k)) (let $query (facts) $query))
+(= (syn $query $depth) (let $query (facts) $query))
 (= (syn $query (S $k)) (let* (((: $rule (-> $premise1 $premise2 $conclusion)) (rules))
                               ((: ($rule $prf1 $prf2) $conclusion) $query)
                               ((: $prf1 $premise1) (syn (: $prf1 $premise1) $k))
-                              ((: $prf2 $premise2) (syn (: $prf2 $premise2) $k))
-                              ; TODO: remove the following once the
-                              ; unifier bug has be fixed
-                              ((: ($rule $prf1 $prf2) $conclusion) $query))
+                              ((: $prf2 $premise2) (syn (: $prf2 $premise2) $k)))
                          $query))

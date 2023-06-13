@@ -1,7 +1,7 @@
 ;; Formula for the inductive Implication Direct Introduction rule.
 
 ;; Import modules
-!(import! &self TruthValue.metta)
+!(import! &self ../truthvalue/TruthValue.metta)
 
 ;; Given the following rule
 ;;
@@ -25,5 +25,13 @@
           ($qb (mode $qatv))
           ($cnt (+ (count $pqtv) $pb)))
      (if (< 0 $cnt)
-         (PrCnt (/ (+ (pos_count $pqtv) (* $pb $qb)) $cnt) $cnt)
-         (PrCnt 1 0))))
+         (STV (/ (+ (pos_count $pqtv) (* $pb $qb)) $cnt) (count->confidence $cnt))
+         (STV 1 0))))
+
+;; Alternate implication direct introduction formula
+(: direct-introduction-formula (-> Bool Bool TruthValue TruthValue))
+(= (direct-introduction-formula False $_ (STV $PQs $PQc)) (STV $PQs $PQc))
+(= (direct-introduction-formula True False (STV $PQs $PQc))
+   (STV (inc-count-strength $PQs $PQc) (inc-confidence $PQc)))
+(= (direct-introduction-formula True True (STV $PQs $PQc))
+   (STV $PQs (inc-confidence $PQc)))

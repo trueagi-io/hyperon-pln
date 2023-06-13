@@ -12,9 +12,11 @@ thus by extension reasoning, in MeTTa.
   `synthesize-via-type-checking.metta` but is simplified by using
   superposition.  It fails for the same reason.
 
-- `unifyt-via-let.metta`: that experiment demonstrates that fully
+- `unify-via-let.metta`: that experiment demonstrates that fully
   fledged syntactic unification can be achieved with the `let*`
   operator.
+
+- `non-determinism.metta`: experiment with non-determinism.
 
 - `synthesize-via-let.metta`: that experiment demonstrates that program
   synthesis can be achieved by combining unification, via `let*`, and
@@ -24,3 +26,12 @@ thus by extension reasoning, in MeTTa.
   synthesis via let.  It shows that forward chaining, backward
   chaining, type inference and more can be accomplished with this
   simple technique.
+
+- `Synthesize.metta`: Fully fledged program synthesizer based on
+  `synthesize-via-let.metta`.
+
+- `SynthesizeTest.metta`: Tests for `Synthesize.metta`.
+
+
+- `self-contained-synthesize.metta`: Self-contained version of
+  `Synthesize.metta` and `SynthesizeTest.metta`.

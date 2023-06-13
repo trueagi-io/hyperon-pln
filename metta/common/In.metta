@@ -6,4 +6,5 @@
 (: ∉ (-> $a (Set $a) Type))
 
 ;; Constructors for ∉
-(: NotInEmpty (∉ $x Empty))
+(: nothing-in-empty-axiom (-> Atom))
+(= (nothing-in-empty-axion) (: NothingInEmpty (∉ $x ∅)))

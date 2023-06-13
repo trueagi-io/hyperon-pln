@@ -42,9 +42,8 @@
 ;; function.
 
 ;; Import modules
-!(import! &self ../common/Set.metta)
-!(import! &self ../common/EvidentialTruthValue.metta)
-!(import! &self ../common/ImplicationDirectIntroductionFormula.metta)
+!(import! &self ../common/truthvalue/EvidentialTruthValue.metta)
+!(import! &self ../common/formula/ImplicationDirectIntroductionFormula.metta)
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Rule Definition ;;
@@ -58,9 +57,10 @@
 
 ;; Base case (axiomatic rule):
 ;;
-;; p→q ≞ (ETV Empty (PrCnt 1 0))
-(: IDIAxiom
-   (≞ (→ $p $q) (ETV Empty (PrCnt 1 0))))
+;; p→q ≞ (ETV ∅ (STV 1 0))
+(: implication-direct-introduction-axiom (-> Atom))
+(= (implication-direct-introduction-axiom)
+   (: IDIAxiom (≞ (→ $p $q) (ETV ∅ (STV 1 0)))))
 
 ;; Recursive case (inductive rule):
 ;;
@@ -72,9 +72,20 @@
 ;; p→q ≞ (ETV (insert a ev) tv)
 ;;
 ;; where tv is calculated as defined further below.
-(: IDIInduction
-   (-> (≞ ($p $a) $patv)
-       (≞ ($q $a) $qatv)
-       (≞ (→ $p $q) (ETV $ev $pqtv))
-       (∉ $a $ev)
-       (≞ (→ $p $q) (ETV (insert $a $ev) (idi_formula $ptv $qtv $pqtv)))))
+(: implication-direct-introduction-rule (-> Atom))
+(= (implication-direct-introduction-rule)
+   (: IDIInduction
+      (-> (≘ $p $a $pa)
+          (≘ $q $a $qa)
+          (≞ (→ $p $q) (ETV $ev $pqtv))
+          (∉ $a $ev)
+          (≞ (→ $p $q) (ETV (insert $a $ev) (direct-introduction-formula $pa $qa $pqtv))))))
+
+;; Convert an ETV to a TV (i.e. elimate the evidential part)
+;;
+;; (ETV evidence tv)
+;; ⊢
+;; tv
+(: evidence-elimination-rule (-> Atom))
+(= (evidence-elimination-rule)
+   (: EvidenceElimination (-> (≞ $a (ETV $evidence $tv)) (≞ $a $tv))))

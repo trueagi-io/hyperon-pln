@@ -1,5 +1,8 @@
 ;; Truth value type definition
 
+;; Import modules
+!(import! &self ../Num.metta)
+
 ;;;;;;;;;;
 ;; Type ;;
 ;;;;;;;;;;
@@ -21,8 +24,12 @@
 ;; count.  The second order probability is distributed according to a
 ;; beta distribution.  The first argument of the constructor
 ;; represents the mode of the second order distribution.
-;; TODO: instead of PrCnt maybe we want positive and negative counts.
 (: PrCnt (-> Number Number TruthValue))
+
+;; Simple Truth Value.  A Second order probability TV constructor,
+;; i.e. probability and confidence.  The probability is in fact the
+;; mode of the corresponding beta distribution.
+(: STV (-> Number Number TruthValue))
 
 ;;;;;;;;;;;;;;;
 ;; Constants ;;
@@ -35,9 +42,54 @@
 (: prior_beta (-> Number))
 (= (prior_beta) 0.5)
 
+;; Lookahead
+(: lookahead (-> Number))
+(= (lookahead) 1.0)
+
+;; Maximum supported count (till +inf is supported, possibly).
+(: max-count (-> Number))
+(= (max-count) 1e9)
+
 ;;;;;;;;;;;;;
 ;; Methods ;;
 ;;;;;;;;;;;;;
+
+;; Convert count to confidence using the formula
+;;
+;; confidence = count / (count + lookahead)
+(: count->confidence (-> Number Number))
+(= (count->confidence $cnt) (/ $cnt (+ $cnt (lookahead))))
+
+;; Convert confidence to count using the formula
+;;
+;; count = (confidence * lookahead) / (1 - confidence)
+(: confidence->count (-> Number Number))
+(= (confidence->count $conf) (if (approxEq 1.0 $conf 1e-9)
+                                 (max-count)
+                                 (/ (* $conf (lookahead)) (- 1.0 $conf))))
+
+;; Increment the given count by 1
+(: inc-count (-> Number Number))
+(= (inc-count $cnt) (+ 1 $cnt))
+
+;; Increment the corresponding count of the given confidence by 1 and
+;; return the confidence of that corresponding incremented count.
+(: inc-confidence (-> Number Number))
+(= (inc-confidence $conf) (count->confidence (inc-count (confidence->count $conf))))
+
+;; Return the strength of a truth value, given that its count has been
+;; incremented by one but its positive count has not.
+;;
+;; The formula is derived from new_s = s*cnt / (cnt + 1), where cnt is
+;; the count of the original truth value, that is cnt = c*k / (1-c).
+;; Thus
+;;
+;; new_s = (s*c*k / (1-c)) / (c*k / (1-c) + 1)
+;;       = (s*c*k / (1-c)) / ((c*k + 1-c) / (1-c))
+;;       = (s*c*k) / (c*k + 1-c)
+(: inc-count-strength (-> Number Number Number))
+(= (inc-count-strength $s $c)
+   (/ (* $s (* $c (lookahead))) (- (+ (* $c (lookahead)) 1) $c)))
 
 ;; Return the first order probability mode of the second order
 ;; distribution associated to a truth value.
@@ -46,6 +98,7 @@
 (= (mode (Bl False)) 0.0)
 (= (mode (Pr $pr)) $pr)
 (= (mode (PrCnt $pr $_)) $pr)
+(= (mode (STV $pr $_)) $pr)
 
 ;; Return the total count of a truth value.  For truth values not
 ;; capturing a notion of confidence, such as Bl or Pr then the count
@@ -54,9 +107,23 @@
 ;; of confidence, such as PrCnt, the total count is the count
 ;; component of the truth value.
 (: count (-> TruthValue Number))
-(= (count (Bl $_)) 10000000.0)
-(= (count (Pr $_)) 10000000.0)
+(= (count (Bl $_)) (max-count))
+(= (count (Pr $_)) (max-count))
 (= (count (PrCnt $_ $cnt)) $cnt)
+(= (count (STV $_ $conf)) (confidence->count $conf))
+
+;; Return the confidence of a truth value.  For truth values not
+;; capturing a notion of confidence, such as Bl or Pr then the
+;; confidence is assumed to be 1.0.  For truth values capturing a
+;; notion of confidence, such as PrCnt, the formula to convert a count
+;; into confidence is as follows
+;;
+;; confidence = count / (count + lookahead)
+(: confidence (-> TruthValue Number))
+(= (confidence (Bl $_)) 1.0)
+(= (confidence (Pr $_)) 1.0)
+(= (confidence (PrCnt $_ $cnt)) (count->confidence $cnt))
+(= (confidence (STV $_ $conf)) $conf)
 
 ;; Return the positive count of a truth value.
 (: pos_count (-> TruthValue Number))
@@ -87,16 +154,8 @@
 (= (mean (PrCnt $pr $cnt))
    (let* (($a (post_alpha (PrCnt $pr $cnt)))
           ($b (post_beta (PrCnt $pr $cnt))))
-     (\ $a (+ $a $b))))
-
-;; Return the confidence of a truth value.  For truth values not
-;; capturing a notion of confidence, such as Bl or Pr then the
-;; confidence is assumed to be 1.0.  For truth values capturing a
-;; notion of confidence, such as PrCnt, the formula to convert a count
-;; into confidence is as follows
-;;
-;; confidence = count / (count + 1)
-(: confidence (-> TruthValue Number))
-(= (confidence (Bl $_)) 1.0)
-(= (confidence (Pr $_)) 1.0)
-(= (confidence (PrCnt $_ $cnt)) (/ $cnt (+ $cnt 1)))
+     (/ $a (+ $a $b))))
+(= (mean (STV $pr $conf))
+   (let* (($a (post_alpha (STV $pr $conf)))
+          ($b (post_beta (STV $pr $conf))))
+     (/ $a (+ $a $b))))

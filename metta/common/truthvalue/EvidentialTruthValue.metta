@@ -2,7 +2,7 @@
 ;; evidence.
 
 !(import! &self TruthValue.metta)
-!(import! &self Set.metta)
+!(import! &self ../Set.metta)
 
 ;;;;;;;;;;
 ;; Type ;;
@@ -24,38 +24,38 @@
 
 ;; Access the truth value of an evidential truth value.
 (: tv (-> EvidentialTruthValue TruthValue))
-(= (tv (ETC $ev $tv)) $tv)
+(= (tv (ETV $ev $tv)) $tv)
 
 ;; Return the first order probability mode of the second order
 ;; distribution associated to an evidential truth value.
-(: etv_mode (-> EvidentialTruthValue Number))
-(= (etv_mode (ETV $ev $tv)) (mode $tv))
+(: mode (-> EvidentialTruthValue Number))
+(= (mode (ETV $ev $tv)) (mode $tv))
 
 ;; Return the total count of an evidential truth value.
-(: etv_count (-> EvidentialTruthValue Number))
-(= (etv_count (ETV $ev $tv)) (count $tv))
+(: count (-> EvidentialTruthValue Number))
+(= (count (ETV $ev $tv)) (count $tv))
 
 ;; Return the positive count of a truth value.
-(: etv_pos_count (-> EvidentialTruthValue Number))
-(= (etv_pos_count (ETV $ev $tv)) (* (mode $tv) (count $tv)))
+(: pos_count (-> EvidentialTruthValue Number))
+(= (pos_count (ETV $ev $tv)) (* (mode $tv) (count $tv)))
 
 ;; Return the negative count of a truth value.
-(: etv_neg_count (-> EvidentialTruthValue Number))
-(= (etv_neg_count (ETV $ev $tv)) (* (- 1 (mode $tv)) (count $tv)))
+(: neg_count (-> EvidentialTruthValue Number))
+(= (neg_count (ETV $ev $tv)) (* (- 1 (mode $tv)) (count $tv)))
 
 ;; Return the posterior alpha of a truth value
-(: etv_post_alpha (-> EvidentialTruthValue Number))
-(= (etv_post_alpha (ETV $ev $tv)) (+ (prior_alpha) (pos_count $tv)))
+(: post_alpha (-> EvidentialTruthValue Number))
+(= (post_alpha (ETV $ev $tv)) (+ (prior_alpha) (pos_count $tv)))
 
 ;; Return the posterior beta of a truth value
-(: etv_post_beta (-> EvidentialTruthValue Number))
-(= (etv_post_beta (ETV $ev $tv)) (+ (prior_beta) (neg_count $tv)))
+(: post_beta (-> EvidentialTruthValue Number))
+(= (post_beta (ETV $ev $tv)) (+ (prior_beta) (neg_count $tv)))
 
 ;; Return the first order probability mean of the second order
 ;; distribution associated to an evidential truth value.
-(: etv_mean (-> EvidentialTruthValue Number))
-(= (etv_mean (ETV $ev $tv)) (mean $tv))
+(: mean (-> EvidentialTruthValue Number))
+(= (mean (ETV $ev $tv)) (mean $tv))
 
 ;; Return the confidence of an evidential truth value.
-(: etv_confidence (-> EvidentialTruthValue Number))
-(= (etv_confidence (ETV $ev $tv)) (confidence $tv))
+(: confidence (-> EvidentialTruthValue Number))
+(= (confidence (ETV $ev $tv)) (confidence $tv))
