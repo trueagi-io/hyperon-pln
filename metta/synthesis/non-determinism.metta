@@ -2,6 +2,7 @@
 (: foo (-> Number Number))
 (= (foo $x) (+ $x $x))
 (= (foo $x) (* $x $x))
+;; (= (foo $x) (superpose ((+ $x $x) (* $x $x))))
 
 ;; Test foo
 !(foo 21)
