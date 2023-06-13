@@ -80,3 +80,12 @@
           (≞ (→ $p $q) (ETV $ev $pqtv))
           (∉ $a $ev)
           (≞ (→ $p $q) (ETV (insert $a $ev) (direct-introduction-formula $pa $qa $pqtv))))))
+
+;; Convert an ETV to a TV (i.e. elimate the evidential part)
+;;
+;; (ETV evidence tv)
+;; ⊢
+;; tv
+(: evidence-elimination-rule (-> Atom))
+(= (evidence-elimination-rule)
+   (: EvidenceElimination (-> (≞ $a (ETV $evidence $tv)) (≞ $a $tv))))

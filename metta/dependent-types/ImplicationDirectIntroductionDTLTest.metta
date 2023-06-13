@@ -10,8 +10,7 @@
 (: kb (-> Atom))
 (= (kb) (superpose ((: P42 (≘ P 42 True))
                     (: Q42 (≘ Q 42 False)))))
-
-;; All nullary rules, i.e. axioms, are placed in the kb as well
+;; All axioms are placed in the kb as well
 (= (kb) (implication-direct-introduction-axiom))
 (= (kb) (: NothingInEmpty (∉ $x ∅))) ; NEXT: replace by (nothing-in-empty-axiom))
 
