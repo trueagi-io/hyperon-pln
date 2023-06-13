@@ -29,9 +29,9 @@
          (STV 1 0))))
 
 ;; Alternate implication direct introduction formula
-(: direct_introduction (-> Bool Bool TruthValue TruthValue))
-(= (direct_introduction False $_ (STV $PQs $PQc)) (STV $PQs $PQc))
-(= (direct_introduction True False (STV $PQs $PQc))
+(: direct-introduction-formula (-> Bool Bool TruthValue TruthValue))
+(= (direct-introduction-formula False $_ (STV $PQs $PQc)) (STV $PQs $PQc))
+(= (direct-introduction-formula True False (STV $PQs $PQc))
    (STV (inc-count-strength $PQs $PQc) (inc-confidence $PQc)))
-(= (direct_introduction True True (STV $PQs $PQc))
+(= (direct-introduction-formula True True (STV $PQs $PQc))
    (STV $PQs (inc-confidence $PQc)))
