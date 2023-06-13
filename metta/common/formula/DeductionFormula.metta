@@ -6,61 +6,62 @@
 
 ; Consistency Conditions
 (: smallest-intersection-probability (-> Number Number Number))
-(= (smallest-intersection-probability $sA $sB)
-  (clamp (/ (- (+ $sA $sB) 1) $sA) 0 1))
+(= (smallest-intersection-probability $As $Bs)
+  (clamp (/ (- (+ $As $Bs) 1) $As) 0 1))
 
 (: largest-intersection-probability (-> Number Number Number))
-(= (largest-intersection-probability $sA $sB)
-  (clamp (/ $sB $sA) 0 1))
+(= (largest-intersection-probability $As $Bs)
+  (clamp (/ $Bs $As) 0 1))
 
 (: conditional-probability-consistency (-> Number Number Number Bool))
-(= (conditional-probability-consistency $sA $sB $sAB)
-  (and (< 0 $sA)
-       (and (<= (smallest-intersection-probability $sA $sB) $sAB)
-            (<= $sAB (largest-intersection-probability $sA $sB)))))
+(= (conditional-probability-consistency $As $Bs $ABs)
+   True)
+   ;; (and (< 0 $As)
+   ;;      (and (<= (smallest-intersection-probability $As $Bs) $ABs)
+   ;;           (<= $ABs (largest-intersection-probability $As $Bs)))))
 
 ;; Main Formula
 (: simple-deduction-strength-formula (-> Number Number Number Number Number Number))
-(= (simple-deduction-strength-formula $sA $sB $sC $sAB $sBC)
+(= (simple-deduction-strength-formula $As $Bs $Cs $ABs $BCs)
   (if
      (and
-        (conditional-probability-consistency $sA $sB $sAB)
-        (conditional-probability-consistency $sB $sC $sBC))
+        (conditional-probability-consistency $As $Bs $ABs)
+        (conditional-probability-consistency $Bs $Cs $BCs))
      ;; Preconditions are met
-     (if (< 0.99 $sB)
+     (if (< 0.99 $Bs)
         ;; sB tends to 1
-        $sC
+        $Cs
         ;; otherwise
-        (+ (* $sAB $sBC) (/ (* (- 1 $sAB) (- $sC (* $sB $sBC))) (- 1 $sB))))
+        (+ (* $ABs $BCs) (/ (* (- 1 $ABs) (- $Cs (* $Bs $BCs))) (- 1 $Bs))))
      ;; Preconditions are not met
      0))
 
 ;; Deduction formula
 (= (ded_formula $ptv $qtv $rtv $pqtv $qrtv)
     (let*
-        (($cP (confidence $ptv))
-         ($cQ (confidence $qtv))
-         ($cR (confidence $rtv))
-         ($cPQ (confidence $pqtv))
-         ($cQR (confidence $qrtv))
-         ($sPQ (mode $pqtv))
-         ($sQR (mode $qrtv))
-         ($sP (mode $ptv))
-         ($sQ (mode $qtv))
-         ($sR (mode $rtv)))
+        (($Pc (confidence $ptv))
+         ($Qc (confidence $qtv))
+         ($Rc (confidence $rtv))
+         ($PQc (confidence $pqtv))
+         ($QRc (confidence $qrtv))
+         ($PQs (mode $pqtv))
+         ($QRs (mode $qrtv))
+         ($Ps (mode $ptv))
+         ($Qs (mode $qtv))
+         ($Rs (mode $rtv)))
         (let*
-            (($sPR (simple-deduction-strength-formula $sP $sQ $sR $sPQ $sQR))
-             ($cPR (min $cP (min $cQ (min $cR (min $cPQ $cQR))))))
-            (if (== $sPR 0)
+            (($PRs (simple-deduction-strength-formula $Ps $Qs $Rs $PQs $QRs))
+             ($PRc (min $Pc (min $Qc (min $Rc (min $PQc $QRc))))))
+            (if (== $PRs 0)
                 (PrCnt 1 0)
-                (PrCnt $sPR $cPR)))))
+                (PrCnt $PRs $PRs)))))
 
 ;; Alternate deduction formula hardwired for STV to make it faster.
-(= (deduction (STV $Ps $Pc)
-              (STV $Qs $Qc)
-              (STV $Rs $Rc)
-              (STV $PQs $PQc)
-              (STV $QRs $QRc))
+(= (deduction-formula (STV $Ps $Pc)
+                      (STV $Qs $Qc)
+                      (STV $Rs $Rc)
+                      (STV $PQs $PQc)
+                      (STV $QRs $QRc))
    (if (and (conditional-probability-consistency $Ps $Qs $PQs)
             (conditional-probability-consistency $Qs $Rs $QRs))
        ;; Preconditions are met

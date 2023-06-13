@@ -26,4 +26,4 @@
           (≞ $r $rtv)
           (≞ (→ $p $q) $pqtv)
           (≞ (→ $q $r) $qrtv)
-          (≞ (→ $p $r) (deduction $ptv $qtv $rtv $pqtv $qrtv)))))
+          (≞ (→ $p $r) (deduction-formula $ptv $qtv $rtv $pqtv $qrtv)))))
