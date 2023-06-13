@@ -75,8 +75,8 @@
 (: implication-direct-introduction-rule (-> Atom))
 (= (implication-direct-introduction-rule)
    (: IDIInduction
-      (-> (≞ ($p $a) (Bl $pa))
-          (≞ ($q $a) (Bl $qa))
+      (-> (≘ $p $a $pa)
+          (≘ $q $a $qa)
           (≞ (→ $p $q) (ETV $ev $pqtv))
           (∉ $a $ev)
           (≞ (→ $p $q) (ETV (insert $a $ev) (direct_introduction $pa $qa $pqtv))))))
