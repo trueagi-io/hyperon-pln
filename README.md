@@ -28,9 +28,9 @@ metta/dependent-types
 The following examples can be run
 
 ```
-python3 [HYPERON_EXPERIMENTAL]/python/tests/metta.py metta/dependent-types/DeductionDTLTest.metta
-python3 [HYPERON_EXPERIMENTAL]/python/tests/metta.py metta/dependent-types/ImplicationDirectIntroductionDTLTest.metta
-python3 [HYPERON_EXPERIMENTAL]/python/tests/metta.py metta/dependent-types/DeductionImplicationDirectIntroductionDTLTest.metta
+metta metta/dependent-types/DeductionDTLTest.metta
+metta metta/dependent-types/ImplicationDirectIntroductionDTLTest.metta
+metta metta/dependent-types/DeductionImplicationDirectIntroductionDTLTest.metta
 ```
 
 ### Synthesizer
