@@ -28,4 +28,4 @@
 !(record synthesize ((: (. g $f) (-> $in String)) (fromNumber 3) kb rb)) ; No answer
 !(record synthesize ((: (. g $f) (-> $in Bool)) (fromNumber 3) kb rb))   ; (: (. g f) (-> Number Bool)), (: (. g (. f h)) (-> Bool Bool)), (: (. g (. f (. h g))) (-> String Bool))
 !(record synthesize ((: $term $type) (fromNumber 4) kb rb))     ; Too long to list
-;; !(record syn ((: $term (-> Number Number)) (fromNumber 6))) ; Too long to run
+;; !(record synthesize ((: $term (-> Number Number)) (fromNumber 6) kb rb)) ; Too long to run
