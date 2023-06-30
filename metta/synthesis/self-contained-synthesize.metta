@@ -50,14 +50,18 @@
 ;; an Atom of the form
 (: synthesize (-> Atom Nat (-> Atom) (-> Atom) Atom))
 ;; Nullary rule (axiom)
-(= (synthesize $query $depth $axiom $rule) (let $query ($axiom) $query))
+(= (synthesize $query $depth $axiom $rule) (case ($axiom) (($query $query))))
 ;; Binary rule
 (= (synthesize $query (S $k) $axiom $rule)
-   (let* (((: $ructor (-> $premise1 $premise2 $conclusion)) ($rule))
-          ((: ($ructor $proof1 $proof2) $conclusion) $query)
-          ((: $proof1 $premise1) (synthesize (: $proof1 $premise1) $k $axiom $rule))
-          ((: $proof2 $premise2) (synthesize (: $proof2 $premise2) $k $axiom $rule)))
-     $query))
+   (case ($rule)
+     (((: $ructor (-> $premise1 $premise2 $conclusion))
+       (case $query
+         (((: ($ructor $proof1 $proof2) $conclusion)
+           (case (synthesize (: $proof1 $premise1) $k $axiom $rule)
+             (((: $proof1 $premise1)
+               (case (synthesize (: $proof2 $premise2) $k $axiom $rule)
+                 (((: $proof2 $premise2)
+                   $query)))))))))))))
 
 ;; Knowledge base
 (: kb (-> Atom))
@@ -85,4 +89,4 @@
 !(record synthesize ((: (. g $f) (-> $in String)) (fromNumber 3) kb rb)) ; No answer
 !(record synthesize ((: (. g $f) (-> $in Bool)) (fromNumber 3) kb rb))   ; (: (. g f) (-> Number Bool)), (: (. g (. f h)) (-> Bool Bool)), (: (. g (. f (. h g))) (-> String Bool))
 !(record synthesize ((: $term $type) (fromNumber 4) kb rb))     ; Too long to list
-;; !(record syn ((: $term (-> Number Number)) (fromNumber 6))) ; Too long to run
+;; !(record synthesize ((: $term (-> Number Number)) (fromNumber 6) kb rb)) ; Too long to run
