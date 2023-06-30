@@ -3,23 +3,25 @@
 Contains a number of experiments to implement program synthesis, and
 thus by extension reasoning, in MeTTa.
 
-- `synthesize-via-type-checking.metta`: that experiment implements a
+- `synthesize-via-type-checking.metta`: experiment to implement a
   synthesizer from scratch attempting to use the type checker to check
   the validity of combinations.  It fails because the type checker is
   static.
 
-- `synthesize-via-superpose.metta`: that experiment is similar to
-  `synthesize-via-type-checking.metta` but is simplified by using
+- `synthesize-via-superpose.metta`: experiment similar to
+  `synthesize-via-type-checking.metta` but simplified by using
   superposition.  It fails for the same reason.
 
-- `unify-via-let.metta`: that experiment demonstrates that fully
-  fledged syntactic unification can be achieved with the `let*`
-  operator.
+- `unify-via-let.metta`: experiment to demonstrate that full syntactic
+  unification can be achieved with the `let` operator.
+
+- `unify-via-case.metta`: same as `unify-via-let.metta` but it uses
+  `case` instead of `let`.
 
 - `non-determinism.metta`: experiment with non-determinism.
 
-- `synthesize-via-let.metta`: that experiment demonstrates that program
-  synthesis can be achieved by combining unification, via `let*`, and
+- `synthesize-via-let.metta`: experiment to demonstrate that program
+  synthesis can be achieved by combining unification via `let` and
   non-determinism.
 
 - `synthesize-via-let-test.metta`: contains a dozen+ tests of program
@@ -27,11 +29,17 @@ thus by extension reasoning, in MeTTa.
   chaining, type inference and more can be accomplished with this
   simple technique.
 
+- `synthesize-via-case.metta`: same as `synthesize-via-let.metta` but
+  it uses `case` instead of `let`.  The advantage is that it ignores
+  branches that are not fully reduced.
+
+- `synthesize-via-case-test.metta`: same as
+  `synthesize-via-let-test.metta` but it uses `case` instead of `let`.
+
 - `Synthesize.metta`: Fully fledged program synthesizer based on
-  `synthesize-via-let.metta`.
+  `synthesize-via-case.metta`.
 
 - `SynthesizeTest.metta`: Tests for `Synthesize.metta`.
-
 
 - `self-contained-synthesize.metta`: Self-contained version of
   `Synthesize.metta` and `SynthesizeTest.metta`.
