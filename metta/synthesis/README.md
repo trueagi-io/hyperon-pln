@@ -18,6 +18,10 @@ thus by extension reasoning, in MeTTa.
 - `unify-via-case.metta`: same as `unify-via-let.metta` but it uses
   `case` instead of `let`.
 
+- `Unify.metta`: define unify and unify* operators.
+
+- `UnifyTest.metta`: test unify and unify*.
+
 - `non-determinism.metta`: experiment with non-determinism.
 
 - `synthesize-via-let.metta`: experiment to demonstrate that program
