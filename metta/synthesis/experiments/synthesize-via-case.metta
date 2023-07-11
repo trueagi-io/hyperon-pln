@@ -1,5 +1,5 @@
 ;; Import modules
-!(import! &self ../common/Num.metta)
+!(import! &self ../../common/Num.metta)
 
 ;; Define set of rules
 (= (rules) (: . (-> (-> $b $c) (-> $a $b) (-> $a $c))))
