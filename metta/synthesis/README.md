@@ -1,49 +1,19 @@
-# Program Synthesis Experiments
+# Program Synthesis
 
-Contains a number of experiments to implement program synthesis, and
-thus by extension reasoning, in MeTTa.
+Contains a unifier and a generic program synthesizer.
 
-- `synthesize-via-type-checking.metta`: experiment to implement a
-  synthesizer from scratch attempting to use the type checker to check
-  the validity of combinations.  It fails because the type checker is
-  static.
-
-- `synthesize-via-superpose.metta`: experiment similar to
-  `synthesize-via-type-checking.metta` but simplified by using
-  superposition.  It fails for the same reason.
-
-- `unify-via-let.metta`: experiment to demonstrate that full syntactic
-  unification can be achieved with the `let` operator.
-
-- `unify-via-case.metta`: same as `unify-via-let.metta` but it uses
-  `case` instead of `let`.
-
-- `Unify.metta`: define unify and unify* operators.
+- `Unify.metta`: define unify and unify* operators.  Like `let` and
+  `let*` but rely on `case` to discard not fully reduced branches.
 
 - `UnifyTest.metta`: test unify and unify*.
 
-- `non-determinism.metta`: experiment with non-determinism.
-
-- `synthesize-via-let.metta`: experiment to demonstrate that program
-  synthesis can be achieved by combining unification via `let` and
-  non-determinism.
-
-- `synthesize-via-let-test.metta`: contains a dozen+ tests of program
-  synthesis via let.  It shows that forward chaining, backward
-  chaining, type inference and more can be accomplished with this
-  simple technique.
-
-- `synthesize-via-case.metta`: same as `synthesize-via-let.metta` but
-  it uses `case` instead of `let`.  The advantage is that it ignores
-  branches that are not fully reduced.
-
-- `synthesize-via-case-test.metta`: same as
-  `synthesize-via-let-test.metta` but it uses `case` instead of `let`.
-
-- `Synthesize.metta`: Fully fledged program synthesizer based on
-  `synthesize-via-case.metta`.
+- `Synthesize.metta`: Generic program synthesizer based on `case`.  It
+  was meant to be using `unify` and `unify*`, however using `case`
+  directly, even though not as pretty, is faster.  For an example of
+  synthesizer based on `unify`, see
+  `experiments/synthesize-via-unify.metta`.
 
 - `SynthesizeTest.metta`: Tests for `Synthesize.metta`.
 
-- `self-contained-synthesize.metta`: Self-contained version of
-  `Synthesize.metta` and `SynthesizeTest.metta`.
+- `experiments`: folder containing a number of experiments leading to
+  that particular implementation.
