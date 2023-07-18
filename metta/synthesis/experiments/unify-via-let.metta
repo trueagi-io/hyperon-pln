@@ -16,5 +16,5 @@
 ;; Simple multi-unification via superpose
 !(let (Link A $y) (superpose ((Link $x B) (Node A) (Link $x C))) (Link $x $y))
 
-;; Unify a term with the result of function (left-handside)
+;; Unify results of functions (via an intermediate variable, $z)
 !(let* (($z (g $y)) ($z (f $x))) $z)

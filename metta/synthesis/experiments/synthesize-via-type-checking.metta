@@ -1,5 +1,5 @@
 ;; Import modules
-!(import! &self ../common/Num.metta)
+!(import! &self ../../common/Num.metta)
 
 ;; ;; Type definitions checker
 ;; !(pragma! type-check auto)
@@ -67,7 +67,7 @@
 (= (synthesize $fns (S (S $k))) (let* (($prgs (synthesize $fns (S $k)))
                                        ($cmbs (prodWith . $fns $prgs))
                                        ($vld (filter well-typed $cmbs)))
-                                  ; NEXT: should be concatenated with $prgs?
+                                  ; TODO: should be concatenated with $prgs?
                                   (trace! (info (variables (prgs $prgs) (cmbs $cmbs))
                                                 (synthesize= $fns (S (S $k)) $vld))
                                           $vld)))
