@@ -1,9 +1,9 @@
-; Test DeductionDTL and ImplicationDirectionIntroductionDTL rules
+;; Test DeductionDTL and ImplicationDirectionIntroductionDTL rules
 
-;; Improt the rules
+;; Import the rules
 !(import! &self ImplicationDirectIntroductionDTL.metta)
 !(import! &self DeductionDTL.metta)
-;; !(import! &self ../common/In.metta)  ; NEXT
+!(import! &self ../common/In.metta)
 !(import! &self ../synthesis/Synthesize.metta)
 
 ;; Knowledge base
@@ -53,5 +53,5 @@
 ! "===== Test synthesizer on deduction rule ====="
 !(synthesize (: $proof (≞ (→ P R) $tv)) (fromNumber 2) kb rb)
 
-;; ! "===== Test synthesizer on deduction and implication direct introduction rules ====="
+! "===== Test synthesizer on deduction and implication direct introduction rules ====="
 !(synthesize (: (Deduction Pm Qm Rm $p4 $p5) (≞ (→ P R) $tv)) (fromNumber 3) kb rb)
