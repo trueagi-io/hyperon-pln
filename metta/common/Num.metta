@@ -45,8 +45,9 @@
 (: ceil (-> Number Number))
 (= (ceil $n) (fromNat (fromNumber $n)))
 
-;; Define a less than type.  Please note that it is purposefully
-;; different than < as it is a type representing proposition x < y.
+;; Define a less than type.  Note that it is purposefully different
+;; than < as it is a type, not an operator.  Inhabitants of (⋖ x y)
+;; are proofs that x < y.
 (: ⋖ (-> $t $t Type))
 
 ;; Zero is always less than the successor of something
