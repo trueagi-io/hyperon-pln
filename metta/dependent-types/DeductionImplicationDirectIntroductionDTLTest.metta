@@ -11,12 +11,12 @@
 (= (kb) (superpose ((: Pm (≞ P (STV 0.2 0.3)))
                     (: Qm (≞ Q (STV 0.3 0.2)))
                     (: Rm (≞ R (STV 0.4 0.1)))
-                    (: P42 (≘ P 42 True))
-                    (: Q42 (≘ Q 42 True))
+                    (: P42 (⊷ P 42 True))
+                    (: Q42 (⊷ Q 42 True))
                     (: QRm (≞ (→ Q R) (STV 0.9 0.7))))))
 ;; All axioms are placed in the kb as well
 (= (kb) (implication-direct-introduction-axiom))
-(= (kb) (: NothingInEmpty (∉ $x ∅))) ; NEXT: replace by (nothing-in-empty-axiom))
+(= (kb) (nothing-in-empty-axiom))
 
 ;; Rule base
 (: rb (-> Atom))

@@ -64,8 +64,8 @@
 
 ;; Recursive case (inductive rule):
 ;;
-;; (p a) ≞ patv
-;; (q a) ≞ qatv
+;; (p a) = pa
+;; (q a) = qa
 ;; p→q ≞ (ETV ev pqtv)
 ;; a ∉ ev
 ;; ⊢
@@ -75,8 +75,8 @@
 (: implication-direct-introduction-rule (-> Atom))
 (= (implication-direct-introduction-rule)
    (: IDIInduction
-      (-> (≘ $p $a $pa)
-          (≘ $q $a $qa)
+      (-> (⊷ $p $a $pa)
+          (⊷ $q $a $qa)
           (≞ (→ $p $q) (ETV $ev $pqtv))
           (∉ $a $ev)
           (≞ (→ $p $q) (ETV (insert $a $ev) (direct-introduction-formula $pa $qa $pqtv))))))
