@@ -48,7 +48,7 @@
    ;; Conclusion
    (≞ (→ $p $q) (ETV (insert $a $ev) (idi_formula $patv $qtv $pqtv))))
 
-;; NEXT: add equality like
+;; TODO: add equality like
 ;;
 ;; (= (⊢ ....) ....)
 ;;
