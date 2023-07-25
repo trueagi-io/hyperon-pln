@@ -44,3 +44,18 @@
 ;; negative it returns 1.
 (: ceil (-> Number Number))
 (= (ceil $n) (fromNat (fromNumber $n)))
+
+;; Define a less than type.  Please note that it is purposefully
+;; different than < as it is a type representing proposition x < y.
+(: ≺ (-> $t $t Type))
+
+;; Zero is always less than the successor of something
+(: (zero-lt-succ-axiom) (-> Atom))
+(= (zero-lt-succ-axiom)
+   (: ZeroLTSucc (≺ Z (S $k))))
+
+;; If x ≺ y then (S x) ≺ (S y)
+(: (succ-monotonicity-rule) (-> Atom))
+(= (succ-monotonicity-rule)
+   (: SuccMonotonicity (-> (≺ $x $y)
+                           (≺ (S $x) (S $y)))))
