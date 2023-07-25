@@ -15,25 +15,25 @@
 ;; If x < y, then x ∉ {y}
 (: lt-notin-singleton-rule (-> Atom))
 (= (lt-notin-singleton-rule)
-   (: LTNotInSingleton (-> (≺ $x $y)
+   (: LTNotInSingleton (-> (⋖ $x $y)
                            (∉ $x (Singleton $y)))))
 
 ;; If x < y, then x ∉ {y, ...}, because OrderedSet is ordered.
 (= (lt-notin-prepend-rule)
-   (: LTNotInPrepend (-> (≺ $x $y)
+   (: LTNotInPrepend (-> (⋖ $x $y)
                          (∉ $x (Prepend $y $s $p)))))
 
 ;; If x ∉ S, y ∉ S and x < y, then x ∉ (y ∪ S)
 (= (lt-notin-recursive-1-rule)
    (: LTNotInRecursive1 (-> (∉ $x $S)
                             (∉ $y $S)
-                            (≺ $x $y)
+                            (⋖ $x $y)
                             (∉ $x (insert $y $S)))))
 
 ;; If x ∉ S, y ∉ S and x < y, then y ∉ (x ∪ S)
 (= (lt-notin-recursive-2-rule)
    (: LTNotInRecursive2 (-> (∉ $x $S)
                             (∉ $y $S)
-                            (≺ $x $y)
+                            (⋖ $x $y)
                             (∉ $y (insert $x $S)))))
 

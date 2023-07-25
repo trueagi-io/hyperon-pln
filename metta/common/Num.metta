@@ -47,15 +47,15 @@
 
 ;; Define a less than type.  Please note that it is purposefully
 ;; different than < as it is a type representing proposition x < y.
-(: ≺ (-> $t $t Type))
+(: ⋖ (-> $t $t Type))
 
 ;; Zero is always less than the successor of something
 (: (zero-lt-succ-axiom) (-> Atom))
 (= (zero-lt-succ-axiom)
-   (: ZeroLTSucc (≺ Z (S $k))))
+   (: ZeroLTSucc (⋖ Z (S $k))))
 
-;; If x ≺ y then (S x) ≺ (S y)
+;; If x ⋖ y then (S x) ⋖ (S y)
 (: (succ-monotonicity-rule) (-> Atom))
 (= (succ-monotonicity-rule)
-   (: SuccMonotonicity (-> (≺ $x $y)
-                           (≺ (S $x) (S $y)))))
+   (: SuccMonotonicity (-> (⋖ $x $y)
+                           (⋖ (S $x) (S $y)))))
