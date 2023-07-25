@@ -10,14 +10,16 @@
 ;; list without duplicates.  In order to guaranty that, the
 ;; constructor Cons takes an additional argument encoding a proof that
 ;; the element to append is less than the head.
-(: Set (-> $a Type))
-(: ∅ (Set $a))
-(: Singleton (-> $a (Set $a)))
-(: Prepend (-> $a (Set $a) ElemLTHeadPrf (Set $a)))
+(: OrderedSet (-> $a Type))
+(: ∅ (OrderedSet $a))
+(: Singleton (-> $a (OrderedSet $a)))   ; TODO: could probably avoid
+                                        ; that if ElemLTHeadPrf
+                                        ; includes the empty set.
+(: Prepend (-> $a (OrderedSet $a) ElemLTHeadPrf (OrderedSet $a)))
 
 ;; Check if an element is in a set.  TODO: optimize using the fact
-;; that it is a set.
-(: elem (-> $a (Set $a) Bool))
+;; that it is an ordered set.
+(: elem (-> $a (OrderedSet $a) Bool))
 (= (elem $x ∅) False)
 (= (elem $x (Singleton $y)) (== $x $y))
 (= (elem $x (Prepend $head $tail $prf))
@@ -27,7 +29,7 @@
 ;; already in the set as to produce a set, i.e. a sorted list without
 ;; duplicate.
 ;; TODO: Prove that `insert` preserves order and uniqueness
-(: insert (-> $a (Set $a) (Set $a)))
+(: insert (-> $a (OrderedSet $a) (OrderedSet $a)))
 (= (insert $x ∅) (Singleton $x))
 (= (insert $x (Singleton $y))
    (if (== $x $y)
