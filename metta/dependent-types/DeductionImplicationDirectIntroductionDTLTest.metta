@@ -28,7 +28,7 @@
 ;;
 ;; Build the following inference tree
 ;;
-;;                                ---------(P42m) ---------(Q42m) -----------------(IDIAxiom) -----(NothingInEmpty)
+;;                                ---------(P42)  ---------(Q42)  -----------------(IDIAxiom) -----(NothingInEmpty)
 ;;                                (P 42) = ⊤      (Q 42) = ⊤      P → Q ≞ (∅, <1 0>)          42 ∉ ∅
 ;;                                ------------------------------------------------------------------(IDIInduction)
 ;;                                                    P → Q ≞ (ETV $evidence $pqtv)

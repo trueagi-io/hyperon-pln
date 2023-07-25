@@ -31,7 +31,7 @@
 ;; p→q ≞ (ETV Empty (PrCnt 1 0))
 ;;
 ;; Directly present in the atomspace.
-(= (idi_axiom) 
+(= (idi_axiom)
    (≞ (→ $p $q) (ETV Empty (PrCnt 1 0))))
 
 ;; Recursive case (inductive rule):
