@@ -1,8 +1,8 @@
 ;; Import modules
-!(import! &self DeductionDTL.metta)
 !(import! &self ModusPonensDTL.metta)
 !(import! &self ../synthesis/Synthesize.metta)
 
+;; Puzzle:
 ;; The cow is big.
 ;; The cow needs the dog.
 ;; The dog sees the rabbit.
@@ -12,7 +12,8 @@
 ;; The rabbit sees the dog.
 ;; If the cow chases the dog then the cow sees the rabbit.
 ;; If something is big then it chases the dog.
-;; Question: The cow sees the rabbit?
+;; Question:
+;; The cow sees the rabbit?
 
 ;; Knowledge base
 (: Predicate Type)
@@ -37,8 +38,7 @@
 
 ;; Rule base
 (: rb (-> Atom))
-(= (rb) (superpose ((deduction-rule)
-                    (modus-ponens-rule))))
+(= (rb) (modus-ponens-rule))
 
 ! "===== Test synthesizer ===="
 !(synthesize (: $proof (≞ (big cow) (STV $s $c))) (fromNumber 0) kb rb)   ;; (: cow_is_big (≞ (big cow) (STV 0.99 0.99)))
