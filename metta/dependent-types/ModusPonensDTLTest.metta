@@ -15,16 +15,25 @@
 ;; Question: The cow sees the rabbit?
 
 ;; Knowledge base
+(: Predicate Type)
+(: → (-> Predicate Predicate Type))
+(: big (-> Atom Predicate))
+(: need (-> Atom Atom Predicate))
+(: see (-> Atom Atom Predicate))
+(: chase (-> Atom Atom Predicate))
+(: cow Atom)
+(: dog Atom)
+(: rabbit Atom)
 (: kb (-> Atom))
-(= (kb) (superpose ((: cow_is_big (≞ (is cow big) (STV 0.99 0.99)))
-                    (: cow_needs_dog (≞ (needs cow dog) (STV 0.99 0.99)))
-                    (: dog_sees_rabbit (≞ (sees dog rabbit) (STV 0.99 0.99)))
-                    (: rabbit_chases_cow (≞ (chases rabbit cow) (STV 0.99 0.99)))
-                    (: rabbit_chases_dog (≞ (chases rabbit dog) (STV 0.99 0.99)))
-                    (: rabbit_is_big (≞ (is rabbit big) (STV 0.99 0.99)))
-                    (: rabbit_sees_dog (≞ (sees rabbit dog) (STV 0.99 0.99)))
-                    (: cow_chases_dog_sees_rabbit (≞ (→ (chases cow dog) (sees cow rabbit)) (STV 0.99 0.99)))
-                    (: x_is_big_chases_dog (≞ (→ (is $x big) (chases $x dog)) (STV 0.99 0.99))))))
+(= (kb) (superpose ((: cow_is_big (≞ (big cow) (STV 0.99 0.99)))
+                    (: cow_needs_dog (≞ (need cow dog) (STV 0.99 0.99)))
+                    (: dog_sees_rabbit (≞ (see dog rabbit) (STV 0.99 0.99)))
+                    (: rabbit_chases_cow (≞ (chase rabbit cow) (STV 0.99 0.99)))
+                    (: rabbit_chases_dog (≞ (chase rabbit dog) (STV 0.99 0.99)))
+                    (: rabbit_is_big (≞ (big rabbit) (STV 0.99 0.99)))
+                    (: rabbit_sees_dog (≞ (see rabbit dog) (STV 0.99 0.99)))
+                    (: cow_chases_dog_sees_rabbit (≞ (→ (chase cow dog) (see cow rabbit)) (STV 0.99 0.99)))
+                    (: x_is_big_chases_dog (≞ (→ (big $x) (chase $x dog)) (STV 0.99 0.99))))))
 
 ;; Rule base
 (: rb (-> Atom))
@@ -32,6 +41,6 @@
                     (modus-ponens-rule))))
 
 ! "===== Test synthesizer ===="
-!(synthesize (: $proof (≞ (is cow big) (STV $s $c))) (fromNumber 0) kb rb)
-!(synthesize (: $proof (≞ (chases cow dog) (STV $s $c))) (fromNumber 1) kb rb)
-!(synthesize (: $proof (≞ (sees cow rabbit) (STV $s $c))) (fromNumber 2) kb rb)
+!(synthesize (: $proof (≞ (big cow) (STV $s $c))) (fromNumber 0) kb rb)   ;; (: cow_is_big (≞ (big cow) (STV 0.99 0.99)))
+!(synthesize (: $proof (≞ (chase cow dog) (STV $s $c))) (fromNumber 1) kb rb)   ;; (: (ModusPonens cow_is_big x_is_big_chases_dog) (≞ (chase cow dog) (STV 0.9821 0.99)))
+!(synthesize (: $proof (≞ (see cow rabbit) (STV $s $c))) (fromNumber 2) kb rb)   ;; (: (ModusPonens (ModusPonens cow_is_big x_is_big_chases_dog) cow_chases_dog_sees_rabbit) (≞ (see cow rabbit) (STV 0.975859 0.99)))
