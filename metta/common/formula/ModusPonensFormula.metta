@@ -4,11 +4,11 @@
 !(import! &self ../truthvalue/TruthValue.metta)
 !(import! &self ../Num.metta)
 
-(= (modus-ponens-formula (STV $Ps $Pc)
-                         (STV $PQs $PQc))
+(= (modus-ponens-formula (STV $As $Ac)
+                         (STV $ABs $ABc))
    (let*
-       (($notPQs 0.2)
-        ($notPQc 1))
+       (($notABs 0.2)   ; temporary hack
+        ($notABc 1))
        (STV
-           (+ (* $PQs $Ps) (* $notPQs (- 1 $Ps)))
-           (min (min $PQc $notPQc) $Pc))))
+           (+ (* $ABs $As) (* $notABs (- 1 $As)))
+           (min (min $ABc $notABc) $Ac))))
