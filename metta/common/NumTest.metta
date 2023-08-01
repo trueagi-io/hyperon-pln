@@ -27,15 +27,17 @@
   (approxEq 10 10.0001 1e-9)
   False)
 
-;; Test reasoning about comparison over Natural
+;; Define knowledge and rule bases to reason about Natural order
 (= (kb) (zero-lt-succ-axiom))
 (= (rb) (succ-monotonicity-rule))
-!(assertEqual
+
+;; Test reasoning about Natural order
+!(assertEqual                           ; 0 < 1
   (synthesize (: $proof (⋖ Z (S Z))) Z kb rb)
   (: ZeroLTSucc (⋖ Z (S Z))))
-!(assertEqual
+!(assertEqual                           ; 1 < 3
   (synthesize (: $proof (⋖ (fromNumber 1) (fromNumber 3))) (S Z) kb rb)
   (: (SuccMonotonicity ZeroLTSucc) (⋖ (fromNumber 1) (fromNumber 3))))
-!(assertEqual
+!(assertEqual                           ; 2 < 7
   (synthesize (: $proof (⋖ (fromNumber 2) (fromNumber 7))) (fromNumber 5) kb rb)
   (: (SuccMonotonicity (SuccMonotonicity ZeroLTSucc)) (⋖ (fromNumber 2) (fromNumber 7))))
