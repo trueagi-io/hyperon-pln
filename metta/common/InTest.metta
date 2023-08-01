@@ -19,6 +19,14 @@
   (: NotInEmpty (∉ Z ∅)))
 ;; TODO: re-enabled once unify* can be used
 ;; !(assertEqual                           ; 0 ∉ {1}
-;;   (synthesize (: $proof (∉ Z (Singleton (S Z)))) (S Z) kb rb)
-;;   (: (LTNotInRecursiveLeft NotInEmpty NotInEmpty ZeroLTSucc) (∉ Z (Singleton (S Z)))))
-!(synthesize (: $proof (∉ Z (Singleton (S Z)))) (S Z) kb rb)
+;;   (synthesize (: $proof (∉ Z (insert (S Z) ∅))) (S Z) kb rb)
+;;   (: (LTNotInRecursiveLeft NotInEmpty NotInEmpty ZeroLTSucc) (∉ Z (insert (S Z) ∅))))
+
+;; NEXT: fix
+;; !(synthesize (: $proof (∉ Z (insert (S Z) ∅))) (S Z) kb rb)
+!(synthesize
+  (: (LTNotInRecursiveLeft NotInEmpty NotInEmpty ZeroLTSucc)
+     (∉ Z (insert (S Z) ∅)))
+  (S Z)
+  kb
+  rb)
