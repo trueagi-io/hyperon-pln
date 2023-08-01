@@ -58,17 +58,18 @@
 (= (ceil $n) (fromNat (fromNumber $n)))
 
 ;; Define a less than type.  Note that it is purposefully different
-;; than < as it is a type, not an operator.  Inhabitants of (⋖ x y)
-;; are proofs that x < y.
-(: ⋖ (-> $t $t Type))
+;; than ⩻ as it is a type, not an operator.  Inhabitants of (⍃ x y)
+;; are proofs that x ⩻ y == True.  For now ⍃ is only axiomatized for
+;; Nat.
+(: ⍃ (-> $t $t Type))
 
 ;; Zero is always less than the successor of something
 (: (zero-lt-succ-axiom) (-> Atom))
 (= (zero-lt-succ-axiom)
-   (: ZeroLTSucc (⋖ Z (S $k))))
+   (: ZeroLTSucc (⍃ Z (S $k))))
 
-;; If x ⋖ y then (S x) ⋖ (S y)
+;; If x ⍃ y then (S x) ⍃ (S y)
 (: (succ-monotonicity-rule) (-> Atom))
 (= (succ-monotonicity-rule)
-   (: SuccMonotonicity (-> (⋖ $x $y)
-                           (⋖ (S $x) (S $y)))))
+   (: SuccMonotonicity (-> (⍃ $x $y)
+                           (⍃ (S $x) (S $y)))))
