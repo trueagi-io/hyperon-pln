@@ -40,6 +40,18 @@
 (= (fromNat Z) 0)
 (= (fromNat (S $k)) (+ 1 (fromNat $k)))
 
+;; Define a generic less than operator, ⩻, for Nat.  < cannot be used
+;; because it is a built-in, its type is hardwired and cannot be
+;; overloaded.
+(: ⩻ (-> Nat Nat Bool))
+(= (⩻ $_ Z) False)
+(= (⩻ Z (S $_)) True)
+(= (⩻ (S $x) (S $y)) (⩻ $x $y))
+
+;; Overload ⩻ for Number.
+(: ⩻ (-> Number Number Bool))
+(= (⩻ $x $y) (< $x $y))
+
 ;; Return the ceiling of a non negative number.  If the number is
 ;; negative it returns 1.
 (: ceil (-> Number Number))
