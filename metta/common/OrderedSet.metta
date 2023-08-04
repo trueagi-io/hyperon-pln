@@ -1,6 +1,5 @@
 ;; Import modules
 !(import! &self Num.metta)
-!(import! &self BelieveMe.metta)
 
 ;; Definition of a set data structure.  Under the hood it is a sorted
 ;; list without duplicates, thus called OrderedSet.  For now its
