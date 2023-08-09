@@ -14,8 +14,8 @@
 ;; Constructor ;;
 ;;;;;;;;;;;;;;;;;;
 
-;; Takes a set of pieces of evidence ascribed to a truth value to form
-;; an evidential truth value.
+;; Takes an evidence set ascribed to a truth value to form an
+;; evidential truth value.
 (: ETV (-> (OrderedSet $a) TruthValue EvidentialTruthValue))
 
 ;;;;;;;;;;;;;
