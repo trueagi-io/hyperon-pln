@@ -57,6 +57,15 @@
 (: ceil (-> Number Number))
 (= (ceil $n) (fromNat (fromNumber $n)))
 
+;; Convert Number to Bool.  Anything above 0 converts to True.
+(: number->bool (-> Number Bool))
+(= (number->bool $x) (< 0 $x))
+
+;; Convert Bool to Number.  False converts to 0, True converts to 1.
+(: bool->number (-> Bool Number))
+(= (bool->number False) 0)
+(= (bool->number True) 1)
+
 ;; Define a less than type.  Note that it is purposefully different
 ;; than ⩻ as it is a type, not an operator.  Inhabitants of (⍃ x y)
 ;; are proofs that x ⩻ y == True.  For now ⍃ is only axiomatized for
