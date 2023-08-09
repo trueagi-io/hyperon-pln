@@ -5,8 +5,10 @@
 ;;
 ;; "under f, the image of x is y"
 ;;
-;; ⊷ was chosen because it is described as IMAGE OF in UTF-8.  It is
-;; the MeTTa equivalent of ExecutionLink in Atomese.
+;; It was chosen because it is described as IMAGE OF in UTF-8.  It is
+;; the MeTTa equivalent of ExecutionLink in Atomese.  The character ⊷
+;; has description: IMAGE OF, hexadecimal code: 0x22B7, unicode-math
+;; code: \imageof and latex code: \multimapdotbothB.
 (= (record $f ($arg)) (⊷ $f $arg ($f $arg)))
 (= (record $f ($arg1 $arg2)) (⊷ $f ($arg1 $arg2) ($f $arg1 $arg2)))
 (= (record $f ($arg1 $arg2 $arg3)) (⊷ $f ($arg1 $arg2 $arg3) ($f $arg1 $arg2 $arg3)))
