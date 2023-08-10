@@ -8,7 +8,7 @@
 (: min (-> $a $a $a))
 (= (min $x $y) (if (< $x $y) $x $y))
 
-;; Clamp an number to be within a certain range
+;; Clamp a number to be within a certain range
 (: clamp (-> $a $a $a $a))
 (= (clamp $x $l $u) (max $l (min $u $x)))
 
@@ -24,7 +24,7 @@
 (: >= (-> $a $a Bool))
 (= (>= $x $y) (or (> $x $y) (== $x $y)))
 
-;; Define approximatively equal
+;; Define approximately equal
 (: approxEq (-> $a $a $a Bool))
 (= (approxEq $x $y $epsilon) (<= (abs (- $x $y)) $epsilon))
 
