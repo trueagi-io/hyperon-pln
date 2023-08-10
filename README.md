@@ -2,7 +2,7 @@
 
 ## Description
 
-Hyperon port of PLN.  Very experimental at this stage.
+Port of Probabilistic Logic Networs (PLN) for Hyperon/MeTTa.
 
 ## Requirements
 
@@ -71,3 +71,12 @@ There is also some Idris code under the `idris` folder to prototype
 some aspect of the dependent types port.  This is sometimes easier
 because Idris is more mature than MeTTa.  The minimum requirement is
 Idris2 version 0.5.1.
+
+## References
+
+Below is a list of references to know more about PLN and its port to
+Hyperon/MeTTa:
+
+- [PLN Book](https://link.springer.com/book/10.1007/978-0-387-76872-4)
+- [PLN for Procedural and Temporal Reasoning](https://www.researchgate.net/publication/370994045_Probabilistic_Logic_Networks_for_Temporal_and_Procedural_Reasoning)
+- [Presentation of the synthesizer at AGI-23](https://odysee.com/@ngeiswei:d/AGI-23---Program-Synthesis-and-Chaining-with-MeTTa:3)

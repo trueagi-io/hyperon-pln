@@ -15,7 +15,7 @@
 ;; represents the resulting truth value of the conclusion.
 
 ;; Import modules
-!(import! &self ../common/Set.metta)
+!(import! &self ../common/OrderedSet.metta)
 !(import! &self ../common/EvidentialTruthValue.metta)
 !(import! &self ../common/ImplicationDirectIntroductionFormula.metta)
 
@@ -33,7 +33,7 @@
 ;; Directly present in the atomspace.
 (≞ (→ $p $q) (ETV Empty (PrCnt 1 0)))
 
-;; NEXT: see MeTTa examples such as b2_backchain.metta,
+;; TODO: see MeTTa examples such as b2_backchain.metta,
 ;; b3_direct.metta, b4_nonterm.metta, c3_pln_stv.metta,
 ;; d1_custom_types.metta and d3_typed_pln.metta for inspiration.
 

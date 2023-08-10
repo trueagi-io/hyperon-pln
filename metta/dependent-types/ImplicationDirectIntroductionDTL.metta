@@ -55,37 +55,97 @@
 ;; To deal with an abritrary number of pieces of evidence the rule is
 ;; defined inductively.
 
-;; Base case (axiomatic rule):
+;; Base case (one piece of evidence):
 ;;
-;; p→q ≞ (ETV ∅ (STV 1 0))
-(: implication-direct-introduction-axiom (-> Atom))
-(= (implication-direct-introduction-axiom)
-   (: IDIAxiom (≞ (→ $p $q) (ETV ∅ (STV 1 0)))))
-
-;; Recursive case (inductive rule):
-;;
-;; (p a) ≞ patv
-;; (q a) ≞ qatv
-;; p→q ≞ (ETV ev pqtv)
-;; a ∉ ev
+;; (p a) = pa
+;; (q a) = qa
 ;; ⊢
-;; p→q ≞ (ETV (insert a ev) tv)
+;; p→q ≞ (ETV (:: a ∅) tv)
 ;;
-;; where tv is calculated as defined further below.
-(: implication-direct-introduction-rule (-> Atom))
-(= (implication-direct-introduction-rule)
-   (: IDIInduction
-      (-> (≘ $p $a $pa)
-          (≘ $q $a $qa)
-          (≞ (→ $p $q) (ETV $ev $pqtv))
-          (∉ $a $ev)
-          (≞ (→ $p $q) (ETV (insert $a $ev) (direct-introduction-formula $pa $qa $pqtv))))))
+;; where tv is calculated according to the direct introduction
+;; formula.
+;;
+;; To avoid prematurely reducing (p a) = pa to pa = pa, the following
+;; representation is used instead
+;;
+;; (⊷ p a pa)
+;;
+;; which can be read as "under p, the image of a is pa".
+;;
+;; ⊷ is essentially the Atomese equivalent of ExecutionLink.  It has
+;; description: IMAGE OF, hexadecimal code: 0x22B7, unicode-math code:
+;; \imageof and latex code: \multimapdotbothB.
+(: implication-direct-introduction-base-rule (-> Atom))
+(= (implication-direct-introduction-base-rule)
+   (: IDIBase
+      (-> (⊷ $p $a $pa)
+          (⊷ $q $a $qa)
+          (≞ (→ $p $q)
+             (ETV (:: $a ∅)
+                  (direct-introduction-base-formula $pa $qa))))))
 
-;; Convert an ETV to a TV (i.e. elimate the evidential part)
+;; Recursive case (more than one piece of evidence):
+;;
+;; (p a) = pa
+;; (q a) = qa
+;; p→q ≞ (ETV (:: h t) pqtv)
+;; h < a
+;; ⊢
+;; p→q ≞ (ETV (:: a (:: h t)) tv)
+;;
+;; where tv is calculated using the direct introduction formula.
+;;
+;; To avoid prematurely reducing (p a) = pa to pa = pa, the following
+;; representation is used instead
+;;
+;; (⊷ p a pa)
+;;
+;; which can be read as "under p, the image of a is pa".
+;;
+;; For a similar reason, the premise h < a is represented as
+;;
+;; h ⍃ a
+;;
+;; ⍃ is the axiomatized version of <.  It is defined in Num.metta.
+;; The box around the less than sign is here to manifest its
+;; axiomatic, as opposed to computational, nature.  It has
+;; description: APL FUNCTIONAL SYMBOL QUAD LESS-THAN and hexadecimal
+;; code: 0x2343.
+;;
+;; The h ⍃ a premise is there to garanty that evidence is not double
+;; counted.
+;;
+;; Historical note: initially the premise
+;;
+;; h ⍃ a
+;;
+;; was replaced by
+;;
+;; a ∉ (:: h t)
+;;
+;; But then it was realized that it is far more efficient to enforce
+;; the order in which evidence can be pilled up, than to prove that a
+;; new piece of evidence does not belongs to an existing evidence set.
+;; And now you know why time is the way it is.
+(: implication-direct-introduction-recursive-rule (-> Atom))
+(= (implication-direct-introduction-recursive-rule)
+   (: IDIRecursive
+      (-> (⊷ $p $a $pa)
+          (⊷ $q $a $qa)
+          (≞ (→ $p $q) (ETV (:: $h $t) $pqtv))
+          (⍃ $h $a)
+          (≞ (→ $p $q)
+             (ETV (:: $a (:: $h $t))
+                  (direct-introduction-recursive-formula $pa $qa $pqtv))))))
+
+;; Convert an EvidenceTruthValue to a TruthValue (i.e. elimate the
+;; evidential part).
 ;;
 ;; (ETV evidence tv)
 ;; ⊢
 ;; tv
 (: evidence-elimination-rule (-> Atom))
 (= (evidence-elimination-rule)
-   (: EvidenceElimination (-> (≞ $a (ETV $evidence $tv)) (≞ $a $tv))))
+   (: EvidenceElimination
+      (-> (≞ $a (ETV $evidence $tv))
+          (≞ $a $tv))))

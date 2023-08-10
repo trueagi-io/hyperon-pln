@@ -15,7 +15,7 @@
 ;; represents the resulting truth value of the conclusion.
 
 ;; Import modules
-!(import! &self ../common/Set.metta)
+!(import! &self ../common/OrderedSet.metta)
 !(import! &self ../common/EvidentialTruthValue.metta)
 !(import! &self ../common/ImplicationDirectIntroductionFormula.metta)
 
@@ -31,7 +31,7 @@
 ;; p→q ≞ (ETV Empty (PrCnt 1 0))
 ;;
 ;; Directly present in the atomspace.
-(= (idi_axiom) 
+(= (idi_axiom)
    (≞ (→ $p $q) (ETV Empty (PrCnt 1 0))))
 
 ;; Recursive case (inductive rule):
