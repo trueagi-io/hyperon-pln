@@ -3,7 +3,7 @@
 ;; !(import! &self Unify.metta)
 
 ;; Enumerate all programs up to a given depth that are consistent with
-;; the query, using the given axioms and rules.
+;; the query, using the given axiom non-deterministic functions and rules.
 ;;
 ;; The arguments are:
 ;;
@@ -27,10 +27,6 @@
 ;;        a rule.  A rule is a function mapping premises to
 ;;        conclusion, where premises and conclusion have the form
 ;;        (: TERM TYPE).
-;;
-;; up to a given depth that are consistent with the query, using the
-;; provided rule and axiom non-deterministic functions.  An axiom is
-;; an Atom of the form
 ;;
 ;; TODO: recurse over curried rules instead of duplicating code over
 ;; tuples.
