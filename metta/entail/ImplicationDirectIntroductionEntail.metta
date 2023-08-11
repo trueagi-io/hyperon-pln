@@ -15,7 +15,7 @@
 ;; represents the resulting truth value of the conclusion.
 
 ;; Import modules
-!(import! &self ../common/Set.metta)
+!(import! &self ../common/OrderedSet.metta)
 !(import! &self ../common/EvidentialTruthValue.metta)
 !(import! &self ../common/ImplicationDirectIntroductionFormula.metta)
 ;;;;;;;;;;;;;;;;;;;;;
@@ -48,7 +48,7 @@
    ;; Conclusion
    (≞ (→ $p $q) (ETV (insert $a $ev) (idi_formula $patv $qtv $pqtv))))
 
-;; NEXT: add equality like
+;; TODO: add equality like
 ;;
 ;; (= (⊢ ....) ....)
 ;;

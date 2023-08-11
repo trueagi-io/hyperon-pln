@@ -40,7 +40,45 @@
 (= (fromNat Z) 0)
 (= (fromNat (S $k)) (+ 1 (fromNat $k)))
 
+;; Define a generic less than operator, ⩻, for Nat.  < cannot be used
+;; because it is a built-in, its type is hardwired and cannot be
+;; overloaded.
+(: ⩻ (-> Nat Nat Bool))
+(= (⩻ $_ Z) False)
+(= (⩻ Z (S $_)) True)
+(= (⩻ (S $x) (S $y)) (⩻ $x $y))
+
+;; Overload ⩻ for Number.
+(: ⩻ (-> Number Number Bool))
+(= (⩻ $x $y) (< $x $y))
+
 ;; Return the ceiling of a non negative number.  If the number is
 ;; negative it returns 1.
 (: ceil (-> Number Number))
 (= (ceil $n) (fromNat (fromNumber $n)))
+
+;; Convert Number to Bool.  Anything above 0 converts to True.
+(: number->bool (-> Number Bool))
+(= (number->bool $x) (< 0 $x))
+
+;; Convert Bool to Number.  False converts to 0, True converts to 1.
+(: bool->number (-> Bool Number))
+(= (bool->number False) 0)
+(= (bool->number True) 1)
+
+;; Define a less than type.  Note that it is purposefully different
+;; than ⩻ as it is a type, not an operator.  Inhabitants of (⍃ x y)
+;; are proofs that x ⩻ y == True.  For now ⍃ is only axiomatized for
+;; Nat.
+(: ⍃ (-> $t $t Type))
+
+;; Zero is always less than the successor of something
+(: (zero-lt-succ-axiom) (-> Atom))
+(= (zero-lt-succ-axiom)
+   (: ZeroLTSucc (⍃ Z (S $k))))
+
+;; If x ⍃ y then (S x) ⍃ (S y)
+(: (succ-monotonicity-rule) (-> Atom))
+(= (succ-monotonicity-rule)
+   (: SuccMonotonicity (-> (⍃ $x $y)
+                           (⍃ (S $x) (S $y)))))

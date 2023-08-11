@@ -2,7 +2,7 @@
 ;; evidence.
 
 !(import! &self TruthValue.metta)
-!(import! &self ../Set.metta)
+!(import! &self ../OrderedSet.metta)
 
 ;;;;;;;;;;
 ;; Type ;;
@@ -14,9 +14,9 @@
 ;; Constructor ;;
 ;;;;;;;;;;;;;;;;;;
 
-;; Takes a set of pieces of evidence ascribed to a truth value to form
-;; an evidential truth value.
-(: ETV (-> (Set $a) TruthValue EvidentialTruthValue))
+;; Takes an evidence set ascribed to a truth value to form an
+;; evidential truth value.
+(: ETV (-> (OrderedSet $a) TruthValue EvidentialTruthValue))
 
 ;;;;;;;;;;;;;
 ;; Methods ;;
