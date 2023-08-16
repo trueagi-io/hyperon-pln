@@ -75,26 +75,27 @@
 ;;;;;;;;;;;;;;;;
 ;; Unit tests ;;
 ;;;;;;;;;;;;;;;;
+!("Unit Tests")
 
 ;; Test map
 (: inc (-> Number Number))
 (= (inc $n) (+ $n 1))
-!(map inc (Cons 2 (Cons 3 (Cons 1 Nil))))
+!(map inc (Cons 2 (Cons 3 (Cons 1 Nil))))  ; (Cons 3 (Cons 4 (Cons 2 Nil)))
 
 ;; Test filter
 (: even (-> Number Bool))
 (= (even $n) (== (* (ceil (/ $n 2)) 2) $n))
-!(filter even (Cons 2 (Cons 3 (Cons 1 Nil))))
+!(filter even (Cons 2 (Cons 3 (Cons 1 Nil))))  ; (Cons 2 Nil)
 
 ;; Test interleave
-!(interleave Nil Nil)
-!(interleave (Cons 1 (Cons 2 Nil)) (Cons "a" (Cons "b" Nil)))
+!(interleave Nil Nil)  ; Nil
+!(interleave (Cons 1 (Cons 2 Nil)) (Cons "a" (Cons "b" Nil)))  ; (Cons 1 (Cons "a" (Cons 2 (Cons "b" Nil))))
 
 ;; Test prodWith
-!(prodWith * Nil (Cons 2 Nil))
-!(prodWith * (Cons 1 Nil) Nil)
-!(prodWith * (Cons 1 Nil) (Cons 2 Nil))
-!(prodWith * (Cons 1 (Cons 2 Nil)) (Cons 3 (Cons 4 Nil)))
+!(prodWith * Nil (Cons 2 Nil))  ; Nil
+!(prodWith * (Cons 1 Nil) Nil)  ; Nil
+!(prodWith * (Cons 1 Nil) (Cons 2 Nil))  ; (Cons 2 Nil)
+!(prodWith * (Cons 1 (Cons 2 Nil)) (Cons 3 (Cons 4 Nil)))  ; (Cons 3 (Cons 4 (Cons 6 (Cons 8 Nil))))
 
 ;; Test synthesize
 
@@ -112,7 +113,7 @@
 ;; (= (functions) (Cons f (Cons g (Cons h Nil))))
 (= (functions) (Cons f (Cons g Nil)))
 
-!(prodWith . (Cons g Nil) (Cons f Nil))
-!(prodWith . (Cons f Nil) (Cons g Nil))
-!(prodWith . (Cons f (Cons g Nil)) (Cons f (Cons g Nil)))
-!(synthesize (functions) (fromNumber 2))
+!(prodWith . (Cons g Nil) (Cons f Nil))  ; (Cons (. g f) Nil)
+!(prodWith . (Cons f Nil) (Cons g Nil))  ; (Cons (. f g) Nil)
+!(prodWith . (Cons f (Cons g Nil)) (Cons f (Cons g Nil)))  ; (Cons (. f f) (Cons (. f g) (Cons (. g f) (Cons (. g g) Nil))))
+!(synthesize (functions) (fromNumber 2))  ; (Cons (. f f) (Cons (. f g) (Cons (. g f) (Cons (. g g) Nil))))
