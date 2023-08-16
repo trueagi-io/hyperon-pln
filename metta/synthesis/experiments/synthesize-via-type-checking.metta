@@ -110,8 +110,9 @@
 (= (h $x) (if $x TrueAtom FalseAtom))
 
 (: functions (-> List))
-;; (= (functions) (Cons f (Cons g (Cons h Nil))))
 (= (functions) (Cons f (Cons g Nil)))
+;; Uncomment to try `synthesize` with more functions
+;; (= (functions) (Cons f (Cons g (Cons h Nil))))
 
 !(prodWith . (Cons g Nil) (Cons f Nil))  ; (Cons (. g f) Nil)
 !(prodWith . (Cons f Nil) (Cons g Nil))  ; (Cons (. f g) Nil)
