@@ -28,7 +28,7 @@
 (: lambda (-> $a $t (-> $a $t)))
 (= ((lambda $var $body) $arg) (let $var $arg $body))
 
-;; Define curry.  Given a binary function, and it first argument,
+;; Define curry.  Given a binary function, and its first argument,
 ;; return a unary function corresponding to the partial evaluation of
 ;; the binary function over the first argument.
 (: curry (-> (-> $a $b $c) $a (-> $b $c)))
