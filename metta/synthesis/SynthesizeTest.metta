@@ -17,7 +17,7 @@
 ;; Test program synthesizer
 !(record synthesize ((: $term $type) Z kb rb))                  ; (: f (-> Number String)), (: g (-> String Bool)), (: h (-> Bool Number)), (: i (-> String Number Bool))
 !(record synthesize ((: $term (-> Number String)) Z kb rb))     ; (: f (-> Number String))
-!(record synthesize ((: $term (-> String Number Number)) (S Z) kb rb))     ; (: f (-> Number String))
+!(record synthesize ((: $term (-> String Number Number)) (S Z) kb rb))     ; (: (.: h i) (-> String Number Number))
 !(record synthesize ((: $term (-> Number Bool)) (S Z) kb rb))   ; (: (. g f) (-> Number Bool))
 !(record synthesize ((: (. g f) (-> Number Bool)) (S Z) kb rb)) ; (: (. g f) (-> Number Bool))
 !(record synthesize ((: (. g f) $type) (S Z) kb rb))            ; (: (. g f) (-> Number Bool))
