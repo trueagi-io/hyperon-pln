@@ -5,12 +5,11 @@ thus by extension reasoning, in MeTTa.
 
 - `synthesize-via-type-checking.metta`: experiment to implement a
   synthesizer from scratch attempting to use the type checker to check
-  the validity of combinations.  It fails because the type checker is
-  static.
+  the validity of combinations.  
 
 - `synthesize-via-superpose.metta`: experiment similar to
   `synthesize-via-type-checking.metta` but simplified by using
-  superposition.  It fails for the same reason.
+  superposition. It fails because the type checker is static.
 
 - `unify-via-let.metta`: experiment to demonstrate that full syntactic
   unification can be achieved with the `let` operator.
