@@ -9,7 +9,7 @@
 !(record syn ((: (. g f) (-> Number Bool)) (S Z))) ; (: (. g f) (-> Number Bool))
 !(record syn ((: (. g f) $type) (S Z)))            ; (: (. g f) (-> Number Bool))
 !(record syn ((: $term $type) (S Z)))              ; (: f (-> Number String)), ..., (: (. f h) (-> Bool String)), ...
-!(record syn ((: (. (. g f) h) (-> $in Bool)) (fromNumber 2))) ; (: (. (. g f) h) (-> Bool Bool)))
+!(record syn ((: (. (. g f) h) (-> $in Bool)) (fromNumber 2))) ; (: (. (. g f) h) (-> Bool Bool))
 !(record syn ((: (. $g h) (-> $in String)) (fromNumber 3))) ; (: (. f h) (-> Bool String)), (: (. (. (. f h) (. g f)) h) (-> Bool String))
 !(record syn ((: (. $g h) (-> Number $out)) (fromNumber 3)))   ; No answer
 !(record syn ((: (. g $f) (-> $in String)) (fromNumber 3))) ; No answer

@@ -13,10 +13,11 @@
 ;; up to a given depth that are consistent with the query, using rules
 ;; and facts.
 (: syn (-> Atom Nat Atom))
-; Base case
-; Match against facts directly
+
+; Base case: match against facts directly
 (= (syn $query $depth) (let $query (facts) $query))
-; Inductive case.
+
+; Inductive case
 ; Decompose rules into premises, trying rules and facts up to a depth limit.
 ; Returns the query if it finds a valid derivation using the available knowledge
 (= (syn $query (S $k)) (let* (((: $rule (-> $premise1 $premise2 $conclusion)) (rules))
