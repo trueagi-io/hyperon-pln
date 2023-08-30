@@ -35,15 +35,15 @@ thus by extension reasoning, in MeTTa.
 - `synthesize-via-case-test.metta`: same as
   `synthesize-via-let-test.metta` but it uses `case` instead of `let`.
 
-- `synthesize-via-unify.metta`: same as `synthesize-via-let.metta` but
+- `synthesize-via-unify.metta`: same as [Synthesize.metta](../Synthesize.metta), but
   it uses `unify` instead of `let`.  It ignores branches that are not
   fully reduced, however it is slower than
-  `synthesize-via-unify.metta`.
+  `Synthesize.metta`.
 
 - `synthesize-via-unify-test.metta`: same as
-  `synthesize-via-let-test.metta` but it uses `unify` instead of
-  `let`.
+  [SythesizeTest.metta](../SynthesizeTest.metta) but it uses `unify` instead of
+  `let`. Does not work, it hangs.
 
-- `self-contained-synthesize.metta`: Self-contained version of
-  `Synthesize.metta` and `SynthesizeTest.metta` for demonstration
-  purposes.
+- `self-contained-synthesize.metta`: Self-contained version of 
+  `sythesize-via-case.metta` and `synthesize-via-case-test.metta`,
+  for demonstration purposes.

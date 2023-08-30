@@ -25,4 +25,5 @@
                                (case (syn (: $prf1 $premise1) $k)
                                  (((: $prf1 $premise1)
                                    (case (syn (: $prf2 $premise2) $k)
-                                     (((: $prf2 $premise2) $query)))))))))))))
+                                     (((: $prf2 $premise2)
+                                       $query)))))))))))))
