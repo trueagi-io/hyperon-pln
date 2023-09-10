@@ -2,7 +2,7 @@
 !(let (Link A $y) (Link $x B) (Link $x $y))  ; [(Link A B)]
 
 ;; Simple unification with the arrow operator
-!(let (-> A $y) (-> $x B) (-> $x $y))  ; [(Link A B)]
+!(let (-> A $y) (-> $x B) (-> $x $y))  ; [(-> A B)]
 
 ;; When using `let`, the second argument gets evaluated before binding, so
 ;; unifying a term with the result of a function (right-handside of `let`) works
