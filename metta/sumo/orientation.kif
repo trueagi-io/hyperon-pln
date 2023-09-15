@@ -1,9 +1,8 @@
-;; Extracted from
+;; Self-contained SUO-KIF file extracted from
 ;;
 ;; https://github.com/ontologyportal/sumo/blob/master/Merge.kif
 ;;
-;; containing knowledge contributing to the definition of
-;; `orientation`.
+;; containing knowledge about `orientation`.
 
 (instance orientation SpatialRelation)
 (instance orientation TernaryPredicate)
@@ -21,5 +20,3 @@ vertically with respect to ?OBJ2.")
     (orientation ?X ?Y Right)
     (orientation ?Z ?Y Left))
  (orientation ?X ?Z Right))
-
-!(get-atoms &self)
