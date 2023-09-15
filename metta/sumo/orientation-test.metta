@@ -22,6 +22,15 @@
 (orientation A B Right)
 (orientation C B Left)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; MeTTa code to convert SUO-KIF into MeTTa ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Space containing the result of the SUO-KIF to MeTTa translation
+!(bind! &metta (new-space))
+
+!(match &self $x $x)
+
 ;; (query (orientation A C Right))
 
 ;; We want to produce NEXT
