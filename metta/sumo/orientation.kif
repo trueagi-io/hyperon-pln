@@ -20,3 +20,22 @@ vertically with respect to ?OBJ2.")
     (orientation ?X ?Y Right)
     (orientation ?Z ?Y Left))
  (orientation ?X ?Z Right))
+
+;; Add instances, extracted from
+;;
+;; https://github.com/ontologyportal/sumo/blob/master/tests/SP01.kif.tq
+;;
+;; to test it.
+
+(instance A Object)
+(instance B Object)
+(instance C Object)
+
+(orientation A B Right)
+(orientation C B Left)
+
+;; An example of query would be: does the following
+;;
+;; (orientation A C Right)
+;;
+;; hold?
