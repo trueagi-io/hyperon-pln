@@ -63,4 +63,4 @@ for usage.
 
 Note that all MeTTa files coming from SUO-KIF have already been
 pre-generated.  If you need to regenerate them see Section [Convert
-SUO-KIF to MeTTa](#convert-suokif-to-metta).
+SUO-KIF to MeTTa](#convert-suo-kif-to-metta).
