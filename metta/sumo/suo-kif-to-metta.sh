@@ -15,7 +15,9 @@ echo ""
 # 4. Replace `not` by `¬` so that `(not x)` does not get spontanously
 #    reduced by the MeTTa interpreter.
 #
-# 5. Replace `=>` by `⟹` so that I can sleep at night.
+# 5. Replace `=>` by `⟹`.
+#
+# 6. Replace `forall` by `∀`.
 #
 # Also make sure to not replace `and`, `or` and `not` willy-nilly so
 # that `orientation` does not turn into `∨ientation`.
@@ -25,4 +27,5 @@ sed -E \
     -e 's/\(or([[:space:]]+|$)/(∨\1/g' \
     -e 's/\(not([[:space:]]+|$)/(¬\1/g' \
     -e 's/\(=>([[:space:]]+|$)/(⟹\1/g' \
+    -e 's/\(forall([[:space:]]+|$)/(∀\1/g' \
     "$1"
