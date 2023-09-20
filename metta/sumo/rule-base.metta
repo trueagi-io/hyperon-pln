@@ -1,9 +1,18 @@
 ;; Inference rules to operate on SUMO
 
-;; Modus ponens with conjunction as implicant
-(: MPCI (->
-         ;; Premises
-         (⟹ (∧ $x $y) $z)
-         (∧ $x $y)
-         ;; Conclusion
-         $z))
+;; Conjunction Introduction
+(: ConjunctionIntroduction
+   (->
+    ;; Premises
+    $x
+    $y
+    (∧ $x $y)))
+
+;; Modus ponens
+(: ModusPonens
+   (->
+    ;; Premises
+    (⟹ $x $y)
+    $x
+    ;; Conclusion
+    $y))
