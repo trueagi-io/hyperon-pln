@@ -21,7 +21,7 @@ vertically with respect to ?OBJ2.")
     (orientation ?Z ?Y Left))
  (orientation ?X ?Z Right))
 
-;; Add instances, extracted from
+;; Add instances of `orientation`, extracted from
 ;;
 ;; https://github.com/ontologyportal/sumo/blob/master/tests/SP01.kif.tq
 ;;
@@ -34,8 +34,6 @@ vertically with respect to ?OBJ2.")
 (orientation A B Right)
 (orientation C B Left)
 
-;; An example of query would be: does the following
+;; An example of query would be
 ;;
 ;; (orientation A C Right)
-;;
-;; hold?
