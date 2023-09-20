@@ -17,11 +17,11 @@
 
 ;; Test reasoning about Natural order
 !(assertEqual                           ; 0 < 1
-  (synthesize (: $proof (⍃ Z (S Z))) Z kb rb)
+  (synthesize (: $proof (⍃ Z (S Z))) kb rb Z)
   (: ZeroLTSucc (⍃ Z (S Z))))
 !(assertEqual                           ; 1 < 3
-  (synthesize (: $proof (⍃ (fromNumber 1) (fromNumber 3))) (S Z) kb rb)
+  (synthesize (: $proof (⍃ (fromNumber 1) (fromNumber 3))) kb rb (S Z))
   (: (SuccMonotonicity ZeroLTSucc) (⍃ (fromNumber 1) (fromNumber 3))))
 !(assertEqual                           ; 2 < 7
-  (synthesize (: $proof (⍃ (fromNumber 2) (fromNumber 7))) (fromNumber 5) kb rb)
+  (synthesize (: $proof (⍃ (fromNumber 2) (fromNumber 7))) kb rb (fromNumber 5))
   (: (SuccMonotonicity (SuccMonotonicity ZeroLTSucc)) (⍃ (fromNumber 2) (fromNumber 7))))

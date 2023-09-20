@@ -60,10 +60,10 @@
 
 ;; Test synthesizer
 ! "===== Prove that 2 < 7 (synthesizer) ====="
-!(synthesize (: $proof (⍃ (fromNumber 2) (fromNumber 7))) (fromNumber 2) kb rb)
+!(synthesize (: $proof (⍃ (fromNumber 2) (fromNumber 7))) kb rb (fromNumber 2))
 
 ! "===== Prove P→Q using base rule (synthesizer) ====="
-!(synthesize (: $proof (≞ (→ P Q) $etv)) (fromNumber 1) kb rb)
+!(synthesize (: $proof (≞ (→ P Q) $etv)) kb rb (fromNumber 1))
 
 ! "===== Prove P→Q using base, recursive and order rules (synthesizer) ====="
-!(synthesize (: $proof (≞ (→ P Q) $etv)) (fromNumber 3) kb rb)
+!(synthesize (: $proof (≞ (→ P Q) $etv)) kb rb (fromNumber 3))

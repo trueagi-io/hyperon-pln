@@ -15,7 +15,7 @@
 
 ;; Test reasoning about ∉
 !(assertEqual                           ; 2 ∉ ∅
-  (synthesize (: $proof (∉ Z ∅)) Z kb rb)
+  (synthesize (: $proof (∉ Z ∅)) kb rb Z)
   (: NotInEmpty (∉ Z ∅)))
 ;; TODO: re-enabled once unify* can be used
 ;; !(assertEqual                           ; 0 ∉ {1}
@@ -27,6 +27,6 @@
 !(synthesize
   (: (LTNotInRecursiveLeft NotInEmpty NotInEmpty ZeroLTSucc)
      (∉ Z (insert (S Z) ∅)))
-  (S Z)
   kb
-  rb)
+  rb
+  (S Z))
