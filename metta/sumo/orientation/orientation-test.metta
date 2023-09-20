@@ -4,13 +4,13 @@
 ;; do that.
 
 ;; Import synthesizer
-!(import! &self ../synthesis/Synthesize.metta)
+!(import! &self ../../synthesis/Synthesize.metta)
 
 ;; Import knowledge base
 !(import! &kb orientation.kif.metta)
 
 ;; Import rule base
-!(import! &rb rule-base.metta)
+!(import! &rb ../rule-base.metta)
 
 ;; Label each statement in the knowledge base as a witness of a type,
 ;; because that is what the synthesizer expects.  For now each witness
@@ -39,4 +39,4 @@
 !(synthesize (: $proof (orientation A B Right)) kb rb Z)
 
 ;; Call synthesizer on query (orientation A C Right)
-!(synthesize (: $proof (orientation A C Right)) kb rb (S Z)) ;; NEXT
+!(synthesize (: $proof (orientation A C Right)) kb rb (fromNumber 2))
