@@ -19,6 +19,8 @@ echo ""
 #
 # 6. Replace `forall` by `∀`.
 #
+# 7. Replace `exists` by `∃`.
+#
 # Also make sure to not replace `and`, `or` and `not` willy-nilly so
 # that `orientation` does not turn into `∨ientation`.
 sed -E \
@@ -28,4 +30,5 @@ sed -E \
     -e 's/\(not([[:space:]]+|$)/(¬\1/g' \
     -e 's/\(=>([[:space:]]+|$)/(⟹\1/g' \
     -e 's/\(forall([[:space:]]+|$)/(∀\1/g' \
+    -e 's/\(exists([[:space:]]+|$)/(∃\1/g' \
     "$1"
