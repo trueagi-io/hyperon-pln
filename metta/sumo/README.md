@@ -5,6 +5,7 @@ subfolders
 
 * `orientation`
 * `located`
+* `john-carry-flower`
 
 Each subfolder contains an experiment, with a particular snippet of
 SUMO + a query to fulfill, i.e. a theorem to prove.
