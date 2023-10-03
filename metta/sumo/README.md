@@ -49,6 +49,13 @@ that starts with `$`.
 
 To load SUO-KIF directly see `load-suo-kif.metta`.
 
+## Dependent Types
+
+The translation could be more Curry-Howard-ish, so that forall
+quantifiers are dependent products, existential quantifiers are
+dependent sums, implications are function applications, conjunctions
+are products, disjunctions are Either, etc.
+
 ## Reasoning
 
 ### Rule Base
