@@ -13,14 +13,27 @@
 if ($REL $INST1 $INST2) and ($REL $INST2 $INST3) imply ($REL $INST1 $INST3),
 for all $INST1, $INST2, and $INST3.")
 
+;; TODO: re-enable when ($REL $INST1 $INST2) does not lead to an
+;; infinite recursion.
+;;
+;; (⟹
+;;    (instance $REL TransitiveRelation)
+;;    (∀ ($INST1 $INST2 $INST3)
+;;       (⟹
+;;          (∧
+;;             ($REL $INST1 $INST2)
+;;             ($REL $INST2 $INST3))
+;;          ($REL $INST1 $INST3))))
+
+;; In the meantime we manually instantiate the relation located.  We
+;; remove the ∀ in the process to avoid ($INST1 $INST2 $INST3) which
+;; also leads to an infinite recursion, and is not actually mandatory
+;; anymore.
 (⟹
-   (instance $REL TransitiveRelation)
-   (∀ ($INST1 $INST2 $INST3)
-      (⟹
-         (∧
-            ($REL $INST1 $INST2)
-            ($REL $INST2 $INST3))
-         ($REL $INST1 $INST3))))
+   (∧
+      (located $INST1 $INST2)
+      (located $INST2 $INST3))
+   (located $INST1 $INST3))
 
 (instance located TransitiveRelation)
 
