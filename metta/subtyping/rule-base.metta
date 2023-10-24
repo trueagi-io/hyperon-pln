@@ -36,12 +36,23 @@
            ;; Conclusion
            (<: (-> $S1 $S2) (-> $T1 $T2))))
 
-;; Relationship between subtyping and type.  For now we assume
-;; implicit coercion.  That is if a term t is of type S a subtype of
-;; T, then t is of type T as well.
+;; Relationship between subtyping and type assuming implicit coercion.
+;; That is if a term `t` is of type `S` a subtype of `T`, then `t` is
+;; of type `T` as well.
 (: STImplCoer (->
                ;; Premises
                (<: $S $T)
                (: $t $S)
                ;; Conclusion
                (: $t $T)))
+
+;; Relationship between subtyping and type assume explicit coercion.
+;; That is if a term `t` is of type `S` a subtype of `T`, then
+;; `(coerce proof_S<:T t)` is of type `T`, where `proof_S<:T` is a
+;; proof that `S` is a subtype of `T`.
+(: coerce (->
+           ;; Premises
+           (<: $S $T)
+           $S
+           ;; Conclusion
+           $T))
