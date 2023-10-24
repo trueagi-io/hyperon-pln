@@ -52,7 +52,7 @@ see `STImplCoer` defined in `rule-base.metta`.
 
 ## Conclusion
 
-From that experiment we can conclude two things.
+From that experiment we can conclude:
 
 1. Subtyping is possible with MeTTa
 2. Explicit coercion allows to treat programs (in that case coercion
