@@ -52,11 +52,11 @@ see `STImplCoer` defined in `rule-base.metta`.
 
 ## Conclusion
 
-From that experiment we can conclude:
+From that experiment we can conclude the following:
 
-1. Subtyping is possible with MeTTa
+1. Subtyping is possible with MeTTa.
 2. Explicit coercion allows to treat programs (in that case coercion
    functions) on the same level as proofs, in a Curry-Howard
-   correspondance style.
-3. Implicit coercion has the adventage of not requiring a coercion
+   correspondence fashion.
+3. Implicit coercion has the advantage of not requiring a coercion
    function, but does not treat functions on the same level as proofs.
