@@ -16,9 +16,6 @@
 ;;         4. Type checking: (: TERM TYPE)
 ;;         5. Type inference: (: TERM $type)
 ;;
-;; $depth: a Nat representing the maximum depth of the generated
-;;         programs.
-;;
 ;; $axiom: a nullary function to axiom, to non-deterministically pick
 ;;         up an axiom.  An axiom is an Atom of the form
 ;;         (: TERM TYPE).
@@ -28,49 +25,52 @@
 ;;        conclusion, where premises and conclusion have the form
 ;;        (: TERM TYPE).
 ;;
+;; $depth: a Nat representing the maximum depth of the generated
+;;         programs.
+;;
 ;; TODO: recurse over curried rules instead of duplicating code over
 ;; tuples.
-(: synthesize (-> Atom Nat (-> Atom) (-> Atom) Atom))
+(: synthesize (-> Atom (-> Atom) (-> Atom) Nat Atom))
 ;; Nullary rule (axiom)
-(= (synthesize $query $depth $axiom $rule)
+(= (synthesize $query $axiom $rule $depth)
    (let $query ($axiom) $query))
 ;; Unary rule
-(= (synthesize $query (S $k) $axiom $rule)
+(= (synthesize $query $axiom $rule (S $k))
    (let* (((: $ructor (-> $premise $conclusion)) ($rule))
-            ((: ($ructor $proof) $conclusion) $query)
-            ((: $proof $premise) (synthesize (: $proof $premise) $k $axiom $rule)))
-           $query))
+          ((: ($ructor $proof) $conclusion) $query)
+          ((: $proof $premise) (synthesize (: $proof $premise) $axiom $rule $k)))
+     $query))
 ;; Binary rule
-(= (synthesize $query (S $k) $axiom $rule)
+(= (synthesize $query $axiom $rule (S $k))
    (let* (((: $ructor (-> $premise1 $premise2 $conclusion)) ($rule))
-            ((: ($ructor $proof1 $proof2) $conclusion) $query)
-            ((: $proof1 $premise1) (synthesize (: $proof1 $premise1) $k $axiom $rule))
-            ((: $proof2 $premise2) (synthesize (: $proof2 $premise2) $k $axiom $rule)))
-           $query))
+          ((: ($ructor $proof1 $proof2) $conclusion) $query)
+          ((: $proof1 $premise1) (synthesize (: $proof1 $premise1) $axiom $rule $k))
+          ((: $proof2 $premise2) (synthesize (: $proof2 $premise2) $axiom $rule $k)))
+     $query))
 ;; Trinary rule
-(= (synthesize $query (S $k) $axiom $rule)
+(= (synthesize $query $axiom $rule (S $k))
    (let* (((: $ructor (-> $premise1 $premise2 $premise3 $conclusion)) ($rule))
-            ((: ($ructor $proof1 $proof2 $proof3) $conclusion) $query)
-            ((: $proof1 $premise1) (synthesize (: $proof1 $premise1) $k $axiom $rule))
-            ((: $proof2 $premise2) (synthesize (: $proof2 $premise2) $k $axiom $rule))
-            ((: $proof3 $premise3) (synthesize (: $proof3 $premise3) $k $axiom $rule)))
-           $query))
+          ((: ($ructor $proof1 $proof2 $proof3) $conclusion) $query)
+          ((: $proof1 $premise1) (synthesize (: $proof1 $premise1) $axiom $rule $k))
+          ((: $proof2 $premise2) (synthesize (: $proof2 $premise2) $axiom $rule $k))
+          ((: $proof3 $premise3) (synthesize (: $proof3 $premise3) $axiom $rule $k)))
+     $query))
 ;; Quaternary rule
-(= (synthesize $query (S $k) $axiom $rule)
+(= (synthesize $query $axiom $rule (S $k))
    (let* (((: $ructor (-> $premise1 $premise2 $premise3 $premise4 $conclusion)) ($rule))
-            ((: ($ructor $proof1 $proof2 $proof3 $proof4) $conclusion) $query)
-            ((: $proof1 $premise1) (synthesize (: $proof1 $premise1) $k $axiom $rule))
-            ((: $proof2 $premise2) (synthesize (: $proof2 $premise2) $k $axiom $rule))
-            ((: $proof3 $premise3) (synthesize (: $proof3 $premise3) $k $axiom $rule))
-            ((: $proof4 $premise4) (synthesize (: $proof4 $premise4) $k $axiom $rule)))
-           $query))
+          ((: ($ructor $proof1 $proof2 $proof3 $proof4) $conclusion) $query)
+          ((: $proof1 $premise1) (synthesize (: $proof1 $premise1) $axiom $rule $k))
+          ((: $proof2 $premise2) (synthesize (: $proof2 $premise2) $axiom $rule $k))
+          ((: $proof3 $premise3) (synthesize (: $proof3 $premise3) $axiom $rule $k))
+          ((: $proof4 $premise4) (synthesize (: $proof4 $premise4) $axiom $rule $k)))
+     $query))
 ;; Quintenary rule
-(= (synthesize $query (S $k) $axiom $rule)
+(= (synthesize $query $axiom $rule (S $k))
    (let* (((: $ructor (-> $premise1 $premise2 $premise3 $premise4 $premise5 $conclusion)) ($rule))
-            ((: ($ructor $proof1 $proof2 $proof3 $proof4 $proof5) $conclusion) $query)
-            ((: $proof1 $premise1) (synthesize (: $proof1 $premise1) $k $axiom $rule))
-            ((: $proof2 $premise2) (synthesize (: $proof2 $premise2) $k $axiom $rule))
-            ((: $proof3 $premise3) (synthesize (: $proof3 $premise3) $k $axiom $rule))
-            ((: $proof4 $premise4) (synthesize (: $proof4 $premise4) $k $axiom $rule))
-            ((: $proof5 $premise5) (synthesize (: $proof5 $premise5) $k $axiom $rule)))
-           $query))
+          ((: ($ructor $proof1 $proof2 $proof3 $proof4 $proof5) $conclusion) $query)
+          ((: $proof1 $premise1) (synthesize (: $proof1 $premise1) $axiom $rule $k))
+          ((: $proof2 $premise2) (synthesize (: $proof2 $premise2) $axiom $rule $k))
+          ((: $proof3 $premise3) (synthesize (: $proof3 $premise3) $axiom $rule $k))
+          ((: $proof4 $premise4) (synthesize (: $proof4 $premise4) $axiom $rule $k))
+          ((: $proof5 $premise5) (synthesize (: $proof5 $premise5) $axiom $rule $k)))
+     $query))
