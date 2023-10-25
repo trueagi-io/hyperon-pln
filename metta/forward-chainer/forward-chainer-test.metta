@@ -120,9 +120,8 @@
 ;; forward chainer function.
 (: fc_eq (-> Atom (-> Atom) Nat Atom))
 ;; Base case
-(= (fc_eq (→ $p $q) $kb $depth) (→ $p $q))
-(= (fc_eq $p $kb $depth) $p)
-;; Recursive case
+(= (fc_eq $premise $kb $depth) $premise)
+;; Recursive case (modus ponens)
 (= (fc_eq (→ $p $q) $kb (S $k)) (let $p (kb_eq) (fc_eq $q $kb $k)))
 (= (fc_eq $p $kb (S $k)) (let (→ $p $q) (kb_eq) (fc_eq $q $kb $k)))
 
