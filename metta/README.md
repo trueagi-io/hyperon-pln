@@ -9,3 +9,4 @@ organized into the following folders:
 - dependent-types: rule is represented as type constructor;
 - common: definitions common to some or all ways.
 - synthesis: program synthesis experiments.
+- forward-chainer: forward chainer experiments.
