@@ -18,9 +18,11 @@
 (= (fromNat Z) 0)
 (= (fromNat (S $k)) (+ 1 (fromNat $k)))
 
-;;;;;;;;;;;;;;;;;;;;
-;; Entail version ;;
-;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;
+;; Entail ;;
+;;;;;;;;;;;;
+
+! "=== Entail ==="
 
 ;; Foward chainer
 (: fc_entail (-> Atom (-> Atom) (-> Atom) Nat Atom))
@@ -42,7 +44,7 @@
                            (⊢ (→ B C))
                            (⊢ A))))
 
-;; Rule base (modus ponens)
+;; Rule base
 (: rb_entail (-> Atom))
 (= (rb_entail) (⊢
                 ;; Premises
@@ -58,11 +60,13 @@
 !(let (⊢ (→ $x $y)) (kb_entail)
       (fc_entail (⊢ (→ $x $y)) kb_entail rb_entail (fromNumber 2)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Bare entail version ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;
+;; Bare entail ;;
+;;;;;;;;;;;;;;;;;
 
 ;; Variant of entail where ⊢ is not wrapped around the knowledge base.
+
+! "=== Bare entail ==="
 
 ;; Foward chainer
 (: fc_bare (-> Atom (-> Atom) (-> Atom) Nat Atom))
@@ -84,7 +88,7 @@
                          (→ B C)
                          A)))
 
-;; Rule base (modus ponens)
+;; Rule base
 (: rb_bare (-> Atom))
 (= (rb_bare) (⊢
               ;; Premises
@@ -100,21 +104,44 @@
 !(let (→ $x $y) (kb_bare)
       (fc_bare (→ $x $y) kb_bare rb_bare (fromNumber 2)))
 
-;; ;;;;;;;;;;;;;;;;;;;;;;
-;; ;; Equality version ;;
-;; ;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;
+;; Equality ;;
+;;;;;;;;;;;;;;
 
-;; ;; Rule base (modus ponens)
-;; (= (,
-;;     ;; Premises
-;;     (→ $p $q)
-;;     $p)
-;;    ;; Conclusion
-;;    $q)
+! "=== Equality ==="
 
-;;;;;;;;;;;;;;;;;
-;; DTL version ;;
-;;;;;;;;;;;;;;;;;
+;; Knowledge base
+(: kb_eq (-> Atom))
+(= (kb_eq) (superpose ((→ A B)
+                       (→ B C)
+                       A)))
+
+;; Forward chainer.  The rule based is directly embedded in the
+;; forward chainer function.
+(: fc_eq (-> Atom (-> Atom) Nat Atom))
+;; Base case
+(= (fc_eq (→ $p $q) $kb $depth) (→ $p $q))
+(= (fc_eq $p $kb $depth) $p)
+;; Recursive case
+(= (fc_eq (→ $p $q) $kb (S $k)) (let $p (kb_eq) (fc_eq $q $kb $k)))
+(= (fc_eq $p $kb (S $k)) (let (→ $p $q) (kb_eq) (fc_eq $q $kb $k)))
+
+;; Test forward chainer
+!(fc_eq A kb_eq (fromNumber 2))
+!(fc_eq (→ A B) kb_eq (fromNumber 2))
+;; !(fc_eq (→ $x $y) kb_eq (fromNumber 2))
+!(let (→ $x $y) (kb_eq)
+      (fc_eq (→ $x $y) kb_eq (fromNumber 2)))
+
+;;;;;;;;;;;
+;; Match ;;
+;;;;;;;;;;;
+
+;;;;;;;;;
+;; DTL ;;
+;;;;;;;;;
+
+! "=== DTL ==="
 
 ;; Foward chainer
 (: fc_dtl (-> Atom (-> Atom) (-> Atom) Nat Atom))
