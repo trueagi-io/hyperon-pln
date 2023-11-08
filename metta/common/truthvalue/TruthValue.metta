@@ -20,12 +20,6 @@
 ;; First order probability TV constructor, i.e. mere probability.
 (: Pr (-> Number TruthValue))
 
-;; Second order probability TV constructor, i.e. probability and
-;; count.  The second order probability is distributed according to a
-;; beta distribution.  The first argument of the constructor
-;; represents the mode of the second order distribution.
-(: PrCnt (-> Number Number TruthValue))
-
 ;; Simple Truth Value.  A Second order probability TV constructor,
 ;; i.e. probability and confidence.  The probability is in fact the
 ;; mode of the corresponding beta distribution.
@@ -97,32 +91,27 @@
 (= (mode (Bl True)) 1.0)
 (= (mode (Bl False)) 0.0)
 (= (mode (Pr $pr)) $pr)
-(= (mode (PrCnt $pr $_)) $pr)
 (= (mode (STV $pr $_)) $pr)
 
 ;; Return the total count of a truth value.  For truth values not
 ;; capturing a notion of confidence, such as Bl or Pr then the count
 ;; is assumed to be a very large number (cause +inf does not seem to
-;; be supported at the moment).  For truth values capturing a notion
-;; of confidence, such as PrCnt, the total count is the count
-;; component of the truth value.
+;; be supported at the moment).
 (: count (-> TruthValue Number))
 (= (count (Bl $_)) (max-count))
 (= (count (Pr $_)) (max-count))
-(= (count (PrCnt $_ $cnt)) $cnt)
 (= (count (STV $_ $conf)) (confidence->count $conf))
 
 ;; Return the confidence of a truth value.  For truth values not
 ;; capturing a notion of confidence, such as Bl or Pr then the
 ;; confidence is assumed to be 1.0.  For truth values capturing a
-;; notion of confidence, such as PrCnt, the formula to convert a count
+;; notion of confidence, such as STV, the formula to convert a count
 ;; into confidence is as follows
 ;;
 ;; confidence = count / (count + lookahead)
 (: confidence (-> TruthValue Number))
 (= (confidence (Bl $_)) 1.0)
 (= (confidence (Pr $_)) 1.0)
-(= (confidence (PrCnt $_ $cnt)) (count->confidence $cnt))
 (= (confidence (STV $_ $conf)) $conf)
 
 ;; Return the positive count of a truth value.
@@ -145,16 +134,11 @@
 ;; distribution associated to a truth value.  For truth values not
 ;; capturing a notion of confidence, such as Bl or Pr then the
 ;; confidence is assumed to be 1.0.  For truth values capturing a
-;; notion of confidence, such as PrCnt, a beta distribution is
-;; assumed.
+;; notion of confidence, such as STV, a beta distribution is assumed.
 (: mean (-> TruthValue Number))
 (= (mean (Bl True)) 1.0)
 (= (mean (Bl False)) 0.0)
 (= (mean (Pr $pr)) $pr)
-(= (mean (PrCnt $pr $cnt))
-   (let* (($a (post_alpha (PrCnt $pr $cnt)))
-          ($b (post_beta (PrCnt $pr $cnt))))
-     (/ $a (+ $a $b))))
 (= (mean (STV $pr $conf))
    (let* (($a (post_alpha (STV $pr $conf)))
           ($b (post_beta (STV $pr $conf))))

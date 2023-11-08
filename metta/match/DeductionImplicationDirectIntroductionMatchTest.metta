@@ -9,12 +9,12 @@
 (∉ 42 Empty)
 
 ; Q->R is already in the atomspace
-(≞ (→ Q R) (PrCnt 1 0.5))
+(≞ (→ Q R) (STV 1 0.5))
 
 ; Predicates
-(≞ P (PrCnt 1 0.1))
-(≞ Q (PrCnt 1 0.5))
-(≞ R (PrCnt 1 0.1))
+(≞ P (STV 1 0.1))
+(≞ Q (STV 1 0.5))
+(≞ R (STV 1 0.1))
 
 ; Matching query to do IDI and deduction rules
 !(match &self

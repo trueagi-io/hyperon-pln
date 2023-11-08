@@ -11,7 +11,6 @@
 !(smallest-intersection-probability 0.9 0.6)
 !(conditional-probability-consistency 0.9 0.6 0.5)
 !(simple-deduction-strength-formula 0.9 0.6 0.5 0.3 0.4)
-!(ded_formula (PrCnt 1 10) (PrCnt 1 4) (PrCnt 1 2) (PrCnt 1 3) (PrCnt 1 5))
 !(conditional-probability-consistency 0.2 0.3 1)
 !(conditional-probability-consistency 0.3 0.4 0.9)
 !(deduction-formula (STV 0.2 0.3) (STV 0.3 0.2) (STV 0.4 0.1) (STV 1 0.5) (STV 0.9 0.7))
