@@ -31,10 +31,10 @@
 
 ;; For now the underlying beta distributions have a Jeffreys prior,
 ;; i.e. the prior alpha and beta are 0.5.
-(: prior_alpha (-> Number))
-(= (prior_alpha) 0.5)
-(: prior_beta (-> Number))
-(= (prior_beta) 0.5)
+(: prior-alpha (-> Number))
+(= (prior-alpha) 0.5)
+(: prior-beta (-> Number))
+(= (prior-beta) 0.5)
 
 ;; Lookahead
 (: lookahead (-> Number))
@@ -115,20 +115,20 @@
 (= (confidence (STV $_ $conf)) $conf)
 
 ;; Return the positive count of a truth value.
-(: pos_count (-> TruthValue Number))
-(= (pos_count $tv) (* (mode $tv) (count $tv)))
+(: pos-count (-> TruthValue Number))
+(= (pos-count $tv) (* (mode $tv) (count $tv)))
 
 ;; Return the negative count of a truth value.
-(: neg_count (-> TruthValue Number))
-(= (neg_count $tv) (* (- 1 (mode $tv)) (count $tv)))
+(: neg-count (-> TruthValue Number))
+(= (neg-count $tv) (* (- 1 (mode $tv)) (count $tv)))
 
 ;; Return the posterior alpha of a truth value
-(: post_alpha (-> TruthValue Number))
-(= (post_alpha $tv) (+ (prior_alpha) (pos_count $tv)))
+(: post-alpha (-> TruthValue Number))
+(= (post-alpha $tv) (+ (prior-alpha) (pos-count $tv)))
 
 ;; Return the posterior beta of a truth value
-(: post_beta (-> TruthValue Number))
-(= (post_beta $tv) (+ (prior_beta) (neg_count $tv)))
+(: post-beta (-> TruthValue Number))
+(= (post-beta $tv) (+ (prior-beta) (neg-count $tv)))
 
 ;; Return the first order probability mean of the second order
 ;; distribution associated to a truth value.  For truth values not
