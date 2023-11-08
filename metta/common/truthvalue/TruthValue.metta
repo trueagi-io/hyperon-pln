@@ -62,28 +62,25 @@
                                  (max-count)
                                  (/ (* $conf (lookahead)) (- 1.0 $conf))))
 
-;; Increment the given count by 1
-(: inc-count (-> Number Number))
-(= (inc-count $cnt) (+ 1 $cnt))
+;; Increment the negative count of a given truth value, by
+;; incrementing its total count without incrementing the positive
+;; count.
+(: inc-neg-count (-> TruthValue TruthValue))
+(= (inc-neg-count (STV $s $c)) (let* (($tot_cnt (confidence->count $c))
+                                      ($pos_cnt (* $s $tot_cnt))
+                                      ($new_tot_cnt (+ $tot_cnt 1)))
+                                 (STV (/ $pos_cnt $new_tot_cnt)
+                                      (count->confidence $new_tot_cnt))))
 
-;; Increment the corresponding count of the given confidence by 1 and
-;; return the confidence of that corresponding incremented count.
-(: inc-confidence (-> Number Number))
-(= (inc-confidence $conf) (count->confidence (inc-count (confidence->count $conf))))
-
-;; Return the strength of a truth value, given that its count has been
-;; incremented by one but its positive count has not.
-;;
-;; The formula is derived from new_s = s*cnt / (cnt + 1), where cnt is
-;; the count of the original truth value, that is cnt = c*k / (1-c).
-;; Thus
-;;
-;; new_s = (s*c*k / (1-c)) / (c*k / (1-c) + 1)
-;;       = (s*c*k / (1-c)) / ((c*k + 1-c) / (1-c))
-;;       = (s*c*k) / (c*k + 1-c)
-(: inc-count-strength (-> Number Number Number))
-(= (inc-count-strength $s $c)
-   (/ (* $s (* $c (lookahead))) (- (+ (* $c (lookahead)) 1) $c)))
+;; Increment the positive count of a given truth value, by
+;; incrementing its total count and its positive count.
+(: inc-pos-count (-> TruthValue TruthValue))
+(= (inc-pos-count (STV $s $c)) (let* (($tot_cnt (confidence->count $c))
+                                      ($pos_cnt (* $s $tot_cnt))
+                                      ($new_pos_cnt (+ $pos_cnt 1))
+                                      ($new_tot_cnt (+ $tot_cnt 1)))
+                                 (STV (/ $new_pos_cnt $new_tot_cnt)
+                                      (count->confidence $new_tot_cnt))))
 
 ;; Return the first order probability mode of the second order
 ;; distribution associated to a truth value.
@@ -140,6 +137,6 @@
 (= (mean (Bl False)) 0.0)
 (= (mean (Pr $pr)) $pr)
 (= (mean (STV $pr $conf))
-   (let* (($a (post_alpha (STV $pr $conf)))
-          ($b (post_beta (STV $pr $conf))))
+   (let* (($a (post-alpha (STV $pr $conf)))
+          ($b (post-beta (STV $pr $conf))))
      (/ $a (+ $a $b))))
