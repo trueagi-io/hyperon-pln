@@ -36,7 +36,7 @@
 ;; (: Deduction
 ;;    (-> (≞ (→ $P $Q) $TV1)
 ;;        (≞ (→ $Q $R) $TV2)
-;;        (≞ (→ $P $R) (ded_formula $TV1 $TV2))))
+;;        (≞ (→ $P $R) (deduction-formula $TV1 $TV2))))
 ;;
 ;; where ≞, → are dependent types, and formula is just a regular metta
 ;; function.
@@ -57,13 +57,15 @@
 
 ;; Base case (one piece of evidence):
 ;;
-;; (p a) = pa
+;; (p a) = True
 ;; (q a) = qa
 ;; ⊢
 ;; p→q ≞ (ETV (:: a ∅) tv)
 ;;
 ;; where tv is calculated according to the direct introduction
-;; formula.
+;; formula.  Note that we don't bother to take into account pieces of
+;; evidence that is not True on (p a), because it has no impact on the
+;; resulting truth value otherwise.
 ;;
 ;; To avoid prematurely reducing (p a) = pa to pa = pa, the following
 ;; representation is used instead
@@ -78,22 +80,25 @@
 (: implication-direct-introduction-base-rule (-> Atom))
 (= (implication-direct-introduction-base-rule)
    (: IDIBase
-      (-> (⊷ $p $a $pa)
+      (-> (⊷ $p $a True)
           (⊷ $q $a $qa)
           (≞ (→ $p $q)
              (ETV (:: $a ∅)
-                  (direct-introduction-base-formula $pa $qa))))))
+                  (direct-introduction-base-formula $qa))))))
 
 ;; Recursive case (more than one piece of evidence):
 ;;
-;; (p a) = pa
+;; (p a) = True
 ;; (q a) = qa
 ;; p→q ≞ (ETV (:: h t) pqtv)
 ;; h < a
 ;; ⊢
 ;; p→q ≞ (ETV (:: a (:: h t)) tv)
 ;;
-;; where tv is calculated using the direct introduction formula.
+;; where tv is calculated using the direct introduction formula.  Note
+;; that we don't bother to take into account pieces of evidence that
+;; is not True on (p a), because it has no impact on the resulting
+;; truth value otherwise.
 ;;
 ;; To avoid prematurely reducing (p a) = pa to pa = pa, the following
 ;; representation is used instead
@@ -130,13 +135,13 @@
 (: implication-direct-introduction-recursive-rule (-> Atom))
 (= (implication-direct-introduction-recursive-rule)
    (: IDIRecursive
-      (-> (⊷ $p $a $pa)
+      (-> (⊷ $p $a True)
           (⊷ $q $a $qa)
           (≞ (→ $p $q) (ETV (:: $h $t) $pqtv))
           (⍃ $h $a)
           (≞ (→ $p $q)
              (ETV (:: $a (:: $h $t))
-                  (direct-introduction-recursive-formula $pa $qa $pqtv))))))
+                  (direct-introduction-recursive-formula $qa $pqtv))))))
 
 ;; Convert an EvidenceTruthValue to a TruthValue (i.e. elimate the
 ;; evidential part).

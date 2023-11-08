@@ -64,6 +64,13 @@ are products, disjunctions are Either, etc.
 A set of rules have been specially crafted to reason over SUMO and
 contained into `rules.metta`.
 
+## Prerequisite
+
+Make sure that hyperon-experimental has been compiled with
+`variable_operator` disabled.  To check that, search for `[features]`
+and make sure that `default` excludes `"variable_operation"` inside
+the `<HYPERON-EXPERIMENTAL>/lib/Cargo.toml` file.
+
 ## Usage
 
 See the README.md files under the subfolders of the experiments

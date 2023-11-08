@@ -5,17 +5,15 @@
 
 ;; Alternate implication direct introduction formula assuming Boolean
 ;; evidence.  Base case, meaning there is only one piece of evidence.
-(: direct-introduction-base-formula (-> Bool Bool TruthValue))
-(= (direct-introduction-base-formula False $_) (STV 1 0))
-(= (direct-introduction-base-formula True $qa)
+(: direct-introduction-base-formula (-> Bool TruthValue))
+(= (direct-introduction-base-formula $qa)
    (STV (bool->number $qa) (count->confidence 1)))
 
 ;; Alternate implication direct introduction formula.  Inductive case,
 ;; meaning the piece of evidence gets aggregated to another truth
 ;; value.
-(: direct-introduction-recursive-formula (-> Bool Bool TruthValue TruthValue))
-(= (direct-introduction-recursive-formula False $_ (STV $PQs $PQc)) (STV $PQs $PQc))
-(= (direct-introduction-recursive-formula True False (STV $PQs $PQc))
-   (STV (inc-count-strength $PQs $PQc) (inc-confidence $PQc)))
-(= (direct-introduction-recursive-formula True True (STV $PQs $PQc))
-   (STV $PQs (inc-confidence $PQc)))
+(: direct-introduction-recursive-formula (-> Bool TruthValue TruthValue))
+(= (direct-introduction-recursive-formula False (STV $PQs $PQc))
+   (inc-neg-count (STV $PQs $PQc)))
+(= (direct-introduction-recursive-formula True (STV $PQs $PQc))
+   (inc-pos-count (STV $PQs $PQc)))

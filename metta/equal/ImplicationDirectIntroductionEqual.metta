@@ -28,10 +28,10 @@
 
 ;; Base case (axiomatic rule):
 ;;
-;; p→q ≞ (ETV Empty (PrCnt 1 0))
+;; p→q ≞ (ETV Empty (STV 1 0))
 ;;
 ;; Directly present in the atomspace.
-(≞ (→ $p $q) (ETV Empty (PrCnt 1 0)))
+(≞ (→ $p $q) (ETV Empty (STV 1 0)))
 
 ;; TODO: see MeTTa examples such as b2_backchain.metta,
 ;; b3_direct.metta, b4_nonterm.metta, c3_pln_stv.metta,

@@ -3,7 +3,7 @@
 
 ;; Test formula
 !("========== Test formula ==========")
-!(idi_formula (Bl True) (Bl False) (PrCnt 1 0))
+!(idi_formula (Bl True) (Bl False) (STV 1 0))
 
 ;; Test axiom
 !("========== Test axiom ==========")
@@ -13,7 +13,7 @@
 !("========== Test inductive rule ==========")
 !(let* (($pa (≞ (P 42) (Bl True)))
         ($qa (≞ (Q 42) (Bl False)))
-        ($pq (≞ (→ P Q) (ETV Empty (PrCnt 1 0))))
+        ($pq (≞ (→ P Q) (ETV Empty (STV 1 0))))
         ($an (∉ 42 Empty)))
    (match &self (⊢ $pa $qa $pq $an $conclusion) $conclusion))
 

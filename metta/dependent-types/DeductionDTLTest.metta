@@ -44,9 +44,10 @@
 
 ;; Test synthesizer
 ! "===== Test synthesizer ===="
-!(record synthesize ((: $proof (≞ (→ P Q) $tv)) kb rb Z)) ; (: PQm (≞ (→ P Q) (STV 0.8 0.4)))
-!(record synthesize ((: $proof (≞ (→ Q R) $tv)) kb rb Z)) ; (: QRm (≞ (→ Q R) (STV 0.9 0.5)))
-!(record synthesize ((: $proof (≞ (→ P R) $tv)) kb rb (S Z))) ; (: (Deduction Pm Qm Rm PQm QRm) (≞ (→ P R) (STV 0.8 0.1)))
+!(assertEqual (synthesize (: $proof (≞ (→ P Q) $tv)) kb rb Z) (: PQm (≞ (→ P Q) (STV 0.8 0.4))))
+!(assertEqual (synthesize (: $proof (≞ (→ Q R) $tv)) kb rb Z) (: QRm (≞ (→ Q R) (STV 0.9 0.5))))
+;; Do not use assert because of all the incompleted reductions
+!(synthesize (: $proof (≞ (→ P R) $tv)) kb rb (S Z)) ; (: (Deduction Pm Qm Rm PQm QRm) (≞ (→ P R) (STV 0.8 0.1))))
 
 ;; ;; TODO: fix the following
 ;; !(record synthesize ((: $proof (≞ (→ P R) (STV $s $c))) kb rb (S Z))) ; (: (Deduction Pm Qm Rm PQm QRm) (≞ (→ P R) (STV 0.8 0.1)))
