@@ -15,10 +15,9 @@
 
 (: conditional-probability-consistency (-> Number Number Number Bool))
 (= (conditional-probability-consistency $As $Bs $ABs)
-   True)
-   ;; (and (< 0 $As)
-   ;;      (and (<= (smallest-intersection-probability $As $Bs) $ABs)
-   ;;           (<= $ABs (largest-intersection-probability $As $Bs)))))
+   (and (< 0 $As)
+        (and (<= (smallest-intersection-probability $As $Bs) $ABs)
+             (<= $ABs (largest-intersection-probability $As $Bs)))))
 
 ;; Main Formula
 (: simple-deduction-strength-formula (-> Number Number Number Number Number Number))
