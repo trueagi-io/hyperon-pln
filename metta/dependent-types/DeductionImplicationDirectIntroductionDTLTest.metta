@@ -69,6 +69,6 @@
 ;; (: (Deduction Pm Qm Rm (EvidenceElimination (IDIBase P2 Q2)) QRm) (≞ (→ P R) (STV 0.18571428571428572 0.1)))
 ;; (: (Deduction Pm Qm Rm (EvidenceElimination (IDIBase P7 Q7)) QRm) (≞ (→ P R) (STV 0.9 0.1)))
 
-;; TODO: disabled because it takes to long for now
+;; Disabled because it takes to long (over an hour)
 ;; ! "===== Prove that P→R based on two pieces of evidence and deduction ====="
 ;; !(synthesize (: (Deduction Pm Qm Rm $PQ QRm) (≞ (→ P R) $etv)) kb rb (fromNumber 5))
