@@ -28,6 +28,27 @@
 
 ! "=== Forward Revertant ==="
 
+;; Knowledge base
+!(bind! &kb (new-space))
+!(add-atom &kb (: ab (→ A B)))
+!(add-atom &kb (: bc (→ B C)))
+!(add-atom &kb (: a A))
+
+;; Rule base
+!(bind! &rb (new-space))
+!(add-atom &rb (: ModusPonens (->
+                               ;; Premises
+                               (→ $p $q)
+                               $p
+                               ;; Conclusion
+                               $q)))
+!(add-atom &rb (: Deduction (->
+                             ;; Premises
+                             (→ $p $q)
+                             (→ $q $r)
+                             ;; Conclusion
+                             (→ $p $r))))
+
 ;; Backward chainer, based on the DTL version of
 ;; `../backward-chaining/bc-xp.metta` but rules are in an atomspace
 ;; instead of being hardwired.  To be used by the forward revertant
@@ -57,40 +78,27 @@
                (frc (: ($ctor $prf1 $prf2) $ccl) $k))))
 (= (frc (: $prf2 $prm2) (S $k))
    (match &rb (: $ctor (-> $prm1 $prm2 $ccl))
-          (let (: $prf1 $prm1) (bc (: $prf2 $prm2) $k)
+          (let (: $prf1 $prm1) (bc (: $prf1 $prm1) $k)
                (frc (: ($ctor $prf1 $prf2) $ccl) $k))))
 
-;; Knowledge base
-!(bind! &kb (new-space))
-!(add-atom &kb (: ab (→ A B)))
-!(add-atom &kb (: bc (→ B C)))
-!(add-atom &kb (: a A))
-
-;; Rule base
-!(bind! &rb (new-space))
-!(add-atom &rb (: ModusPonens (->
-                               ;; Premises
-                               (→ $p $q)
-                               $p
-                               ;; Conclusion
-                               $q)))
-!(add-atom &rb (: Deduction (->
-                             ;; Premises
-                             (→ $p $q)
-                             (→ $q $r)
-                             ;; Conclusion
-                             (→ $p $r))))
+;; Test backward chainer
+;; NEXT
 
 ;; Test forward revertant chainer
 !(assertEqual
-  (frc (: $prf A) Z)
+  (frc (: a A) Z)
   (: a A))
 !(assertEqualToResult
-  (frc (: $prf A) (fromNumber 1))
+  (frc (: a A) (fromNumber 1))
   ((: a A)
-   (ModusPonens ab a) B))
+   (: (ModusPonens ab a) B)))
 !(assertEqualToResult
-  (frc (: $prf A) (fromNumber 2))
+  (frc (: a A) (fromNumber 2))
+  ((: a A)
+   (: (ModusPonens ab a) B)
+   (: (ModusPonens bc (ModusPonens ab a)) C)))
+!(assertEqualToResult
+  (frc (: a A) (fromNumber 3))
   ((: a A)
    (: (ModusPonens ab a) B)
    (: (ModusPonens bc (ModusPonens ab a)) C)
