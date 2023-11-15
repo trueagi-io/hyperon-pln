@@ -1,4 +1,4 @@
-# Backward Chainer Experiments
+# Backward Chaining Experiments
 
 ## Description
 

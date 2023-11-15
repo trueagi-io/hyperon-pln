@@ -1,4 +1,4 @@
-# Forward Chainer Experiments
+# Forward Chaining Experiments
 
 ## Description
 
