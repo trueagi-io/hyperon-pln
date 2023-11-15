@@ -49,5 +49,11 @@
 ;; Do not use assert because of all the incompleted reductions
 !(synthesize (: $proof (≞ (→ P R) $tv)) kb rb (S Z)) ; (: (Deduction Pm Qm Rm PQm QRm) (≞ (→ P R) (STV 0.8 0.1))))
 
-;; ;; TODO: fix the following
+;; TODO: fix the following
+;;
+;; SOLUTION: do partial evaluation where each substitution is
+;; provable.  For instance: arguments are well typed for function
+;; calls, conditions are proven to be true or false for conditionals,
+;; etc.
+;;
 ;; !(record synthesize ((: $proof (≞ (→ P R) (STV $s $c))) kb rb (S Z))) ; (: (Deduction Pm Qm Rm PQm QRm) (≞ (→ P R) (STV 0.8 0.1)))
