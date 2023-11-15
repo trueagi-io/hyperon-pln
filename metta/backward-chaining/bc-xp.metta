@@ -1,3 +1,5 @@
+;; Standalone backward chaining experiments.
+
 ;;;;;;;;;
 ;; Nat ;;
 ;;;;;;;;;
