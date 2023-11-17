@@ -37,7 +37,7 @@
 ;; b3_direct.metta, b4_nonterm.metta, c3_pln_stv.metta,
 ;; d1_custom_types.metta and d3_typed_pln.metta for inspiration.
 
-;; Recursive case (inductive rule):
+;; Recursive step (inductive rule):
 ;;
 ;; (p a) ≞ patv
 ;; (q a) ≞ qatv

@@ -34,7 +34,7 @@
 (= (idi_axiom)
    (≞ (→ $p $q) (ETV Empty (STV 1 0))))
 
-;; Recursive case (inductive rule):
+;; Recursive step (inductive rule):
 ;;
 ;; (p a) ≞ patv
 ;; (q a) ≞ qatv

@@ -14,7 +14,7 @@
    (case $pairs
      (;; Base case
       (() $rewrite)
-      ;; Recursive case
+      ;; Recursive step
       ($pairs (let* (($head (car-atom $pairs))
                      ($tail (cdr-atom $pairs)))
                 (case $head             ; By using a case we guaranty

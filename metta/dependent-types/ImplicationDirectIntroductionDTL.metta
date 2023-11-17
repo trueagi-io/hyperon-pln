@@ -86,7 +86,7 @@
              (ETV (:: $a ∅)
                   (direct-introduction-base-formula $qa))))))
 
-;; Recursive case (more than one piece of evidence):
+;; Recursive step (more than one piece of evidence):
 ;;
 ;; (p a) = True
 ;; (q a) = qa
