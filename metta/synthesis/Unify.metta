@@ -1,3 +1,6 @@
+;; TODO: this should be revised as there is now a unify function in
+;; the standard library.
+
 ;; Implement a unifier.  Like with `let` the left term must be an
 ;; Atom, so if it is function it will not be evaluated.  The
 ;; implementation however uses `case`, not `let`, that way it filters
