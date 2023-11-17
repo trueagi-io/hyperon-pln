@@ -15,8 +15,8 @@
           ;; Base case of append function definition
           (: Base_plus (=== (plus Z $y) $y))
 
-          ;; Inductive case of append function definition
-          (: Ind_plus (=== (plus (S $x) $y) (S (plus $x $y))))
+          ;; Recursive step of append function definition
+          (: Rec_plus (=== (plus (S $x) $y) (S (plus $x $y))))
 
           ;; Property expressing that for any natural, Z is the right
           ;; identity of plus.  Note that the property definition is
@@ -40,15 +40,39 @@
                        ;; Conclusion
                        (=== $y $x)))
 
-          ;; Induction on List
-          (: NatInduction (-> ;; Premises
-                              (: $p (-> Nat Type)) ; property
-                              ($p Z)               ; base
-                              (-> (: $x Nat)
-                                  ($p $x)
-                                  ($p (S $x)))     ; induction
-                              ;; Conclusion
-                              (-> (: $x' Nat) ($p $x')))))))
+          ;; Structural preservation of equality
+          (: UnaryEqStruct (-> ;; Premise
+                               (=== $x $x')
+                               ;; Conclusion
+                               (=== ($op $x) ($op $x'))))
+          (: BinaryEqStruct (-> ;; Premises
+                                (=== $x $x')
+                                (=== $y $y')
+                                ;; Conclusion
+                                (=== ($op $x $y) ($op $x' $y'))))
+
+          ;; Rule of replacement
+          (: UnaryRepl (-> ;; Premises
+                           (=== $x $x')
+                           ($op $x)
+                           ;; Conclusion
+                           ($op $x')))
+          (: BinaryRepl (-> ;; Premises
+                            (=== $x $x')
+                            (=== $y $y')
+                            ($op $x $y)
+                            ;; Conclusion
+                            ($op $x' $y')))
+
+          ;; Structural induction on Nat
+          (: StructuralInductionNat (-> ;; Premises
+                                     (: $p (-> Nat Type)) ; property
+                                     ($p Z)               ; base case
+                                     (-> (: $x Nat)
+                                         ($p $x)
+                                         ($p (S $x)))     ; inductive step
+                                     ;; Conclusion
+                                     (-> (: $x' Nat) ($p $x')))))))
 
 (: IndZRID_plus (-> (ZRID_plus $x) (ZRID_plus (S $x))))
 (=== (IndZRID_plus $prf) NEXT)
@@ -56,26 +80,5 @@
 ;; Prove that Z is left identity of plus
 !(synthesize (: $proof (=== (plus Z $y) $y)) kb rb Z)
 
-;; Prove that 1 + 0 = 1
-;;
-;; Proof tree should look like
-;;
-;; ----------------------------------(Ind_plus)  -----------------(Base_plus)
-;; (=== (plus (S Z) Z) (S (plus Z Z)))           (=== (plus Z Z) Z)
-;; ---------------------------------------------------------------(Replacement)
-;;                         (=== (plus (S Z) Z) (S Z))
-!(synthesize (: $proof (=== (plus (S Z) Z) (S Z))) kb rb (fromNumber 3))
-
-;; ;; Prove that 1 + 1 = 2
-;; ;;
-;; ;; Proof tree should look like
-;; ;;
-
-;; ------------------------------------------(Ind_plus)
-;; (=== (plus (S Z) (S Z)) (S (plus Z (S Z))))
-;; ----------------------------------------------------
-;; (=== (plus (S Z) (S Z)) (S (S Z)))
-;; !(synthesize (: $proof (=== (plus (S Z) (S Z)) (S (S Z)))) kb rb (fromNumber 2))
-
-;; ;; Prove that Z is the right identity of plus
+;; Prove that Z is the right identity of plus
 ;; !(synthesize (: $proof (=== (plus $x Z) $x)) kb rb (fromNumber 3))
