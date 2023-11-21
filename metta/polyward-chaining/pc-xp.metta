@@ -65,6 +65,27 @@
                  (($ctor $prf1 $prf2) $prf))
             (: $prf $ccl))))
 
+;; Test backward chainer
+!(assertEqual
+  (bc (: $prf A) Z)
+  (: a A))
+!(assertEqual
+  (bc (: $prf (→ A B)) Z)
+  (: ab (→ A B)))
+!(assertEqual
+  (bc (: $prf (→ B C)) Z)
+  (: bc (→ B C)))
+!(assertEqual
+  (bc (: $prf B) (fromNumber 1))
+  (: (ModusPonens ab a) B))
+!(assertEqualToResult
+  (bc (: $prf C) (fromNumber 2))
+  ((: (ModusPonens bc (ModusPonens ab a)) C)
+   (: (ModusPonens (Deduction ab bc) a) C)))
+!(assertEqual
+  (bc (: $prf (→ A C)) (fromNumber 2))
+  (: (Deduction ab bc) (→ A C)))
+
 ;; Forward revertant chainer, based on the DTL version of
 ;; `../backward-chaining/bc-xp.metta` but matching premises is
 ;; replaced by calling the backward chainer defined above.
