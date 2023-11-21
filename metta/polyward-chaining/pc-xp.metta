@@ -62,7 +62,7 @@
    (match &rb (: $ctor (-> $prm1 $prm2 $ccl))
           (let* (((: $prf1 $prm1) (bc (: $prf1 $prm1) $k))
                  ((: $prf2 $prm2) (bc (: $prf2 $prm2) $k))
-                 ((: ($ctor $prf1 $prf2) $prf)))
+                 (($ctor $prf1 $prf2) $prf))
             (: $prf $ccl))))
 
 ;; Forward revertant chainer, based on the DTL version of
