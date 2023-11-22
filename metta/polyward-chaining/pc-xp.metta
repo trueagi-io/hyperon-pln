@@ -55,15 +55,15 @@
 ;; chainer defined below.
 (: bc (-> Atom Nat Atom))
 ;; Base case
-(= (bc (: $prf $ccl) $depth)
-   (match &kb (: $prf $ccl) (: $prf $ccl)))
+(= (bc (: $prf $ccln) $depth)
+   (match &kb (: $prf $ccln) (: $prf $ccln)))
 ;; Recursive cases
-(= (bc (: $prf $ccl) (S $k))
-   (match &rb (: $ctor (-> $prm1 $prm2 $ccl))
-          (let* (((: $prf1 $prm1) (bc (: $prf1 $prm1) $k))
-                 ((: $prf2 $prm2) (bc (: $prf2 $prm2) $k))
+(= (bc (: $prf $ccln) (S $k))
+   (match &rb (: $ctor (-> $prms1 $prms2 $ccln))
+          (let* (((: $prf1 $prms1) (bc (: $prf1 $prms1) $k))
+                 ((: $prf2 $prms2) (bc (: $prf2 $prms2) $k))
                  (($ctor $prf1 $prf2) $prf))
-            (: $prf $ccl))))
+            (: $prf $ccln))))
 
 ;; Test backward chainer
 !(assertEqual
@@ -91,16 +91,16 @@
 ;; replaced by calling the backward chainer defined above.
 (: frc (-> Atom Nat Atom))
 ;; Base case
-(= (frc (: $prf $prm) $depth) (: $prf $prm))
+(= (frc (: $prf $prms) $depth) (: $prf $prms))
 ;; Recursive cases
-(= (frc (: $prf1 $prm1) (S $k))
-   (match &rb (: $ctor (-> $prm1 $prm2 $ccl))
-          (let (: $prf2 $prm2) (bc (: $prf2 $prm2) $k)
-               (frc (: ($ctor $prf1 $prf2) $ccl) $k))))
-(= (frc (: $prf2 $prm2) (S $k))
-   (match &rb (: $ctor (-> $prm1 $prm2 $ccl))
-          (let (: $prf1 $prm1) (bc (: $prf1 $prm1) $k)
-               (frc (: ($ctor $prf1 $prf2) $ccl) $k))))
+(= (frc (: $prf1 $prms1) (S $k))
+   (match &rb (: $ctor (-> $prms1 $prms2 $ccln))
+          (let (: $prf2 $prms2) (bc (: $prf2 $prms2) $k)
+               (frc (: ($ctor $prf1 $prf2) $ccln) $k))))
+(= (frc (: $prf2 $prms2) (S $k))
+   (match &rb (: $ctor (-> $prms1 $prms2 $ccln))
+          (let (: $prf1 $prms1) (bc (: $prf1 $prms1) $k)
+               (frc (: ($ctor $prf1 $prf2) $ccln) $k))))
 
 ;; Test forward revertant chainer
 !(assertEqual
