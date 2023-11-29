@@ -48,10 +48,22 @@ There are at least two ways this could be done
 
 ## Usage
 
-To run the experiments, enter the following
+### Iterative Forward Chaining
+
+To run the Iterative Forward Chaining experiments, enter the following
 
 ```bash
-metta ic-xp.metta
+metta ifc-xp.metta
+```
+
+It should outputs empty results indicating that all tests have passed.
+
+### Iterative Backward Chaining
+
+To run the Iterative Backward Chaining experiments, enter the following
+
+```bash
+metta ibc-xp.metta
 ```
 
 It should outputs empty results indicating that all tests have passed.
