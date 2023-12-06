@@ -1,4 +1,4 @@
-;; Standalone iterative chaining experiments.
+;; Standalone iterative forward chaining experiments.
 
 ;;;;;;;;;
 ;; Nat ;;
