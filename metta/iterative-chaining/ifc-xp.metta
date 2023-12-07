@@ -347,7 +347,7 @@
 (: ifc (-> $a                            ; Premise
            Nat                           ; Depth
            Nat                           ; Number of iterations
-           $a))                          ; Updated knowledge base
+           $a))                          ; Conclusion
 
 ;; Base case.  For now it terminates at exactly iteration Z to avoid
 ;; having to insert too many redundant results into the knowledge
