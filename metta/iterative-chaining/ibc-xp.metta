@@ -109,3 +109,48 @@
   (bc (: $prf (-> (→ $r $s) (-> (→ $q $r) (-> (→ $p $q) (→ $p $s))))) (fromNumber 4))
   ((: ((((. .) .) Deduction) Deduction) (-> (→ $r $s) (-> (→ $q $r) (-> (→ $p $q) (→ $p $s)))))
    (: ((. (. Deduction)) Deduction) (-> (→ $r $s) (-> (→ $q $r) (-> (→ $p $q) (→ $p $s)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;
+;; Utility Functions ;;
+;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Define ad-atom-nodup, that adds an atom only if it is not already
+;; in the atomspace
+(: add-atom-nodup (-> $st Atom ()))
+(= (add-atom-nodup $space $atom)
+   (case (match $space $atom $atom)
+     (($atom ())
+      (%void% (add-atom $space $atom)))))
+
+;; Add all atoms from an expression to a given atomspace
+(: add-atoms-nodup (-> $st Expression ()))
+(= (add-atoms-nodup $space $atoms)
+   (if (== $atoms ())
+       ()
+       (let* (($head (car-atom $atoms))
+              ($tail (cdr-atom $atoms))
+              ($dummy (add-atom-nodup $space $head)))
+         (add-atoms-nodup $space $tail))))
+
+;; Test utility functions
+! "=== Test Utility Functions ==="
+
+;; Test add-atom-nodup
+!(bind! &space-test (new-space))
+!(add-atom-nodup &space-test A)
+!(add-atom-nodup &space-test A)
+!(assertEqualToResult
+  (get-atoms &space-test)
+  (A))
+
+;; Test add-atoms-nodup
+!(add-atoms-nodup &space-test (A B C A))
+!(assertEqualToResult
+  (get-atoms &space-test)
+  (A B C))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Iterative Chainer Wrapped Around Backward DTL Curried (collapse) ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; NEXT
