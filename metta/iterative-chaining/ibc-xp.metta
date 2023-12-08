@@ -1,9 +1,9 @@
 ;; Standaline iterative backward chaining experiments.
 ;;
-;; The particularity of iterative backward chaining is that the
-;; inference trees have to abstractions, in the lambda calculus sense
-;; of the term.  I.e. we want the backward chaining part to produce
-;; macro rules and use these macro rules iteratively.
+;; The particularity of iterative backward chaining is that the proof
+;; trees should include proof abstractions, in the lambda calculus
+;; sense.  I.e. we want the backward chaining part to produce macro
+;; rules and re-use these macro rules iteratively.
 
 ;;;;;;;;;
 ;; Nat ;;
@@ -52,14 +52,14 @@
                         (-> (-> $p $q)     ; Premise 2
                             (-> $p $r))))) ; Conclusion
 
-;; Backward chainer
+;; Backward chainer/synthesizer
 ;; Base case
-(: bc (-> $a Nat $a))
-(= (bc (: $prf $ccln) $_) (match &kb (: $prf $ccln) (: $prf $ccln)))
+(: syn (-> $a Nat $a))
+(= (syn (: $prf $ccln) $_) (match &kb (: $prf $ccln) (: $prf $ccln)))
 ;; Recursive step
-(= (bc (: ($prfabs $prfarg) $ccln) (S $k))
-   (let* (((: $prfabs (-> $prms $ccln)) (bc (: $prfabs (-> $prms $ccln)) $k))
-          ((: $prfarg $prms) (bc (: $prfarg $prms) $k)))
+(= (syn (: ($prfabs $prfarg) $ccln) (S $k))
+   (let* (((: $prfabs (-> $prms $ccln)) (syn (: $prfabs (-> $prms $ccln)) $k))
+          ((: $prfarg $prms) (syn (: $prfarg $prms) $k)))
      (: ($prfabs $prfarg) $ccln)))
 
 ;; Test backward chainer DTL curried
@@ -67,46 +67,50 @@
 
 ;; Prove A (axiom)
 !(assertEqual
-  (bc (: a A) Z)
+  (syn (: a A) Z)
   (: a A))
 
 ;; Prove (-> (→ A B) (-> A B)) (axiom)
 !(assertEqual
-  (bc (: $prf (-> $prms (-> A B))) Z)
+  (syn (: $prf (-> $prms (-> A B))) Z)
   (: ModusPonens (-> (→ A B) (-> A B))))
 
 ;; Prove (-> A B)
 !(assertEqual
-  (bc (: $prf (-> A B)) (fromNumber 1))
+  (syn (: $prf (-> A B)) (fromNumber 1))
   (: (ModusPonens ab) (-> A B)))
 
 ;; Prove B (one modus ponens)
 !(assertEqual
-  (bc (: $prf B) (fromNumber 2))
+  (syn (: $prf B) (fromNumber 2))
   (: ((ModusPonens ab) a) B))
 
 ;; Prove C (two modus ponens)
 !(assertEqual
-  (bc (: $prf C) (fromNumber 3))
+  (syn (: $prf C) (fromNumber 3))
   (: ((ModusPonens bc) ((ModusPonens ab) a)) C))
 
-;; Prove C (two modus ponens, or on modus ponens and on deduction)
+;; Prove C (two modus ponens, or one modus ponens and one deduction)
 !(assertEqualToResult
-  (bc (: $prf C) (fromNumber 4))
+  (syn (: $prf C) (fromNumber 4))
   ((: ((((. ModusPonens) (Deduction bc)) ab) a) C)
    (: (((. (ModusPonens bc)) (ModusPonens ab)) a) C)
    (: ((ModusPonens ((Deduction bc) ab)) a) C)
    (: ((ModusPonens bc) ((ModusPonens ab) a)) C)))
 
-;; Prove that (-> (→ $q $r) (-> (→ $p $q) (-> $p $r)))
+;; Prove 3-premises version of Modus Ponens, that is
+;;
+;; (-> (→ $q $r) (-> (→ $p $q) (-> $p $r)))
 !(assertEqualToResult
-  (bc (: $prf (-> (→ $q $r) (-> (→ $p $q) (-> $p $r)))) (fromNumber 4))
+  (syn (: $prf (-> (→ $q $r) (-> (→ $p $q) (-> $p $r)))) (fromNumber 4))
   ((: ((((. .) .) ModusPonens) Deduction) (-> (→ $q $r) (-> (→ $p $q) (-> $p $r))))
    (: ((. (. ModusPonens)) Deduction) (-> (→ $q $r) (-> (→ $p $q) (-> $p $r))))))
 
-;; Prove that (-> (→ $r $s) (-> (→ $q $r) (-> (→ $p $q) (→ $p $s))))
+;; Prove 3-premises version of Deduction, that is
+;;
+;; (-> (→ $r $s) (-> (→ $q $r) (-> (→ $p $q) (→ $p $s))))
 !(assertEqualToResult
-  (bc (: $prf (-> (→ $r $s) (-> (→ $q $r) (-> (→ $p $q) (→ $p $s))))) (fromNumber 4))
+  (syn (: $prf (-> (→ $r $s) (-> (→ $q $r) (-> (→ $p $q) (→ $p $s))))) (fromNumber 4))
   ((: ((((. .) .) Deduction) Deduction) (-> (→ $r $s) (-> (→ $q $r) (-> (→ $p $q) (→ $p $s)))))
    (: ((. (. Deduction)) Deduction) (-> (→ $r $s) (-> (→ $q $r) (-> (→ $p $q) (→ $p $s)))))))
 
@@ -153,4 +157,96 @@
 ;; Iterative Chainer Wrapped Around Backward DTL Curried (collapse) ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; NEXT
+;; Call the backward DTL curried chainer iteratively, adding the
+;; proofs, or proof abstractions to the knowledge space after each
+;; iterations.  To avoid irreproducible behavior (due to the side
+;; effects of modifying the atomspace), each call of the backward
+;; chainer collapses between iterations.
+(: isyn (-> $a                            ; Query
+            Nat                           ; Depth
+            Nat                           ; Number of iterations
+            $a))                          ; Result
+
+;; Base case.  For now it terminates at exactly iteration Z to avoid
+;; collecting too many redundant results.
+(= (isyn $query $depth Z) $query)
+
+;; Iterative step
+(= (isyn $query $depth (S $k))
+   (let* (($cres (collapse (syn $query $depth)))
+          ($dummy (add-atoms-nodup &kb $cres)))
+     (isyn (superpose $cres) $depth $k)))
+
+;; Test Iterative Chainer Wrapped Around Forward Revertant (collapse)
+! "=== Test Iterative Chainer Wrapped Around Backward DTL Curried (collapse) ==="
+
+;; No iteration
+!(assertEqual
+  (isyn (: a A) Z Z)
+  (: a A))
+!(assertEqualToResult
+  (get-atoms &kb)
+  ((: ab (→ A B))
+   (: bc (→ B C))
+   (: a A)
+   (: ModusPonens (-> (→ $p $q) (-> $p $q)))
+   (: Deduction (-> (→ $q $r) (-> (→ $p $q) (→ $p $r))))
+   (: . (-> (-> $q $r) (-> (-> $p $q) (-> $p $r))))))
+
+;; One iteration of two steps backward chainer.  We need two steps
+;; of backward chaining because one step merely returns what is in the
+;; knowledge/rule base.
+!(assertEqual
+  (isyn (: $prf B) (fromNumber 2) (fromNumber 1))
+  (: ((ModusPonens ab) a) B))
+!(assertEqualToResult
+  (get-atoms &kb)
+  ((: ab (→ A B))
+   (: bc (→ B C))
+   (: a A)
+   (: ModusPonens (-> (→ $p $q) (-> $p $q)))
+   (: Deduction (-> (→ $q $r) (-> (→ $p $q) (→ $p $r))))
+   (: . (-> (-> $q $r) (-> (-> $p $q) (-> $p $r))))
+   (: ((ModusPonens ab) a) B)))
+
+;; One iteration of two steps backward chainer.  C can be proven with
+;; just one iteration by re-using the proof of B.
+!(assertEqual
+  (isyn (: $prf C) (fromNumber 2) (fromNumber 1))
+  (: ((ModusPonens bc) ((ModusPonens ab) a)) C))
+!(assertEqualToResult
+  (get-atoms &kb)
+  ((: ab (→ A B))
+   (: bc (→ B C))
+   (: a A)
+   (: ModusPonens (-> (→ $p $q) (-> $p $q)))
+   (: Deduction (-> (→ $q $r) (-> (→ $p $q) (→ $p $r))))
+   (: . (-> (-> $q $r) (-> (-> $p $q) (-> $p $r))))
+   (: ((ModusPonens ab) a) B)
+   (: ((ModusPonens bc) ((ModusPonens ab) a)) C)))
+
+;; One iteration of four steps backward chainer.  With four steps,
+;; proof abstractions such as 3-premises version of Modus Ponens can
+;; be inferred as well.
+!(assertEqualToResult
+  (isyn (: $prf (-> (→ $q $r) (-> (→ $p $q) (-> $p $r))))
+        (fromNumber 4) (fromNumber 1))
+  ((: ((((. .) .) ModusPonens) Deduction)
+      (-> (→ $q $r) (-> (→ $p $q) (-> $p $r))))
+   (: ((. (. ModusPonens)) Deduction)
+      (-> (→ $q $r) (-> (→ $p $q) (-> $p $r))))))
+
+;; Let's add more premises to the knowledge base
+!(add-atom &kb (: cd (→ C D)))
+!(add-atom &kb (: de (→ D E)))
+!(add-atom &kb (: ef (→ E F)))
+
+;; Then F can be proven with one iteration and three steps (instead of
+;; four) of backward chaining by re-using the proof abstraction
+;; previously inferred.
+;;
+;; TODO: re-enable after introducing assert contain
+;; !(assertEqualToResult
+  !(isyn (: $prf F) (fromNumber 3) (fromNumber 1))
+  ;; ((: (((((((. .) .) ModusPonens) Deduction) ef) de) ((ModusPonens cd) ((ModusPonens bc) ((ModusPonens ab) a)))) F)
+  ;;  (: (((((. (. ModusPonens)) Deduction) ef) de) ((ModusPonens cd) ((ModusPonens bc) ((ModusPonens ab) a)))) F))
