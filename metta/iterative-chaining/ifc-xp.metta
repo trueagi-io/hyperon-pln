@@ -341,19 +341,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Call the forward revertant chainer iteratively, adding the
-;; conclusions to the knowledge space after each iterations.  In order
-;; not to create insane irreproachable behavior, each call of the
-;; forward revertant chainer collapses between iterations.
+;; conclusions to the knowledge space after each iterations.  To avoid
+;; irreproducible behavior (due to the side effects of modifying the
+;; atomspace), each call of the forward revertant chainer collapses
+;; between iterations.
 (: ifc (-> $a                            ; Premise
            Nat                           ; Depth
            Nat                           ; Number of iterations
            $a))                          ; Conclusion
 
 ;; Base case.  For now it terminates at exactly iteration Z to avoid
-;; having to insert too many redundant results into the knowledge
-;; space.  Ideally it should terminate at any iteration and avoid
-;; redundancy by not inserting knowledge already in the knowledge
-;; space.
+;; collecting too many redundant results.
 (= (ifc $prms $depth Z) $prms)
 
 ;; Iterative step
