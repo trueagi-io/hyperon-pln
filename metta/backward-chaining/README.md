@@ -1,4 +1,4 @@
-# Backward Chainer Experiments
+# Backward Chaining Experiments
 
 ## Description
 
@@ -29,7 +29,7 @@ MeTTa.  Specifically:
 To run the experiments, enter the following
 
 ```bash
-metta backward-chainer-xp.metta
+metta bc-xp.metta
 ```
 
 It should outputs empty results indicating that all tests have passed.

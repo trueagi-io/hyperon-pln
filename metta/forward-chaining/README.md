@@ -1,4 +1,4 @@
-# Forward Chainer Experiments
+# Forward Chaining Experiments
 
 ## Description
 
@@ -25,7 +25,7 @@ Specifically:
 To run the experiments, enter the following
 
 ```bash
-metta forward-chainer-xp.metta
+metta fc-xp.metta
 ```
 
 It should outputs empty results indicating that all tests have passed.

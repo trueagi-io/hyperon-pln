@@ -28,7 +28,7 @@
 ;;
 ;; TODO: recurse over curried rules instead of duplicating code over
 ;; tuples.
-(: synthesize (-> Atom (-> Atom) (-> Atom) Nat Atom))
+(: synthesize (-> $a (-> $kt) (-> $rt) Nat $a))
 ;; Nullary rule (axiom)
 (= (synthesize $query $kb $rb $depth)
    (let $query ($kb) $query))

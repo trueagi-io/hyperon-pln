@@ -1,3 +1,5 @@
+;; Standalone forward chaining experiments.
+
 ;;;;;;;;;
 ;; Nat ;;
 ;;;;;;;;;
