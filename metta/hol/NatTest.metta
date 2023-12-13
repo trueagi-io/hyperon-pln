@@ -18,10 +18,10 @@
           ;; ;; does not get reduced by the MeTTa interpreter.
           ;; (: EqRefl (=== $x $x))
 
-          ;; Base case of append function definition
+          ;; Base case of plus function definition
           (: Base_plus (=== (plus Z $y) $y))
 
-          ;; ;; Recursive step of append function definition
+          ;; ;; Recursive step of plus function definition
           ;; (: Rec_plus (=== (plus (S $x) $y) (S (plus $x $y))))
 
           ;; If Z is the right identity of x then it is the right

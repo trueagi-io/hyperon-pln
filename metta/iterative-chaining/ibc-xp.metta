@@ -1,4 +1,4 @@
-;; Standaline iterative backward chaining experiments.
+;; Standalone iterative backward chaining experiments.
 ;;
 ;; The particularity of iterative backward chaining is that the proof
 ;; trees should include proof abstractions, in the lambda calculus
@@ -30,8 +30,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Similar to the traditional backward chaining DTL but rules are
-;; curried.  This allows to partially apply rule which is essential in
-;; order to be able to infer abstractions.
+;; curried.  This allows to partially apply rule which is useful for
+;; inferring proof abstractions.
 
 ;; Knowledge and rule base
 !(bind! &kb (new-space))
