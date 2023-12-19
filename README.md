@@ -4,9 +4,9 @@
 
 Port of Probabilistic Logic Networs (PLN) for Hyperon/MeTTa.
 
-## Requirements
+## Prerequisites
 
-Build https://github.com/trueagi-io/hyperon-experimental
+- [hyperon-experimental](https://github.com/trueagi-io/hyperon-experimental)
 
 ## Usage
 

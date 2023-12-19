@@ -25,7 +25,7 @@
 ;; already in the set as to produce an ordered set.
 (: insert (-> $a (OrderedSet $a) (OrderedSet $a)))
 (= (insert $x ∅) (:: $x ∅))          ; Base case
-(= (insert $x (:: $h $t))            ; Recursive case
+(= (insert $x (:: $h $t))            ; Recursive step
    (if (== $x $h)
        (:: $h $t)                    ; Present, no need to insert
        (if (⩻ $x $h)                 ; Use generic <

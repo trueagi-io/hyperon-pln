@@ -30,7 +30,7 @@
 (: fc_entail (-> Atom (-> Atom) (-> Atom) Nat Atom))
 ;; Base case
 (= (fc_entail (⊢ $premise) $kb $rb $depth) (⊢ $premise))
-;; Recursive cases
+;; Recursive steps
 (= (fc_entail (⊢ $premise1) $kb $rb (S $k))
    (let* (((⊢ $premise1 $premise2 $conclusion) ($rb))
           ((⊢ $premise2) ($kb)))
@@ -80,7 +80,7 @@
 (: fc_bare (-> Atom (-> Atom) (-> Atom) Nat Atom))
 ;; Base case
 (= (fc_bare $premise $kb $rb $depth) $premise)
-;; Recursive cases
+;; Recursive steps
 (= (fc_bare $premise1 $kb $rb (S $k))
    (let* (((⊢ $premise1 $premise2 $conclusion) ($rb))
           ($premise2 ($kb)))
@@ -134,7 +134,7 @@
 (: fc_eq (-> Atom (-> Atom) Nat Atom))
 ;; Base case
 (= (fc_eq $premise $kb $depth) $premise)
-;; Recursive case (modus ponens)
+;; Recursive step (modus ponens)
 (= (fc_eq (→ $p $q) $kb (S $k)) (let $p (kb_eq) (fc_eq $q $kb $k)))
 (= (fc_eq $p $kb (S $k)) (let (→ $p $q) (kb_eq) (fc_eq $q $kb $k)))
 
@@ -177,7 +177,7 @@
 (: fc_bem (-> Atom Nat Atom))
 ;; Base case
 (= (fc_bem $premise $depth) $premise)
-;; Recursive cases
+;; Recursive steps
 (= (fc_bem $premise1 (S $k))
    (match &rb_bem (⊢ $premise1 $premise2 $conclusion)
           (match &kb_bem $premise2 (fc_bem $conclusion $k))))
@@ -215,7 +215,7 @@
 (: fc_em (-> Atom Nat Atom))
 ;; Base case
 (= (fc_em $premise $depth) $premise)
-;; Recursive case (modus ponens)
+;; Recursive step (modus ponens)
 (= (fc_em (→ $p $q) (S $k)) (match &kb_em $p (fc_em $q $k)))
 (= (fc_em $p (S $k)) (match &kb_em (→ $p $q) (fc_em $q $k)))
 
@@ -240,7 +240,7 @@
 (: fc_dtl (-> Atom (-> Atom) (-> Atom) Nat Atom))
 ;; Base case
 (= (fc_dtl (: $proof $premise) $kb $rb $depth) (: $proof $premise))
-;; Recursive cases
+;; Recursive steps
 (= (fc_dtl (: $proof1 $premise1) $kb $rb (S $k))
    (let* (((: $ructor (-> $premise1 $premise2 $conclusion)) ($rb))
           ((: $proof2 $premise2) ($kb)))

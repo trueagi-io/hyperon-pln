@@ -33,7 +33,7 @@
 ;; Base case
 (= (bc_bare $conclusion $kb $rb $depth)
    (let $conclusion ($kb) $conclusion))
-;; Recursive cases
+;; Recursive step
 (= (bc_bare $conclusion $kb $rb (S $k))
    (let* (((⊢ $premise1 $premise2 $conclusion) ($rb))
           ($premise1 (bc_bare $premise1 $kb $rb $k))
@@ -87,12 +87,12 @@
 ;; Base case
 (= (bc_eq $conclusion $kb $depth)
    (let $conclusion ($kb) $conclusion))
-;; Recursive case (modus ponens)
+;; Recursive step (modus ponens)
 (= (bc_eq $q $kb (S $k))
    (let* (((→ $p $q) (bc_eq (→ $p $q) $kb $k)) ; premise1
           ($p (bc_eq $p $kb $k)))              ; premise2
      $q))                                      ; conclusion
-;; Recursive case (deduction)
+;; Recursive step (deduction)
 (= (bc_eq (→ $p $r) $kb (S $k))
    (let* (((→ $p $q) (bc_eq (→ $p $q) $kb $k))  ; premise1
           ((→ $q $r) (bc_eq (→ $q $r) $kb $k))) ; premise2
@@ -153,7 +153,7 @@
 ;; Base case
 (= (bc_bem $conclusion $depth)
    (match &kb_bem $conclusion $conclusion))
-;; Recursive cases
+;; Recursive step
 (= (bc_bem $conclusion (S $k))
    (match &rb_bem (⊢ $premise1 $premise2 $conclusion)
           (let* (($premise1 (bc_bem $premise1 $k))
@@ -201,12 +201,12 @@
 ;; Base case
 (= (bc_em $conclusion $depth)
    (match &kb_em $conclusion $conclusion))
-;; Recursive case (modus ponens)
+;; Recursive step (modus ponens)
 (= (bc_em $q (S $k))
    (let* (((→ $p $q) (bc_em (→ $p $q) $k)) ; premise1
           ($p (bc_em $p $k)))              ; premise2
      $q))                                  ; conclusion
-;; Recursive case (deduction)
+;; Recursive step (deduction)
 (= (bc_em (→ $p $r) (S $k))
    (let* (((→ $p $q) (bc_em (→ $p $q) $k))  ; premise1
           ((→ $q $r) (bc_em (→ $q $r) $k))) ; premise2
@@ -255,13 +255,13 @@
 ;; Base case
 (= (bc_dem (: $prf $conclusion) $depth)
    (match &kb_dem (: $prf $conclusion) (: $prf $conclusion)))
-;; Recursive case (modus ponens)
+;; Recursive step (modus ponens)
 (= (bc_dem (: $prf_q $q) (S $k))
    (let* (((: $prf_pq (→ $p $q)) (bc_dem (: $prf_pq (→ $p $q)) $k)) ; premise1
           ((: $prf_p $p) (bc_dem (: $prf_p $p) $k))                 ; premise2
           ((: (ModusPonens $prf_pq $prf_p) $q) (: $prf_q $q)))      ; conclusion
      (: $prf_q $q)))
-;; Recursive case (deduction)
+;; Recursive step (deduction)
 (= (bc_dem (: $prf_pr (→ $p $r)) (S $k))
    (let* (((: $prf_pq (→ $p $q)) (bc_dem (: $prf_pq (→ $p $q)) $k))          ; premise1
           ((: $prf_qr (→ $q $r)) (bc_dem (: $prf_qr (→ $q $r)) $k))          ; premise2
