@@ -33,3 +33,15 @@ metta bc-xp.metta
 ```
 
 It should outputs empty results indicating that all tests have passed.
+
+## Related
+
+In the `iterative-chaining` experiments, a new implementation of the
+backward chainer was discovered which recurses on rule abstraction
+(not just rule premises) and uses currying to simplify the
+implementation.  See `syn` in `ibc-xp.metta`.
+
+Also, in the `hol` experiments, it was discovered that proof reduction
+(simplifying a proof to reach a canonical form) can be achieved by
+defining reduction rules as traditional function definitions, and thus
+let MeTTa interper spontaneously reduce them.
