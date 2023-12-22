@@ -32,8 +32,6 @@
 ;; Queries and results are contextualized.  For now we rely on a
 ;; concrete implementation instead of an interface.
 
-;; TODO: instead of context, environment might be a good term as well.
-
 ;; Takes a context type, a value type, and create a type representing
 ;; a contextualized value.
 (: CtxVal (-> $ctx $a Type))
@@ -96,7 +94,7 @@
                (bc (MkCtxVal $utx (: $prfabs (-> $prms $ccln))) $ctx_upd $ctx_agg $tmn_pred))
               ;; Recurse on proof argument
               ((MkCtxVal $ctxarg (: $prfarg $prms))
-               (bc (MkCtxVal $utx (: $prfarg $prms) $ctx_upd $ctx_agg $tmn_pred)))
+               (bc (MkCtxVal $utx (: $prfarg $prms)) $ctx_upd $ctx_agg $tmn_pred))
               ;; Merge all contexts so far to form a new context
               ($ntx ($ctx_agg $utx $ctxabs $ctxarg)))
          ;; Build contextualized result
@@ -144,9 +142,19 @@
   ())
 
 ;; Prove A
-;; !(assertEqual
-  !(bc (MkCtxVal (fromNumber 1) (: $prf A)) dec fst is_zero)
-  ;; (MkCtxVal Z (: a A)))
+!(bc (MkCtxVal (fromNumber 1) (: $prf A)) dec fst is_zero)
+
+;; Prove (-> $pq (-> $p B))
+!(bc (MkCtxVal (fromNumber 1) (: $prfabs (-> $pq (-> $p B)))) dec fst is_zero)
+
+;; Prove (-> A B)
+!(bc (MkCtxVal (fromNumber 2) (: ($prfabs $prfarg) (-> $p B))) dec fst is_zero)
 
 ;; Prove B
-  !(bc (MkCtxVal (fromNumber 2) (: $prf B)) dec fst is_zero)
+!(bc (MkCtxVal (fromNumber 3) (: $prf B)) dec fst is_zero)
+
+;; Prove C
+!(bc (MkCtxVal (fromNumber 4) (: $prf C)) dec fst is_zero)
+
+;; Prove C (via deduction as well)
+!(bc (MkCtxVal (fromNumber 5) (: $prf C)) dec fst is_zero)
