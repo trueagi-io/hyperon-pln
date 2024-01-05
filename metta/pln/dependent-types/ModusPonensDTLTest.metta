@@ -1,6 +1,6 @@
 ;; Import modules
 !(import! &self ModusPonensDTL.metta)
-!(import! &self ../synthesis/Synthesize.metta)
+!(import! &self ../../synthesis/Synthesize.metta)
 
 ;; Puzzle:
 ;; The cow is big.

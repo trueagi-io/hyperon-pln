@@ -3,7 +3,7 @@
 ;; Import the rules
 !(import! &self ImplicationDirectIntroductionDTL.metta)
 !(import! &self DeductionDTL.metta)
-!(import! &self ../synthesis/Synthesize.metta)
+!(import! &self ../../synthesis/Synthesize.metta)
 
 ;; Knowledge base
 (: kb (-> Atom))

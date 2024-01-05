@@ -6,8 +6,8 @@
 
 ;; Import modules
 !(import! &self DeductionDTL.metta)
-!(import! &self ../synthesis/Synthesize.metta)
-!(import! &self ../common/Record.metta)
+!(import! &self ../../synthesis/Synthesize.metta)
+!(import! &self ../../common/Record.metta)
 
 ;; Knowledge base
 (: Predicate Type)
