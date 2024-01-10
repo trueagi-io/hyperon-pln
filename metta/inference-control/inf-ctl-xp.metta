@@ -31,15 +31,18 @@
 
 ;; Backward Chainer.  The arguments of the backward chainer are:
 ;;
-;; * Context abstraction updater.  Update the context before
-;;   recursively calling the backward chainer on the proof abstraction.
+;; * Context abstraction updater.  Given the current query and
+;;   context, update the context before recursively calling the
+;;   backward chainer on the proof abstraction.
 ;;
-;; * Context argument updater.  Update the context before recursively
-;;   calling the backward chainer on the proof argument.
+;; * Context argument updater.  Given the current query and context,
+;;   update the context before recursively calling the backward
+;;   chainer on the proof argument.
 ;;
-;; * Termination predicate.  Condition of a conditional wrapping the
-;;   base case and recursive step functions.  Terminating amounts to
-;;   pruning the reduction (as in evaluation) branch.
+;; * Termination predicate.  Given the current query and context,
+;;   condition of a conditional wrapping the base case and recursive
+;;   step functions.  Terminating amounts to pruning the reduction (as
+;;   in evaluation) branch.
 ;;
 ;; * Query: a metta term of the form (: <PROOF> <THEOREM>) where
 ;;   <PROOF> and <THEOREM> may contain free variables that may be
@@ -48,29 +51,26 @@
 ;; * Context: a context to be updated and passed to the recursive
 ;;   calls of the backward chainer.
 ;;
-;; The context updater is to update the context from the caller before
-;; the recursive calls.  The context aggregator is to aggregate the
-;; contexts resulting from children calls, as well the updated
-;; context.
-;;
-;; NEXT: maybe the context updaters and the termination predicate
-;; should take the query as well.  It could also take a contextualized
-;; query, but it's probably not a good idea to return a contextualized
-;; query because we don't want the user to be able to modify the
-;; query, as it could lead to breaking the backward chainer, as
-;; opposed to just pruning its search.
-(: bc (-> (-> $ct $ct)      ; Context abstraction updater
-          (-> $ct $ct)      ; Context argument updater
-          (-> $ct Bool)     ; Termination predicate
-          $ct               ; Context
-          $a                ; Query
-          $a))              ; Query result
+;; The choice of the arguments of the context updaters and the
+;; termination predicate is justified as follows.  Context updaters
+;; take first the query, which can be viewed an updater modulator,
+;; which then takes the actual context to the return updated one.  An
+;; alternative would have been to construct a contextualized query,
+;; and update that contextualized query instead.  However, we do not
+;; do that to guaranty that the user-programmed inference control does
+;; not interfere with the correctness of the chainer.
+(: bc (-> (-> $a $ct $ct)      ; Context abstraction updater
+          (-> $a $ct $ct)      ; Context argument updater
+          (-> $a $ct Bool)     ; Termination predicate
+          $ct                  ; Context
+          $a                   ; Query
+          $a))                 ; Query result
 
 ;; Base case.  Terminates no matter what, either by pruning the branch
 ;; or by querying the kb.  Thanks to non-determinism, terminating the
 ;; branch does not terminate alternative branches.
 (= (bc $absupd $argupd $tmnpred $ctx (: $prf $ccln))
-   (if ($tmnpred $ctx)
+   (if ($tmnpred (: $prf $ccln) $ctx)
        ;; Terminate by pruning the branch
        (empty)
        ;; Terminate by querying the kb
@@ -79,7 +79,7 @@
 ;; Recursive step.  Recursion only happens if the termination
 ;; condition is false.  Otherwise, the branch is pruned.
 (= (bc $absupd $argupd $tmnpred $ctx (: ($prfabs $prfarg) $ccln))
-   (if ($tmnpred $ctx)
+   (if ($tmnpred (: ($prfabs $prfarg) $ccln) $ctx)
        ;; Terminate by pruning the branch
        (empty)
        ;; Continue
@@ -88,7 +88,7 @@
                (bc ;; Context updaters and termination predicate
                    $absupd $argupd $tmnpred
                    ;; Updated context for proof abstraction
-                   ($absupd $ctx)
+                   ($absupd (: ($prfabs $prfarg) $ccln) $ctx)
                    ;; Proof abstraction query
                    (: $prfabs (-> $prms $ccln))))
               ;; Recurse on proof argument
@@ -96,7 +96,7 @@
                (bc ;; Context updaters and termination predicate
                    $absupd $argupd $tmnpred
                    ;; Updated context for proof argument
-                   ($argupd $ctx)
+                   ($argupd (: ($prfabs $prfarg) $ccln) $ctx)
                    ;; Proof argument query
                    (: $prfarg $prms))))
          ;; Construct result
@@ -135,41 +135,84 @@
 (: dec (-> Nat Nat))
 (= (dec Z) Z)
 (= (dec (S $k)) $k)
+(: depth-updater (-> $a Nat Nat))
+(= (depth-updater $query $depth) (dec $depth))
 
 ;; Define termination predicate, called inside a conditional wrapping
 ;; the bc.  Terminates at 0.
 (: is-zero (-> Nat Bool))
 (= (is-zero Z) True)
 (= (is-zero (S $k)) False)
+(: depth-termination (-> $a Nat Bool))
+(= (depth-termination $query $depth) (is-zero $depth))
 
 ;; Prove nothing, depth of 0 means everything is pruned.
 !(assertEqualToResult
-  (bc dec dec is-zero (fromNumber 0) (: $prf A))
+  (bc depth-updater depth-updater depth-termination ; Updaters and termination predicate
+      (fromNumber 0)                                ; Context
+      (: $prf A))                                   ; Query
   ())
 
 ;; Prove A
-!(bc dec dec is-zero (fromNumber 1) (: $prf A))
+!(assertEqual
+  (bc depth-updater depth-updater depth-termination
+      (fromNumber 2)
+      (: $prf A))
+  (: a A))
 
 ;; Prove (-> (→ $p B) (-> $p B))
-!(bc dec dec is-zero (fromNumber 1) (: $prfabs (-> $pq (-> $p B))))
+!(assertEqual
+  (bc depth-updater depth-updater depth-termination
+      (fromNumber 2)
+      (: $prfabs (-> $pq (-> $p B))))
+  (: ModusPonens (-> (→ $p B) (-> $p B))))
 
 ;; Prove (-> A B)
-!(bc dec dec is-zero (fromNumber 2) (: ($prfabs $prfarg) (-> $p B)))
+!(assertEqual
+  (bc depth-updater depth-updater depth-termination
+      (fromNumber 2)
+      (: ($prfabs $prfarg) (-> $p B)))
+  (: (ModusPonens ab) (-> A B)))
 
 ;; Prove B
-!(bc dec dec is-zero (fromNumber 3) (: $prf B))
+!(assertEqual
+  (bc depth-updater depth-updater depth-termination
+      (fromNumber 3)
+      (: $prf B))
+  (: ((ModusPonens ab) a) B))
 
 ;; Prove C
-!(bc dec dec is-zero (fromNumber 4) (: $prf C))
+!(assertEqual
+  (bc depth-updater depth-updater depth-termination
+      (fromNumber 4)
+      (: $prf C))
+  (: ((ModusPonens bc) ((ModusPonens ab) a)) C))
 
 ;; Prove C (via deduction as well)
-!(bc dec dec is-zero (fromNumber 5) (: $prf C))
+!(assertEqualToResult
+  (bc depth-updater depth-updater depth-termination
+      (fromNumber 5)
+      (: $prf C))
+  ((: ((((. ModusPonens) (Deduction bc)) ab) a) C)
+   (: (((. (ModusPonens bc)) (ModusPonens ab)) a) C)
+   (: ((ModusPonens ((Deduction bc) ab)) a) C)
+   (: ((ModusPonens bc) ((ModusPonens ab) a)) C)))
 
 ;; Prove (→ A C)
-!(bc dec dec is-zero (fromNumber 4) (: $prf (→ A C)))
+!(assertEqual
+  (bc depth-updater depth-updater depth-termination
+      (fromNumber 4)
+      (: $prf (→ A C)))
+  (: ((Deduction bc) ab) (→ A C)))
 
 ;; Prove (-> A C)
-!(bc dec dec is-zero (fromNumber 4) (: $prf (-> A C)))
+!(assertEqualToResult
+  (bc depth-updater depth-updater depth-termination
+      (fromNumber 4)
+      (: $prf (-> A C)))
+  ((: (((. ModusPonens) (Deduction bc)) ab) (-> A C))
+   (: ((. (ModusPonens bc)) (ModusPonens ab)) (-> A C))
+   (: (ModusPonens ((Deduction bc) ab)) (-> A C))))
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ;; Context is depth, initial query and current query ;;
