@@ -25,9 +25,9 @@
                         (-> (-> $p $q)     ; Premise 2
                             (-> $p $r))))) ; Conclusion
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Backward DTL Curried ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Backward Controlled Chainer ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Backward Chainer.  The arguments of the backward chainer are:
 ;;
@@ -40,9 +40,12 @@
 ;;   chainer on the proof argument.
 ;;
 ;; * Termination predicate.  Given the current query and context,
-;;   condition of a conditional wrapping the base case and recursive
-;;   step functions.  Terminating amounts to pruning the reduction (as
-;;   in evaluation) branch.
+;;   provide the condition of a conditional wrapping the base case and
+;;   recursive step functions (pre-application), as well its results
+;;   (post-application).  Terminating amounts to pruning the reduction
+;;   (as in evaluation) branches.  For now there is only one
+;;   termination predicate for both pre and post application, in the
+;;   future we may want to separate them in two.
 ;;
 ;; * Query: a metta term of the form (: <PROOF> <THEOREM>) where
 ;;   <PROOF> and <THEOREM> may contain free variables that may be
@@ -70,19 +73,27 @@
 ;; or by querying the kb.  Thanks to non-determinism, terminating the
 ;; branch does not terminate alternative branches.
 (= (bc $absupd $argupd $tmnpred $ctx (: $prf $ccln))
+   ;; Pre-application termination conditional
    (if ($tmnpred (: $prf $ccln) $ctx)
        ;; Terminate by pruning the branch
        (empty)
-       ;; Terminate by querying the kb
-       (match &kb (: $prf $ccln) (: $prf $ccln))))
+       ;; Continue by querying the kb
+       (match &kb (: $prf $ccln)
+              ;; Post-application termination conditional
+              (if ($tmnpred (: $prf $ccln) $ctx)
+                  ;; Terminate by pruning the branch
+                  (empty)
+                  ;; Continue by returning the queried result
+                  (: $prf $ccln)))))
 
 ;; Recursive step.  Recursion only happens if the termination
 ;; condition is false.  Otherwise, the branch is pruned.
 (= (bc $absupd $argupd $tmnpred $ctx (: ($prfabs $prfarg) $ccln))
+   ;; Pre-application termination conditional
    (if ($tmnpred (: ($prfabs $prfarg) $ccln) $ctx)
        ;; Terminate by pruning the branch
        (empty)
-       ;; Continue
+       ;; Continue by recursing
        (let* (;; Recurse on proof abstraction
               ((: $prfabs (-> $prms $ccln))
                (bc ;; Context updaters and termination predicate
@@ -99,8 +110,12 @@
                    ($argupd (: ($prfabs $prfarg) $ccln) $ctx)
                    ;; Proof argument query
                    (: $prfarg $prms))))
-         ;; Construct result
-         (: ($prfabs $prfarg) $ccln))))
+         ;; Post-application termination conditional
+         (if ($tmnpred (: ($prfabs $prfarg) $ccln) $ctx)
+             ;; Terminate by pruning the branch
+             (empty)
+             ;; Continue by returning result
+             (: ($prfabs $prfarg) $ccln)))))
 
 ;;;;;;;;;;;
 ;; Tests ;;
@@ -214,37 +229,115 @@
    (: ((. (ModusPonens bc)) (ModusPonens ab)) (-> A C))
    (: (ModusPonens ((Deduction bc) ab)) (-> A C))))
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; Context is depth, initial query and current query ;;
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Context is depth and initial query ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; ;; From the previous runs we obverse 3 things
-;; ;;
-;; ;; 1. When the queried theorem is (→ x y) then deduction is useful.
-;; ;; 2. When the queried theorem is otherwise then modus ponens is enough.
-;; ;; 3. Composition . is never necessary even for theorem like (-> x y).
-;; ;;
-;; ;; We thus define context and control functions reflecting these observations
+;; From the previous runs we make the following observations:
+;;
+;; 1. When the queried theorem is (→ x y) then modus ponens is useless.
+;;
+;; 2. When the queried theorem is otherwise then deduction is useless.
+;;
+;; 3. Composition . is useless.
+;;
+;; Then we define context and control functions reflecting these
+;; observations.
 
-;; ;; Context type and ctor
-;; (: Ctx Type)
-;; (: MkCtx (-> Nat                    ; Maximum depth
-;;              $iqt                   ; Initial query
-;;              $cqt                   ; Current query
-;;              Ctx))
+;; Context type and ctor
+(: QD Type)
+(: MkDQ (-> $a                     ; Initial query
+            Nat                    ; Maximum depth
+            QD))
 
-;; ;; Define context abstraction updater.  Decrement the depth, leave the
-;; ;; initial query unchangedand current queries unchanged.
-;; (: abs-updater (-> Ctx Ctx))
-;; (= (abs-updater (MkCtx $depth $query (: ($prfabs $prfarg) $ccln)))
-;;    (MkCtx (dec $depth) $query (: $prfabs (-> $prms $ccln)))
+;; Define context updater, same for both proof abstraction and proof
+;; argument.  Decrement the depth, leave the initial query unchanged.
+(: qd-updater (-> $a QD QD))
+(= (qd-updater $query (MkQD $init-query $depth))
+   (MkQD $init-query (dec $depth)))
 
-;; (: $prfabs (-> $prms $ccln))
+;; Define termination predicate.  Terminate at depth 0, and respect
+;; the 3 observations above.
+(: qd-termination (-> $a QD Bool))
+(= (qd-termination (: $prf $thm) (MkQD (: $init-prf $init-thm) $depth))
+   (or ;; Terminate at depth 0
+       (is-zero $depth)
+       ;; [3th observation] If the current proof query is . then
+       ;; terminate.
+       (or (== $prf .)
+           ;; [1st observation] If initial queried theorem is (→ x y)
+           ;; and current proof query is not Deduction (thus is
+           ;; ModusPonens, as it is the only alternative at this
+           ;; point), then terminate.
+           (if (== $init-thm (→ $x $y))
+               (== $prf ModusPonens)
+               ;; [2nd observation] Otherwise, if the current proof
+               ;; query is not ModusPonens (thus Deduction, as it is
+               ;; the only alternative at this point), then terminate.
+               (== $prf Deduction)))))
 
-;; ;; Define termination predicate.  Terminates at 0 and make sure to
-;; ;; respect the 3 observations above.  NEXT.
-;; (: terminate (-> Ctx Bool))
-;; (= (terminate (MkCtx $depth $iniqry $curqry))
-;;    (or (is-zero $depth)
-       
-;;        ))
+;; Prove nothing, depth of 0 means everything is pruned.
+!(assertEqualToResult
+  (bc qd-updater qd-updater qd-termination ; Updaters and termination predicate
+      (MkQD (: $prf A) (fromNumber 0))     ; Context
+      (: $prf A))                          ; Query
+  ())
+
+;; Prove A
+!(assertEqual
+  (bc qd-updater qd-updater qd-termination
+      (MkQD (: $prf A) (fromNumber 2))
+      (: $prf A))
+  (: a A))
+
+;; Prove (-> (→ $p B) (-> $p B))
+!(assertEqual
+  (bc qd-updater qd-updater qd-termination
+      (MkQD (: $prfabs (-> $pq (-> $p B))) (fromNumber 2))
+      (: $prfabs (-> $pq (-> $p B))))
+  (: ModusPonens (-> (→ $p B) (-> $p B))))
+
+;; Prove (-> A B)
+!(assertEqual
+  (bc qd-updater qd-updater qd-termination
+      (MkQD (: ($prfabs $prfarg) (-> $p B)) (fromNumber 2))
+      (: ($prfabs $prfarg) (-> $p B)))
+  (: (ModusPonens ab) (-> A B)))
+
+;; Prove B
+!(assertEqual
+  (bc qd-updater qd-updater qd-termination
+      (MkQD (: $prf B) (fromNumber 3))
+      (: $prf B))
+  (: ((ModusPonens ab) a) B))
+
+;; Prove C
+!(assertEqual
+  (bc qd-updater qd-updater qd-termination
+      (MkQD (: $prf C) (fromNumber 4))
+      (: $prf C))
+  (: ((ModusPonens bc) ((ModusPonens ab) a)) C))
+
+;; Prove C (deduction is discarded via inference control)
+!(assertEqual
+  (bc qd-updater qd-updater qd-termination
+      (MkQD (: $prf C) (fromNumber 5))
+      (: $prf C))
+  (: ((ModusPonens bc) ((ModusPonens ab) a)) C))
+
+;; Prove (→ A C)
+;; NEXT
+!(assertEqual
+  (bc qd-updater qd-updater qd-termination
+      (MkQD (: $prf (→ A C)) (fromNumber 4))
+      (: $prf (→ A C)))
+  (: ((Deduction bc) ab) (→ A C)))
+
+;; ;; Prove (-> A C).  Inference control prevents from finding a proof
+;; ;; because any of the proofs involve using Deduction, or ., which are
+;; ;; both forbidden for that query.
+;; !(assertEqualToResult
+;;   (bc qd-updater qd-updater qd-termination
+;;       (MkQD (: $prf (-> A C)) (fromNumber 4))
+;;       (: $prf (-> A C)))
+;;   ())
