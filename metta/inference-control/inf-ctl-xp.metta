@@ -1,3 +1,9 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Inference control experiments.  Modify the backward chainer to take ;;
+;; control functions (context updaters and termination predicate) in   ;;
+;; order to control inference                                          ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Knowledge and Rule Base ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -45,7 +51,7 @@
 ;;   (post-application).  Terminating amounts to pruning the reduction
 ;;   (as in evaluation) branches.  For now there is only one
 ;;   termination predicate for both pre and post application, in the
-;;   future we may want to separate them in two.
+;;   future we may want to separate it in two.
 ;;
 ;; * Query: a metta term of the form (: <PROOF> <THEOREM>) where
 ;;   <PROOF> and <THEOREM> may contain free variables that may be
