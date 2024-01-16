@@ -31,28 +31,28 @@
 ;; !(add-atom &kb (: Dec Month))
 
 ;; January precedes February, which precedes Mars, etc.
-!(add-atom &kb (: jf (≺ Jan Feb)))
-!(add-atom &kb (: fm (≺ Feb Mar)))
-!(add-atom &kb (: ma (≺ Mar Apr)))
-!(add-atom &kb (: am (≺ Apr May)))
-!(add-atom &kb (: mj (≺ May Jun)))
-!(add-atom &kb (: jj (≺ Jun Jul)))
-!(add-atom &kb (: ja (≺ Jul Aug)))
-!(add-atom &kb (: as (≺ Aug Sep)))
-!(add-atom &kb (: so (≺ Sep Oct)))
-!(add-atom &kb (: on (≺ Oct Nov)))
-!(add-atom &kb (: nd (≺ Nov Dec)))
+!(add-atom &kb (: jf (≼ Jan Feb)))
+!(add-atom &kb (: fm (≼ Feb Mar)))
+!(add-atom &kb (: ma (≼ Mar Apr)))
+!(add-atom &kb (: am (≼ Apr May)))
+!(add-atom &kb (: mj (≼ May Jun)))
+!(add-atom &kb (: jj (≼ Jun Jul)))
+!(add-atom &kb (: ja (≼ Jul Aug)))
+!(add-atom &kb (: as (≼ Aug Sep)))
+!(add-atom &kb (: so (≼ Sep Oct)))
+!(add-atom &kb (: on (≼ Oct Nov)))
+!(add-atom &kb (: nd (≼ Nov Dec)))
 
 ;; Precedence is non strict, i.e. reflexive
-!(add-atom &kb (: Relf (≺ $x $x)))
+!(add-atom &kb (: Relf (≼ $x $x)))
 
 ;; Precedence is transitive
-!(add-atom &kb (: Trans (-> (≺ $x $y)
-                            (-> (≺ $y $z)
-                                (≺ $x $z)))))
+!(add-atom &kb (: Trans (-> (≼ $x $y)
+                            (-> (≼ $y $z)
+                                (≼ $x $z)))))
 
 ;; Shortcut rule: January precedes all months
-!(add-atom &kb (: JPA (≺ Jan $x)))
+!(add-atom &kb (: JPA (≼ Jan $x)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Backward Controlled Chainer ;;
