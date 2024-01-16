@@ -34,10 +34,10 @@
 !(bind! &kb (new-space))
 
 ;; Define Σ type (called DPair in Idris)
-(: Σ (-> ($a : Type) (-> $a Type) Type))
+(: Σ (-> (: $a Type) (-> $a Type) Type))
 
 ;; Define DPair constructor
-(: MkΣ (-> ($p : (-> $a Type)) ($x : $a) ($p $x) (Σ $a $p)))
+(: MkΣ (-> (: $p (-> $a Type)) (: $x $a) ($p $x) (Σ $a $p)))
 
 ;; Define the even property
 (: Even (-> Nat Type))
@@ -45,18 +45,24 @@
 (: MkEvenSS (-> (Even $k) (Even (S (S $k)))))
 
 ;; Define examples of even numbers (0 and 2)
-(: (MkΣ Z MkEvenZ) (Σ Nat Even))
-(: (MkΣ (S (S Z)) (MkEvenSS MkEvenZ)) (Σ Nat Even))
+(: (MkΣ Even Z MkEvenZ) (Σ Nat Even))
+(: (MkΣ Even (S (S Z)) (MkEvenSS MkEvenZ)) (Σ Nat Even))
+(: $prf (Σ Nat Even))
 
 ;; Define double function
 (: double (-> Nat Nat))
 (= (double Z) Z)
 (= (double (S $k)) (S (S (double $k))))
 
+(= (fst (MkΣ $p $x $prf)) $x)
+(= (snd (MkΣ $p $x $prf)) $prf)
+
 ;; Define double function, with the guaranty that the output is even
 (: doubleΣ (-> Nat (Σ Nat Even)))
-(= (doubleΣ Z) (MkΣ Z MkEvenZ))
-(= (doubleΣ (S $k)) (MkΣ (S (S (fst (double $k)))) (MkEvenSS (snd (double $k)))))
+(= (doubleΣ Z) (MkΣ Even Z MkEvenZ))
+(= (doubleΣ (S $k)) (MkΣ Even
+                         (S (S (fst (doubleΣ $k))))
+                         (MkEvenSS (snd (doubleΣ $k)))))
 
 ;; For all x, (double x) is even
 ;; ∀x (Even (double x))
