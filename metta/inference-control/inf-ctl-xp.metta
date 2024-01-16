@@ -117,9 +117,13 @@
              ;; Continue by returning result
              (: ($prfabs $prfarg) $ccln)))))
 
-;;;;;;;;;;;
-;; Tests ;;
-;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;
+;; Common functions ;;
+;;;;;;;;;;;;;;;;;;;;;;
+
+;; Return True iff $lhs unifies with $rhs
+(: ≐ (-> $a $a Bool))
+(= (≐ $lhs $rhs) (case $rhs (($lhs True) ($_ False))))
 
 ;; Define Nat
 (: Nat Type)
@@ -136,6 +140,10 @@
 (: fromNat (-> Nat Number))
 (= (fromNat Z) 0)
 (= (fromNat (S $k)) (+ 1 (fromNat $k)))
+
+;;;;;;;;;;;
+;; Tests ;;
+;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Context is depth ;;
@@ -158,54 +166,54 @@
 (: is-zero (-> Nat Bool))
 (= (is-zero Z) True)
 (= (is-zero (S $k)) False)
-(: depth-termination (-> $a Nat Bool))
-(= (depth-termination $query $depth) (is-zero $depth))
+(: depth-terminator (-> $a Nat Bool))
+(= (depth-terminator $query $depth) (is-zero $depth))
 
 ;; Prove nothing, depth of 0 means everything is pruned.
 !(assertEqualToResult
-  (bc depth-updater depth-updater depth-termination ; Updaters and termination predicate
-      (fromNumber 0)                                ; Context
-      (: $prf A))                                   ; Query
+  (bc depth-updater depth-updater depth-terminator ; Updaters and termination predicate
+      (fromNumber 0)                               ; Context
+      (: $prf A))                                  ; Query
   ())
 
 ;; Prove A
 !(assertEqual
-  (bc depth-updater depth-updater depth-termination
+  (bc depth-updater depth-updater depth-terminator
       (fromNumber 2)
       (: $prf A))
   (: a A))
 
 ;; Prove (-> (→ $p B) (-> $p B))
 !(assertEqual
-  (bc depth-updater depth-updater depth-termination
+  (bc depth-updater depth-updater depth-terminator
       (fromNumber 2)
       (: $prfabs (-> $pq (-> $p B))))
   (: ModusPonens (-> (→ $p B) (-> $p B))))
 
 ;; Prove (-> A B)
 !(assertEqual
-  (bc depth-updater depth-updater depth-termination
+  (bc depth-updater depth-updater depth-terminator
       (fromNumber 2)
       (: ($prfabs $prfarg) (-> $p B)))
   (: (ModusPonens ab) (-> A B)))
 
 ;; Prove B
 !(assertEqual
-  (bc depth-updater depth-updater depth-termination
+  (bc depth-updater depth-updater depth-terminator
       (fromNumber 3)
       (: $prf B))
   (: ((ModusPonens ab) a) B))
 
 ;; Prove C
 !(assertEqual
-  (bc depth-updater depth-updater depth-termination
+  (bc depth-updater depth-updater depth-terminator
       (fromNumber 4)
       (: $prf C))
   (: ((ModusPonens bc) ((ModusPonens ab) a)) C))
 
 ;; Prove C (via deduction as well)
 !(assertEqualToResult
-  (bc depth-updater depth-updater depth-termination
+  (bc depth-updater depth-updater depth-terminator
       (fromNumber 5)
       (: $prf C))
   ((: ((((. ModusPonens) (Deduction bc)) ab) a) C)
@@ -215,14 +223,14 @@
 
 ;; Prove (→ A C)
 !(assertEqual
-  (bc depth-updater depth-updater depth-termination
+  (bc depth-updater depth-updater depth-terminator
       (fromNumber 4)
       (: $prf (→ A C)))
   (: ((Deduction bc) ab) (→ A C)))
 
 ;; Prove (-> A C)
 !(assertEqualToResult
-  (bc depth-updater depth-updater depth-termination
+  (bc depth-updater depth-updater depth-terminator
       (fromNumber 4)
       (: $prf (-> A C)))
   ((: (((. ModusPonens) (Deduction bc)) ab) (-> A C))
@@ -245,31 +253,31 @@
 ;; observations.
 
 ;; Context type and ctor
-(: QD Type)
-(: MkDQ (-> $a                     ; Initial query
+(: TD Type)
+(: MkTD (-> $a                     ; Target theorem
             Nat                    ; Maximum depth
-            QD))
+            TD))
 
 ;; Define context updater, same for both proof abstraction and proof
 ;; argument.  Decrement the depth, leave the initial query unchanged.
-(: qd-updater (-> $a QD QD))
-(= (qd-updater $query (MkQD $init-query $depth))
-   (MkQD $init-query (dec $depth)))
+(: td-updater (-> $a TD TD))
+(= (td-updater $query (MkTD $trg-thm $depth))
+   (MkTD $trg-thm (dec $depth)))
 
 ;; Define termination predicate.  Terminate at depth 0, and respect
 ;; the 3 observations above.
-(: qd-termination (-> $a QD Bool))
-(= (qd-termination (: $prf $thm) (MkQD (: $init-prf $init-thm) $depth))
+(: td-terminator (-> $a TD Bool))
+(= (td-terminator (: $prf $thm) (MkTD $trg-thm $depth))
    (or ;; Terminate at depth 0
        (is-zero $depth)
        ;; [3th observation] If the current proof query is . then
        ;; terminate.
        (or (== $prf .)
-           ;; [1st observation] If initial queried theorem is (→ x y)
-           ;; and current proof query is not Deduction (thus is
+           ;; [1st observation] If the target theorem unifies with (→ x y) and
+           ;; current proof query is not Deduction (thus is
            ;; ModusPonens, as it is the only alternative at this
            ;; point), then terminate.
-           (if (== $init-thm (→ $x $y))
+           (if (≐ $trg-thm (→ $x $y))
                (== $prf ModusPonens)
                ;; [2nd observation] Otherwise, if the current proof
                ;; query is not ModusPonens (thus Deduction, as it is
@@ -278,66 +286,65 @@
 
 ;; Prove nothing, depth of 0 means everything is pruned.
 !(assertEqualToResult
-  (bc qd-updater qd-updater qd-termination ; Updaters and termination predicate
-      (MkQD (: $prf A) (fromNumber 0))     ; Context
-      (: $prf A))                          ; Query
+  (bc td-updater td-updater td-terminator ; Updaters and termination predicate
+      (MkTD A (fromNumber 0))             ; Context
+      (: $prf A))                         ; Query
   ())
 
 ;; Prove A
 !(assertEqual
-  (bc qd-updater qd-updater qd-termination
-      (MkQD (: $prf A) (fromNumber 2))
+  (bc td-updater td-updater td-terminator
+      (MkTD A (fromNumber 2))
       (: $prf A))
   (: a A))
 
 ;; Prove (-> (→ $p B) (-> $p B))
 !(assertEqual
-  (bc qd-updater qd-updater qd-termination
-      (MkQD (: $prfabs (-> $pq (-> $p B))) (fromNumber 2))
+  (bc td-updater td-updater td-terminator
+      (MkTD (-> $pq (-> $p B)) (fromNumber 2))
       (: $prfabs (-> $pq (-> $p B))))
   (: ModusPonens (-> (→ $p B) (-> $p B))))
 
 ;; Prove (-> A B)
 !(assertEqual
-  (bc qd-updater qd-updater qd-termination
-      (MkQD (: ($prfabs $prfarg) (-> $p B)) (fromNumber 2))
+  (bc td-updater td-updater td-terminator
+      (MkTD (-> $p B) (fromNumber 2))
       (: ($prfabs $prfarg) (-> $p B)))
   (: (ModusPonens ab) (-> A B)))
 
 ;; Prove B
 !(assertEqual
-  (bc qd-updater qd-updater qd-termination
-      (MkQD (: $prf B) (fromNumber 3))
+  (bc td-updater td-updater td-terminator
+      (MkTD B (fromNumber 3))
       (: $prf B))
   (: ((ModusPonens ab) a) B))
 
 ;; Prove C
 !(assertEqual
-  (bc qd-updater qd-updater qd-termination
-      (MkQD (: $prf C) (fromNumber 4))
+  (bc td-updater td-updater td-terminator
+      (MkTD C (fromNumber 4))
       (: $prf C))
   (: ((ModusPonens bc) ((ModusPonens ab) a)) C))
 
 ;; Prove C (deduction is discarded via inference control)
 !(assertEqual
-  (bc qd-updater qd-updater qd-termination
-      (MkQD (: $prf C) (fromNumber 5))
+  (bc td-updater td-updater td-terminator
+      (MkTD C (fromNumber 5))
       (: $prf C))
   (: ((ModusPonens bc) ((ModusPonens ab) a)) C))
 
 ;; Prove (→ A C)
-;; NEXT
 !(assertEqual
-  (bc qd-updater qd-updater qd-termination
-      (MkQD (: $prf (→ A C)) (fromNumber 4))
+  (bc td-updater td-updater td-terminator
+      (MkTD (→ A C) (fromNumber 4))
       (: $prf (→ A C)))
   (: ((Deduction bc) ab) (→ A C)))
 
-;; ;; Prove (-> A C).  Inference control prevents from finding a proof
-;; ;; because any of the proofs involve using Deduction, or ., which are
-;; ;; both forbidden for that query.
-;; !(assertEqualToResult
-;;   (bc qd-updater qd-updater qd-termination
-;;       (MkQD (: $prf (-> A C)) (fromNumber 4))
-;;       (: $prf (-> A C)))
-;;   ())
+;; Prove (-> A C).  Inference control actually prevents from finding a
+;; proof because any of the proofs use either Deduction or ., which
+;; are both forbidden for that query.
+!(assertEqualToResult
+  (bc td-updater td-updater td-terminator
+      (MkTD (-> A C) (fromNumber 0))
+      (: $prf (-> A C)))
+  ())
