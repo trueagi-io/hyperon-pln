@@ -271,9 +271,11 @@
 ;;
 ;; ((NatInd ((Replace0 (Sym plusRightIdProp)) plusBase)) ((. (Replace0 (Sym plusRightIdProp))) ((. (Trans plusRec)) ((. Cong) (Replace0 plusRightIdProp)))))
 ;;
-;; We provide half of the proof otherwise the search takes too much memory (over 64GB)
+;; We provide the clue that structural induction is to be so that the
+;; backward chainer only has to find the base case and the inductive
+;; step, otherwise the search takes too much memory (over 64GB).
 !(assertEqual
-  (bc (: ((NatInd ((Replace0 (Sym plusRightIdProp)) plusBase)) $subprf) (plusRightId $x)) (fromNumber 5))
+  (bc (: ((NatInd $basecase) $indstep) (plusRightId $x)) (fromNumber 5))
   (: ((NatInd ((Replace0 (Sym plusRightIdProp)) plusBase)) ((. (Replace0 (Sym plusRightIdProp))) ((. (Trans plusRec)) ((. Cong) (Replace0 plusRightIdProp))))) (plusRightId $x)))
 
 ;; TODO: try to reproduce
