@@ -243,9 +243,9 @@
    (: ((. (ModusPonens bc)) (ModusPonens ab)) (-> A C))
    (: (ModusPonens ((Deduction bc) ab)) (-> A C))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Context is depth and initial query ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Context is depth and target theorem ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; From the previous runs we make the following observations:
 ;;
@@ -265,7 +265,7 @@
             TD))
 
 ;; Define context updater, same for both proof abstraction and proof
-;; argument.  Decrement the depth, leave the initial query unchanged.
+;; argument.  Decrement the depth, leave the target theorem unchanged.
 (: td-updater (-> $a TD TD))
 (= (td-updater $query (MkTD $trg-thm $depth))
    (MkTD $trg-thm (dec $depth)))
