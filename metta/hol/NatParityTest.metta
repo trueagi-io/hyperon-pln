@@ -27,62 +27,226 @@
 (= (fromNat Z) 0)
 (= (fromNat (S $k)) (+ 1 (fromNat $k)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Knowledge and rule base ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Knowledge/rule base ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
 
 !(bind! &kb (new-space))
 
-;; Define Σ type (called DPair in Idris)
-(: Σ (-> (: $a Type) (-> $a Type) Type))
+;; The following code is translated into axioms and rules to handled
+;; by the backward chainer.
+;;
+;; ;; Define Σ type (called DPair in Idris)
+;; (: Σ (-> (: $a Type) (-> $a Type) Type))
+;;
+;; ;; Define DPair constructor
+;; (: MkΣ (-> (: $p (-> $a Type)) (: $x $a) ($p $x) (Σ $a $p)))
+;;
+;; ;; Define the even property
+;; (: Even (-> Nat Type))
+;; (: MkEvenZ (Even Z))
+;; (: MkEvenSS (-> (Even $k) (Even (S (S $k)))))
+;;
+;; ;; Define examples of even numbers (0 and 2)
+;; (: (MkΣ Even Z MkEvenZ) (Σ Nat Even))
+;; (: (MkΣ Even (S (S Z)) (MkEvenSS MkEvenZ)) (Σ Nat Even))
+;; (: $prf (Σ Nat Even))
+;;
+;; ;; Define double function
+;; (: double (-> Nat Nat))
+;; (= (double Z) Z)
+;; (= (double (S $k)) (S (S (double $k))))
+;;
+;; ;; Σ access functions
+;; (: Σ.val (-> (Σ $a $p) $a))
+;; (= (Σ.val (MkΣ $prop $val $prf)) $val)
+;; (: Σ.prf (-> (Σ $a $p) $p))
+;; (= (Σ.prf (MkΣ $prop $val $prf)) $prf)
+;;
+;; ;; Define double function, with the guaranty that the output is even
+;; (: doubleΣ (-> Nat (Σ Nat Even)))
+;; (= (doubleΣ Z) (MkΣ Even Z MkEvenZ))
+;; (= (doubleΣ (S $k)) (MkΣ Even
+;;                          (S (S (Σ.val (doubleΣ $k))))
+;;                          (MkEvenSS (Σ.prf (doubleΣ $k)))))
+;;
+;; ;; For all x, (double x) is even
+;; ;; ∀x (Even (double x))
+;; (: double-even-prf (-> (: $x Nat) (Even (double $x))))
+;;
+;; ;; Independent product type (i.e. conjunction)
+;; (: ⊗ (-> Type Type Type))
+;;
+;; ;; Equality
+;; (: === (-> $a $a Type))
+;;
+;; ;; ;; NEXT
+;;
+;; ;; ;; For all x, there exists k such that k = (double x) and k is even
+;; ;; ;; ∀x ∃k k=(double x) ∧ (Even k)
+;; ;; (: double-Σ-even-prf (-> ($x : Nat)
+;; ;;                          (Σ Nat (λ $k (⊗ (=== $k (double $x)) (Even $k))))))
+;;
+;; ;; (: double-Σ-even-prf (-> ($x : Nat) (Σ Nat (EqualDoubleAndEven $x))))
+;; ;; (: EqualDoubleAndEven (-> Nat (-> Nat Type)))
+;; ;; (= ((EqualDoubleAndEven $x) $k) (⊗ (=== $k (double $x)) (Even $k)))
+;; ;; ;; Or, alternatively
+;; ;; ;; (= (EqualDoubleAndEven $x) (λ $k (× (=== $k (double $x)) (Even $k))))
 
-;; Define DPair constructor
-(: MkΣ (-> (: $p (-> $a Type)) (: $x $a) ($p $x) (Σ $a $p)))
+;; Define Nat
+!(add-atom &kb (: Nat Type))
+!(add-atom &kb (: Z Nat))
+!(add-atom &kb (: S (-> (: $x Nat)      ; Premise
+                        Nat)))          ; Conclusion
 
-;; Define the even property
-(: Even (-> Nat Type))
-(: MkEvenZ (Even Z))
-(: MkEvenSS (-> (Even $k) (Even (S (S $k)))))
+;; Define Even
+!(add-atom &kb (: Even (-> (: $x Nat) Type)))
+!(add-atom &kb (: MkEvenZ (Even Z)))
+!(add-atom &kb (: MkEvenSS (-> (: $prf (Even $k))   ; Premise
+                               (Even (S (S $k)))))) ; Conclusion
 
-;; Define examples of even numbers (0 and 2)
-(: (MkΣ Even Z MkEvenZ) (Σ Nat Even))
-(: (MkΣ Even (S (S Z)) (MkEvenSS MkEvenZ)) (Σ Nat Even))
-(: $prf (Σ Nat Even))
+;; Define Σ
+!(add-atom &kb (: MkΣ (-> (: $p (-> (: $_ $a) Type)) ; Premise 1.  We
+                                                     ; need to use (: $_ $a)
+                                                     ; as opposed to just $a
+                                                     ; to be fully consistent with
+                                                     ; The (: PROOF PREMISE)
+                                                     ; notation, till it becomes
+                                                     ; optional.
+                          (-> (: $x $a)               ; Premise 2
+                              (-> (: $prf ($p $x))    ; Premise 3
+                                  (Σ $a $p))))))      ; Conclusion
 
-;; Define double function
-(: double (-> Nat Nat))
-(= (double Z) Z)
-(= (double (S $k)) (S (S (double $k))))
+;; Equality is symmetric
+!(add-atom &kb (: Sym (-> (: $prf (=== $x $y)) ; Premise
+                          (=== $y $x))))       ; Conclusion
 
-(= (fst (MkΣ $p $x $prf)) $x)
-(= (snd (MkΣ $p $x $prf)) $prf)
+;; Equality respects function application
+!(add-atom &kb (: Cong (-> (: $f (-> (: $_ $a) $b))                 ; Premise 1
+                           (-> (: $x $a)                            ; Premise 2
+                               (-> (: $x' $a)                       ; Premise 3
+                                   (-> (: $prf (=== $x $x'))        ; Premise 4
+                                       (=== ($f $x) ($f $x')))))))) ; Conclusion
 
-;; Define double function, with the guaranty that the output is even
-(: doubleΣ (-> Nat (Σ Nat Even)))
-(= (doubleΣ Z) (MkΣ Even Z MkEvenZ))
-(= (doubleΣ (S $k)) (MkΣ Even
-                         (S (S (fst (doubleΣ $k))))
-                         (MkEvenSS (snd (doubleΣ $k)))))
+;; Rule of replacement
+!(add-atom &kb (: Replace (-> (: $prf1 (=== $x $x')) ; Premise 1
+                              (-> (: $prf2 $x)       ; Premise 2
+                                  $x'))))            ; Conclusion
 
-;; For all x, (double x) is even
-;; ∀x (Even (double x))
-(: double-even-prf (-> ($x : Nat) (Even (double $x))))
+;; Define double
+!(add-atom &kb (: double (-> (: $x Nat) Nat)))
+!(add-atom &kb (: double_base (=== (double Z) Z)))
+!(add-atom &kb (: double_rec (-> (: $k Nat)
+                                 (=== (double (S $k)) (S (S (double $k)))))))
 
-;; Independent product type
-(: × (-> Type Type Type))
+;; Composition operator
+!(add-atom &kb (: . (-> (-> $b $c)         ; Premise 1
+                        (-> (-> $a $b)     ; Premise 2
+                            (-> $a $c))))) ; Conclusion
 
-;; Equality
-(: === (-> $a $a Type))
+;;;;;;;;;;;;;;;;;;;;;;
+;; Backward chainer ;;
+;;;;;;;;;;;;;;;;;;;;;;
 
+;; Similar to the backward chainer in NatDTLTest but rules are
+;; optionally represented as dependent products.  Meaning rule
+;; premises may contain type-of relationships.  That is, instead of
+;;
+;; (: RULE_CONSTRUCTOR (-> PREMISE CONCLUSION))
+;;
+;; it must be
+;;
+;; (: RULE_CONSTRUCTOR (-> (: PROOF PREMISE) CONCLUSION))
+;;
+;; Typically PROOF will be a variable, but it can also be a term
+;; containing variables, in which case CONCLUSION may contain that
+;; term, or variables of that term.
+;;
+;; Unlike for the backward chainer in NatDTLTest, the non-dependent
+;; format is supported as well.  EDIT: not yet!
+
+;; Base case
+(: bc (-> $a Nat $a))
+(= (bc (: $prf $ccln) $_)
+   ;; Query the knowledge for a rule or a fact
+   (match &kb (: $prf $ccln) (: $prf $ccln)))
+
+;; Recursive step
+(= (bc (: ($prfabs $prfarg) $ccln) (S $k))
+   (let* (;; Recurse on proof abstraction
+          ((: $prfabs (-> (: $prfarg $prms) $ccln))
+           (bc (: $prfabs (-> (: $prfarg $prms) $ccln)) $k))
+          ;; Recurse on proof argument
+          ((: $prfarg $prms)
+           (bc (: $prfarg $prms) $k)))
+     (: ($prfabs $prfarg) $ccln)))
+
+;;;;;;;;;;;;;;;
+;; Reduction ;;
+;;;;;;;;;;;;;;;
+
+;; Reduction rules to simplify proofs and reduce redundancy
+
+;; TODO: these rules should be proven first.  Then they could
+;; automatically be inserted.
+
+;; Involution of symmetry
+(= (Sym (Sym $prf)) $prf)
+
+;; Composition to application
+(= (((. $g) $f) $x) ($g ($f $x)))
+
+;;;;;;;;;;;
+;; Tests ;;
+;;;;;;;;;;;
+
+;; Synthesize natural numbers
+!(bc (: $prf Nat) (fromNumber 3))
+
+;; Prove that 0 is even
+!(bc (: $prf (Even (fromNumber 0))) (fromNumber 0))
+
+;; Prove that 2 is even
+!(bc (: $prf (Even (fromNumber 2))) (fromNumber 1))
+
+;; Synthesize even numbers
+!(bc (: $prf (Σ Nat Even)) (fromNumber 4))
+
+;; Prove that (double Z) is even.
+;;
+;; A possible proof of that is represented by the following proof tree:
+;;
+;;                                  --(Z)       -----------------(double_base)
+;;                                  Nat         (=== (double Z) Z)
+;; -------------------(Even) --(Z)  --(double)  -----------------(Sym)
+;; (-> (: $_ Nat) Type)      Nat    Nat         (=== Z (double Z))
+;; --------------------------------------------------------------(Cong)  -------(MkEvenZ)
+;;                (=== (Even Z) (Even (double Z)))                       (Even Z)
+;;                --------------------------------------------------------------(Replace)
+;;                                       (Even (double Z))
+;;
+;; Or in MeTTa format:
+;;
+;; (: ((Replace ((((Cong Even) Z) (double Z)) (Sym double_base))) MkEvenZ) (Even (double Z)))
+!(bc (: $prf (Even (double Z))) (fromNumber 6))
+
+;; Prove that if (double k) is even, then (double (S k)) is even
+;;
+;; A possible proof of that is represented by the following proof tree:
+;;
 ;; NEXT
+;;
+;;    -----------------($prfek)
+;;    (Even (double $k))
+;; -------------------------(MkEvenSS)  ------------------------------------------------------(Cong)
+;; (Even (S (S (double $k))))           (=== (Even (double (S $k))) (Even (S (S (double $k)))))
+;; -------------------------------------------------------------------------------------------(Replace)
+;;                                  (Even (double (S $k)))
+;;
+;; Or in MeTTa format:
+;;
+;; (λ (: $k Nat) (λ (: $e (Even (double $k)) (Replace (MkEvenSS $e) (Cong ...)))))
+!(bc (: $prf (-> (: $k Nat) (-> (: $e (Even (double $k))) (Even (double (S $k)))))) (fromNumber 1))
 
-;; For all x, there exists k such that k = (double x) and k is even
-;; ∀x ∃k k=(double x) ∧ (Even k)
-(: double-Σ-even-prf (-> ($x : Nat)
-                         (Σ Nat (λ $k (× (=== $k (double $x)) (Even $k))))))
-
-(: double-Σ-even-prf (-> ($x : Nat) (Σ Nat (EqualDoubleAndEven $x))))
-(: EqualDoubleAndEven (-> Nat (-> Nat Type)))
-(= ((EqualDoubleAndEven $x) $k) (× (=== $k (double $x)) (Even $k)))
-;; Or, alternatively
-;; (= (EqualDoubleAndEven $x) (λ $k (× (=== $k (double $x)) (Even $k))))
+;; ;; ;; Prove that for all x, (double x) is even
+;; ;; !(bc (: $prf (-> (: $x Nat) (Even (double $x)))) (fromNumber 3))
