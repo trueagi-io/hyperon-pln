@@ -79,15 +79,15 @@
 ;; or by querying the kb.  Thanks to non-determinism, terminating the
 ;; branch does not terminate alternative branches.
 (= (bc $absupd $argupd $tmnpred $ctx (: $prf $ccln))
-   ;; Pre-application termination conditional
+   ;; Base case termination conditional
    (if ($tmnpred (: $prf $ccln) $ctx)
-       ;; Terminate by pruning the branch
+       ;; Terminate by pruning
        (empty)
        ;; Continue by querying the kb
        (match &kb (: $prf $ccln)
-              ;; Post-application termination conditional
+              ;; Match termination conditional
               (if ($tmnpred (: $prf $ccln) $ctx)
-                  ;; Terminate by pruning the branch
+                  ;; Terminate by pruning
                   (empty)
                   ;; Continue by returning the queried result
                   (: $prf $ccln)))))
@@ -95,9 +95,9 @@
 ;; Recursive step.  Recursion only happens if the termination
 ;; condition is false.  Otherwise, the branch is pruned.
 (= (bc $absupd $argupd $tmnpred $ctx (: ($prfabs $prfarg) $ccln))
-   ;; Pre-application termination conditional
+   ;; Recursive step termination conditional
    (if ($tmnpred (: ($prfabs $prfarg) $ccln) $ctx)
-       ;; Terminate by pruning the branch
+       ;; Terminate by pruning
        (empty)
        ;; Continue by recursing
        (let* (;; Recurse on proof abstraction
@@ -116,12 +116,8 @@
                    ($argupd (: ($prfabs $prfarg) $ccln) $ctx)
                    ;; Proof argument query
                    (: $prfarg $prms))))
-         ;; Post-application termination conditional
-         (if ($tmnpred (: ($prfabs $prfarg) $ccln) $ctx)
-             ;; Terminate by pruning the branch
-             (empty)
-             ;; Continue by returning result
-             (: ($prfabs $prfarg) $ccln)))))
+         ;; Output result
+         (: ($prfabs $prfarg) $ccln))))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Common functions ;;
@@ -351,6 +347,6 @@
 ;; are both forbidden for that query.
 !(assertEqualToResult
   (bc td-updater td-updater td-terminator
-      (MkTD (-> A C) (fromNumber 0))
+      (MkTD (-> A C) (fromNumber 4))
       (: $prf (-> A C)))
   ())
