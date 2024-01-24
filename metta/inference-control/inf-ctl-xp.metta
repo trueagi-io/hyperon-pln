@@ -46,12 +46,12 @@
 ;;   chainer on the proof argument.
 ;;
 ;; * Termination predicate.  Given the current query and context,
-;;   provide the condition of a conditional wrapping the base case and
-;;   recursive step functions (pre-application), as well its results
-;;   (post-application).  Terminating amounts to pruning the reduction
-;;   (as in evaluation) branches.  For now there is only one
-;;   termination predicate for both pre and post application, in the
-;;   future we may want to separate it in two.
+;;   provide the condition predicate of a conditional wrapping the
+;;   base case and recursive step functions, as well its match
+;;   results.  Terminating amounts to pruning the reduction (as in
+;;   evaluation) branches.  For now there is only one termination
+;;   predicate for all types of intersections, in the future we may
+;;   want to split it.
 ;;
 ;; * Query: a metta term of the form (: <PROOF> <THEOREM>) where
 ;;   <PROOF> and <THEOREM> may contain free variables that may be
@@ -62,12 +62,12 @@
 ;;
 ;; The choice of the arguments of the context updaters and the
 ;; termination predicate is justified as follows.  Context updaters
-;; take first the query, which can be viewed an updater modulator,
-;; which then takes the actual context to the return updated one.  An
+;; take first the query, which can be viewed as an updater modulator,
+;; which then takes the actual context to return the updated one.  An
 ;; alternative would have been to construct a contextualized query,
-;; and update that contextualized query instead.  However, we do not
-;; do that to guaranty that the user-programmed inference control does
-;; not interfere with the correctness of the chainer.
+;; and update that contextualized query instead.  However, that
+;; removes the guaranty that the user-programmed inference control
+;; does not interfere with the correctness of the chainer.
 (: bc (-> (-> $a $ct $ct)      ; Context abstraction updater
           (-> $a $ct $ct)      ; Context argument updater
           (-> $a $ct Bool)     ; Termination predicate
