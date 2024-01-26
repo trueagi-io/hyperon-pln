@@ -175,35 +175,30 @@
 ;;;;;;;;;;;;
 
 ;; ;; Prove that Z is left identity of plus
-;; !(assertEqual
-;;   (bc (: $prf (=== ((plus Z) $y) $y)) Z)
-;;   (: Refl (=== $y $y)))
+;; ;; !(assertEqual
+;;   !(bc (: $prf (=== ((plus Z) $y) $y)) Z)
+;;   ;; (: Refl (=== $y $y)))
 
-;; Prove that any natural equals to itself
-;; !(assertEqual
-;; NEXT: this is likely a bug with the unifier
-!(bc (: $prfabs248 (-> (: $prfarg249 $prms252)
-                       (-> (: $prfarg136 $prms139)
-                           (-> (: $y Nat) (=== $y $y))))) Z)
-  ;; !(bc (: $prf (-> (: $y Nat) (=== $y $y))) (fromNumber 2))
-  ;; !(bc (: ((lambda $y) $prf) (-> (: $y Nat) (=== $y $y))) (fromNumber 2))
-  ;; (: ((lambda $y) Refl) (-> (: $y Nat) (=== $y $y))))
+;; ;; Prove that any natural equals to itself
+;; ;; !(assertEqual
+;;   !(bc (: $prf (-> (: $y Nat) (=== $y $y))) (fromNumber 2))
+;;   ;; (: ((lambda $y) Refl) (-> (: $y Nat) (=== $y $y))))
 
-;; ;; Prove that (=== (=== (plus Z Z) Z) (ZRID_plus Z)).
-;; ;;
-;; ;; The following proof tree is expected to prove that:
-;; ;;
-;; ;; ---------------------------------------(plusRightIdProp)
-;; ;; (=== (plusRightId Z) (=== (plus Z Z) Z))
-;; ;; ---------------------------------------(Sym)
-;; ;; (=== (=== (plus Z Z) Z) (plusRightId Z))
-;; ;;
-;; ;; on in MeTTa format:
-;; ;;
-;; ;; (Sym plusRightIdProp)
+;; Prove that (=== (=== (plus Z Z) Z) (ZRID_plus Z)).
+;;
+;; The following proof tree is expected to prove that:
+;;
+;; ---------------------------------------(plusRightIdProp)
+;; (=== (plusRightId Z) (=== (plus Z Z) Z))
+;; ---------------------------------------(Sym)
+;; (=== (=== (plus Z Z) Z) (plusRightId Z))
+;;
+;; Or in MeTTa format:
+;;
+;; (Sym plusRightIdProp)
 ;; !(assertEqual
-;;   (bc (: $prf (=== (=== (plus Z Z) Z) (plusRightId Z))) (fromNumber 2))
-;;   (: (Sym plusRightIdProp) (=== (=== (plus Z Z) Z) (plusRightId Z))))
+  !(bc (: $prf (=== (=== ((plus Z) Z) Z) (plusRightId Z))) (fromNumber 2))
+  ;; (: (Sym plusRightIdProp) (=== (=== (plus Z Z) Z) (plusRightId Z))))
 
 ;; ;; Prove that (plusRightId Z) holds.  Meaning that Z is the right
 ;; ;; identity of plus for Z.
