@@ -99,6 +99,9 @@
 !(add-atom &kb (: S (-> (: $x Nat)      ; Premise
                         Nat)))          ; Conclusion
 
+;; NEXT: deal with asummptions like (: $k Nat)
+;; !(add-atom &kb (: $k
+
 ;; Define Even
 !(add-atom &kb (: Even (-> (: $x Nat) Type)))
 !(add-atom &kb (: MkEvenZ (Even Z)))
@@ -133,6 +136,11 @@
                               (-> (: $prf2 $x)       ; Premise 2
                                   $x'))))            ; Conclusion
 
+;; Modus Ponens (application)
+!(add-atom &kb (: ModusPonens (-> (-> $a $b) ; Premise 1
+                                  (-> $a     ; Premise 2
+                                      $b)))) ; Conclusion
+
 ;; Define double
 !(add-atom &kb (: double (-> (: $x Nat) Nat)))
 !(add-atom &kb (: double_base (=== (double Z) Z)))
@@ -143,6 +151,10 @@
 !(add-atom &kb (: . (-> (-> $b $c)         ; Premise 1
                         (-> (-> $a $b)     ; Premise 2
                             (-> $a $c))))) ; Conclusion
+
+;; ;; Lambda abstraction
+;; ;; NEXT
+;; !(add-atom &kb (: λ (-> )))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Backward chainer ;;
@@ -200,53 +212,63 @@
 ;; Tests ;;
 ;;;;;;;;;;;
 
-;; Synthesize natural numbers
-!(bc (: $prf Nat) (fromNumber 3))
+;; ;; Synthesize natural numbers
+;; !(bc (: $prf Nat) (fromNumber 3))
 
-;; Prove that 0 is even
-!(bc (: $prf (Even (fromNumber 0))) (fromNumber 0))
+;; ;; Prove that 0 is even
+;; !(bc (: $prf (Even (fromNumber 0))) (fromNumber 0))
 
-;; Prove that 2 is even
-!(bc (: $prf (Even (fromNumber 2))) (fromNumber 1))
+;; ;; Prove that 2 is even
+;; !(bc (: $prf (Even (fromNumber 2))) (fromNumber 1))
 
-;; Synthesize even numbers
-!(bc (: $prf (Σ Nat Even)) (fromNumber 4))
+;; ;; Synthesize even numbers
+;; !(bc (: $prf (Σ Nat Even)) (fromNumber 4))
 
-;; Prove that (double Z) is even.
-;;
-;; A possible proof of that is represented by the following proof tree:
-;;
-;;                                  --(Z)       -----------------(double_base)
-;;                                  Nat         (=== (double Z) Z)
-;; -------------------(Even) --(Z)  --(double)  -----------------(Sym)
-;; (-> (: $_ Nat) Type)      Nat    Nat         (=== Z (double Z))
-;; --------------------------------------------------------------(Cong)  -------(MkEvenZ)
-;;                (=== (Even Z) (Even (double Z)))                       (Even Z)
-;;                --------------------------------------------------------------(Replace)
-;;                                       (Even (double Z))
-;;
-;; Or in MeTTa format:
-;;
-;; (: ((Replace ((((Cong Even) Z) (double Z)) (Sym double_base))) MkEvenZ) (Even (double Z)))
-!(bc (: $prf (Even (double Z))) (fromNumber 6))
+;; ;; Prove that (double Z) is even.
+;; ;;
+;; ;; A possible proof of that is represented by the following proof tree:
+;; ;;
+;; ;;                                  --(Z)       -----------------(double_base)
+;; ;;                                  Nat         (=== (double Z) Z)
+;; ;; -------------------(Even) --(Z)  --(double)  -----------------(Sym)
+;; ;; (-> (: $_ Nat) Type)      Nat    Nat         (=== Z (double Z))
+;; ;; --------------------------------------------------------------(Cong)  -------(MkEvenZ)
+;; ;;                (=== (Even Z) (Even (double Z)))                       (Even Z)
+;; ;;                --------------------------------------------------------------(Replace)
+;; ;;                                       (Even (double Z))
+;; ;;
+;; ;; Or in MeTTa format:
+;; ;;
+;; ;; (: ((Replace ((((Cong Even) Z) (double Z)) (Sym double_base))) MkEvenZ) (Even (double Z)))
+;; !(bc (: $prf (Even (double Z))) (fromNumber 6))
 
 ;; Prove that if (double k) is even, then (double (S k)) is even
 ;;
 ;; A possible proof of that is represented by the following proof tree:
 ;;
-;; NEXT
+;; NEXT: test subproofs
 ;;
-;;    -----------------($prfek)
-;;    (Even (double $k))
-;; -------------------------(MkEvenSS)  ------------------------------------------------------(Cong)
-;; (Even (S (S (double $k))))           (=== (Even (double (S $k))) (Even (S (S (double $k)))))
-;; -------------------------------------------------------------------------------------------(Replace)
-;;                                  (Even (double (S $k)))
+;;                                                                                                                                                                                         --------------------------------------------------------(double_rec)  ---------($k)
+;;                                                                                                                                                                                         (-> (: $k Nat) (=== (double (S $k)) (S (S (double $k)))))             (: $k Nat)
+;;                                                                        -------------------(Even)  ----------------------(double (S $k))  --------------------------(S (S (double $k)))  -------------------------------------------------------------------------------(ModusPonens)
+;;                                                                        (-> (: $_ Nat) Type)       (: (double (S $k)) Nat)                (: (S (S (double $k))) Nat)                    (=== (double (S $k)) (S (S (double $k))))
+;;                                                 -----------------($e)  ---------------------------------------------------------------------------------------------------------------------------------------------------------(Cong)
+;;                                                 (Even (double $k))                                           (=== (Even (double (S $k))) (Even (S (S (double $k)))))
+;;                                                 -------------------------(MkEvenSS)                          ------------------------------------------------------(Sym)
+;;                                                 (Even (S (S (double $k))))                                   (=== (Even (S (S (double $k)))) (Even (double (S $k))))
+;;                    -----------------($e)        -------------------------------------------------------------------------------------------------------------------(Replace)
+;;                    (Even (double $k))           (Even (double (S $k)))
+;; --($k)             --------------------------------------------------(λ)
+;; Nat                (-> (: $e (Even (double $k))) (Even (double (S $k))
+;; ---------------------------------------------------------------------(λ)
+;;  (-> (: $k Nat) (-> (: $e (Even (double $k))) (Even (double (S $k)))
 ;;
 ;; Or in MeTTa format:
 ;;
-;; (λ (: $k Nat) (λ (: $e (Even (double $k)) (Replace (MkEvenSS $e) (Cong ...)))))
-!(bc (: $prf (-> (: $k Nat) (-> (: $e (Even (double $k))) (Even (double (S $k)))))) (fromNumber 1))
+;; (λ (: $k Nat) (λ (: $e (Even (double $k))) (Replace (MkEvenSS $e) (Sym (Cong Even (double (S $k)) (S (S (double $k))) (ModusPonens double_rec $k))))))
+;;
+;; NEXT: is it possible to do better by using composition?  ANSWER: probably with composing double_rec, Trans, Sym and Cong
+!(bc (: $prf (-> (: $k Nat) (-> (: $e (Even (double $k))) (Even (double (S $k)))))) (fromNumber 7))
 
 ;; ;; ;; Prove that for all x, (double x) is even
 ;; ;; !(bc (: $prf (-> (: $x Nat) (Even (double $x)))) (fromNumber 3))
