@@ -120,6 +120,11 @@
                               (-> (: $prf ($p $x))    ; Premise 3
                                   (Σ $a $p))))))      ; Conclusion
 
+;; Equality is transitive
+!(add-atom &kb (: Trans (-> (: $prf1 (=== $x $y))     ; Premise 1
+                            (-> (: $prf2 (=== $y $z)) ; Premise 2
+                                (=== $x $z)))))       ; Conclusion
+
 ;; Equality is symmetric
 !(add-atom &kb (: Sym (-> (: $prf (=== $x $y)) ; Premise
                           (=== $y $x))))       ; Conclusion
@@ -268,7 +273,15 @@
 ;; (λ (: $k Nat) (λ (: $e (Even (double $k))) (Replace (MkEvenSS $e) (Sym (Cong Even (double (S $k)) (S (S (double $k))) (ModusPonens double_rec $k))))))
 ;;
 ;; NEXT: is it possible to do better by using composition?  ANSWER: probably with composing double_rec, Trans, Sym and Cong
-!(bc (: $prf (-> (: $k Nat) (-> (: $e (Even (double $k))) (Even (double (S $k)))))) (fromNumber 7))
+
+;; NEXT: this fails with the following error
+;;
+;; thread '<unnamed>' panicked at /home/nilg/Work/TrueAGI/hyperon-experimental/lib/src/atom/matcher.rs:199:14:
+;; Unexpected state
+;; note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+;; fatal runtime error: Rust panics must be rethrown
+;; Aborted (core dumped)
+!(bc (: $prf (-> (: $k Nat) (-> (: $e (Even (double $k))) (Even (double (S $k)))))) (fromNumber 8))
 
 ;; ;; ;; Prove that for all x, (double x) is even
 ;; ;; !(bc (: $prf (-> (: $x Nat) (Even (double $x)))) (fromNumber 3))
