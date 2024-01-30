@@ -116,9 +116,9 @@
                                                      ; The (: PROOF PREMISE)
                                                      ; notation, till it becomes
                                                      ; optional.
-                          (-> (: $x $a)               ; Premise 2
-                              (-> (: $prf ($p $x))    ; Premise 3
-                                  (Σ $a $p))))))      ; Conclusion
+                          (-> (: $x $a)              ; Premise 2
+                              (-> (: $prf ($p $x))   ; Premise 3
+                                  (Σ $a $p))))))     ; Conclusion
 
 ;; Equality is transitive
 !(add-atom &kb (: Trans (-> (: $prf1 (=== $x $y))     ; Premise 1
@@ -141,25 +141,35 @@
                               (-> (: $prf2 $x)       ; Premise 2
                                   $x'))))            ; Conclusion
 
-;; Modus Ponens (application)
-!(add-atom &kb (: ModusPonens (-> (-> $a $b) ; Premise 1
-                                  (-> $a     ; Premise 2
-                                      $b)))) ; Conclusion
+;; ;; Modus Ponens (application)
+;; !(add-atom &kb (: ModusPonens (-> (: $f (-> (: $x $a) $b)) ; Premise 1
+;;                                   (-> (: $x $a)            ; Premise 2
+;;                                       $b))))               ; Conclusion
 
 ;; Define double
-!(add-atom &kb (: double (-> (: $x Nat) Nat)))
+!(add-atom &kb (: double (-> (: $k Nat) Nat)))
 !(add-atom &kb (: double_base (=== (double Z) Z)))
 !(add-atom &kb (: double_rec (-> (: $k Nat)
                                  (=== (double (S $k)) (S (S (double $k)))))))
 
 ;; Composition operator
-!(add-atom &kb (: . (-> (-> $b $c)         ; Premise 1
-                        (-> (-> $a $b)     ; Premise 2
-                            (-> $a $c))))) ; Conclusion
+!(add-atom &kb (: . (-> (: $g (-> (: $y $b) $c))     ; Premise 1
+                        (-> (: $f (-> (: $x $a) $b)) ; Premise 2
+                            (-> (: ($x $a) $c))))))  ; Conclusion
+
+;; Flip operator
+!(add-atom &kb (: flip (-> (: $f (-> (: $x $a) (-> (: $y $b) $c))) ; Premise
+                           (-> (: $y $b) (-> (: $x $a) $c)))))     ; Conclusion
+
+;; ;; Anything can serve as a variable.  Even a closed term, it simply
+;; ;; will not unify with any other closed term than itself, which makes
+;; ;; for a very specific, yet valid, abstraction.
+;; !(add-atom &kb (: $x Variable))
 
 ;; ;; Lambda abstraction
-;; ;; NEXT
-;; !(add-atom &kb (: λ (-> )))
+;; !(add-atom &kb (: λ (-> (: $x Variable)           ; Premise 1
+;;                         (-> (: $y $b)             ; Premise 2
+;;                             (-> (: $x $a) $b))))) ; Conclusion
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Backward chainer ;;
@@ -208,10 +218,13 @@
 ;; automatically be inserted.
 
 ;; Involution of symmetry
-(= (Sym (Sym $prf)) $prf)
+(= (Sym (Sym $f)) $f)
 
 ;; Composition to application
 (= (((. $g) $f) $x) ($g ($f $x)))
+
+;; Involution of flip
+(= (flip (flip $f)) $f)
 
 ;;;;;;;;;;;
 ;; Tests ;;
@@ -247,6 +260,105 @@
 ;; ;; (: ((Replace ((((Cong Even) Z) (double Z)) (Sym double_base))) MkEvenZ) (Even (double Z)))
 ;; !(bc (: $prf (Even (double Z))) (fromNumber 6))
 
+;; ;; Prove
+;; ;;
+;; ;; (-> (: Even (-> (: $_ Nat) Type))
+;; ;;     (-> (: (double (S $k)) Nat)
+;; ;;         (-> (: (S (S (double $k))) Nat)
+;; ;;             (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
+;; ;;                 (=== (Even (double (S $k))) (Even (S (S (double $k)))))))))
+;; ;;
+;; ;; which should merely be Cong.
+;; !(assertEqual
+;;   (bc (: $prf (-> (: Even (-> (: $_ Nat) Type))
+;;                   (-> (: (double (S $k)) Nat)
+;;                       (-> (: (S (S (double $k))) Nat)
+;;                           (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
+;;                               (=== (Even (double (S $k))) (Even (S (S (double $k))))))))))
+;;       (fromNumber 0))
+;;   (: Cong (-> (: Even (-> (: $_ Nat) Type))
+;;               (-> (: (double (S $k)) Nat)
+;;                   (-> (: (S (S (double $k))) Nat)
+;;                       (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
+;;                           (=== (Even (double (S $k))) (Even (S (S (double $k)))))))))))
+
+;; ;; Prove
+;; ;;
+;; ;; (-> (: (double (S $k)) Nat)
+;; ;;     (-> (: (S (S (double $k))) Nat)
+;; ;;         (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
+;; ;;             (=== (Even (double (S $k))) (Even (S (S (double $k))))))))
+;; ;;
+;; ;; which should be (Cong Even).
+;; !(assertEqual
+;;   (bc (: $prf (-> (: (double (S $k)) Nat)
+;;                   (-> (: (S (S (double $k))) Nat)
+;;                       (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
+;;                           (=== (Even (double (S $k))) (Even (S (S (double $k)))))))))
+;;       (fromNumber 1))
+;;   (: (Cong Even) (-> (: (double (S $k)) Nat)
+;;                      (-> (: (S (S (double $k))) Nat)
+;;                          (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
+;;                              (=== (Even (double (S $k))) (Even (S (S (double $k))))))))))
+
+;; Prove NEXT
+;;
+;; (-> (: $k Nat)
+;;     (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
+;;         (=== (Even (double (S $k))) (Even (S (S (double $k)))))))
+;;
+;; which could be
+;;
+;; (λ $k (((Cong Even) (double (S $k))) (S (S (double $k)))))
+;;
+;; or something not involving λ like
+;;
+;; (((Cong Even) (double (S $k))) (S (S (double $k)))) double_rec
+;;
+;; (λ $k (f (double_rec $k)))
+;;
+;; double_rec
+;;
+;; though this one is wrong, it should be corrected, maybe using flip,
+;; composition or such.
+  !(bc (: $prf (-> (: $k Nat)
+                   (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
+                       (=== (Even (double (S $k))) (Even (S (S (double $k))))))))
+       (fromNumber 7))
+
+;; ;; Prove
+;; ;;
+;; ;; (-> (: $k Nat) (-> (: Even (-> (: $_ Nat) Type)) (-> (: (double (S $k)) Nat) (-> (: (S (S (double $k))) Nat) (-> (: $eq (=== (double (S $k)) (S (S (double $k))))) (=== (Even (double (S $k))) (Even (S (S (double $k))))))))))
+;; ;;
+;; ;; (λ $k Cong)
+;; !(bc (: $prf (-> (: $k Nat)
+;;                  (-> (: Even (-> (: $_ Nat) Type))
+;;                      (-> (: (double (S $k)) Nat)
+;;                          (-> (: (S (S (double $k))) Nat)
+;;                              (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
+;;                                  (=== (Even (double (S $k))) (Even (S (S (double $k)))))))))))
+;;      (fromNumber 5))
+
+;; ;; Prove that (-> (: $k Nat) (=== (Even (double (S $k))) (Even (S (S (double $k))))))
+;; ;;
+;; ;; A possible proof tree would be
+;; ;;
+;; ;;
+;; ;; 
+;; ;; ----------------------------------------------------------------------------------------------
+;; ;; (-> (: $k Nat) (=== (Even (double (S $k))) (Even (S (S (double $k))))))
+;; !(bc (: $prf (-> (: $k Nat) (=== (Even (double (S $k))) (Even (S (S (double $k))))))) (fromNumber 7))
+
+
+
+;; ;; Prove that (=== (Even (S (S (double $k)))) (Even (double (S $k))))
+;; ;;
+;; ;; (same as above but Sym)
+;; ;;
+;; !(bc (: $prf (=== (Even (S (S (double $k)))) (Even (double (S $k))))) (fromNumber 5))
+;; !(bc (: $prf (-> (: $k Nat) (=== (Even (S (S (double $k)))) (Even (double (S $k))))) (fromNumber 5)))
+
+
 ;; Prove that if (double k) is even, then (double (S k)) is even
 ;;
 ;; A possible proof of that is represented by the following proof tree:
@@ -274,14 +386,14 @@
 ;;
 ;; NEXT: is it possible to do better by using composition?  ANSWER: probably with composing double_rec, Trans, Sym and Cong
 
-;; NEXT: this fails with the following error
-;;
-;; thread '<unnamed>' panicked at /home/nilg/Work/TrueAGI/hyperon-experimental/lib/src/atom/matcher.rs:199:14:
-;; Unexpected state
-;; note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-;; fatal runtime error: Rust panics must be rethrown
-;; Aborted (core dumped)
-!(bc (: $prf (-> (: $k Nat) (-> (: $e (Even (double $k))) (Even (double (S $k)))))) (fromNumber 8))
+;; ;; NEXT: this fails with the following error
+;; ;;
+;; ;; thread '<unnamed>' panicked at /home/nilg/Work/TrueAGI/hyperon-experimental/lib/src/atom/matcher.rs:199:14:
+;; ;; Unexpected state
+;; ;; note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+;; ;; fatal runtime error: Rust panics must be rethrown
+;; ;; Aborted (core dumped)
+;; !(bc (: $prf (-> (: $k Nat) (-> (: $e (Even (double $k))) (Even (double (S $k)))))) (fromNumber 8))
 
 ;; ;; ;; Prove that for all x, (double x) is even
 ;; ;; !(bc (: $prf (-> (: $x Nat) (Even (double $x)))) (fromNumber 3))
