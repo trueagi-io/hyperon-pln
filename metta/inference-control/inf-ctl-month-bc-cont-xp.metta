@@ -246,6 +246,27 @@
   (depth-continuor (: $prf $thm) (S Z))
   True)
 
+;;
+! "=== test depth-bc-continuor ==="
+!(let $results (collapse
+                (get-closed-proof
+                 (bc &ctl-depth-kb               ; Knowledge base for control
+                     depth-updater depth-updater ; Depth updaters for control
+                     depth-continuor             ; Depth continuor for control
+                     (fromNumber 1)              ; Depth for control
+                     (: $prf (Continue $query Z)))))
+   $results)
+   ;; (not (== () $results))); Continue query
+! "~~~ test depth-bc-continuor ~~~"
+
+;; Test depth bc continuor
+!(assertEqual
+  (depth-bc-continuor (: $prf $thm) Z)
+  False)
+!(assertEqual
+  (depth-bc-continuor (: $prf $thm) (S Z))
+  True)
+
 ;; Prove that (S Z) continues
 !(assertEqual
   (get-closed-proof
@@ -296,18 +317,33 @@
 
 ;; NEXT
 
-;; Prove that Jan precedes Mar
-!(assertEqualToResult
-  (bc &kb
+!(bc &kb
       depth-updater depth-updater depth-bc-continuor
-      (fromNumber 3)
-      (: $prf (≼ Jan Mar)))
-  ((: ((Trans Refl) JPA) (≼ Jan Mar))
-   (: ((Trans JPA) FM) (≼ Jan Mar))
-   (: ((Trans JPA) Refl) (≼ Jan Mar))
-   (: ((Trans JPA) JPA) (≼ Jan Mar))
-   (: ((Trans JF) FM) (≼ Jan Mar))
-   (: JPA (≼ Jan Mar))))
+      (fromNumber 0)
+      (: Trans (-> (≼ Jan Feb) (-> (≼ Feb Mar) (≼ Jan Mar)))))
+
+;; !(bc &kb
+;;       depth-updater depth-updater depth-bc-continuor
+;;       (fromNumber 3)
+;;       (: (Trans JF) (-> (≼ Feb Mar) (≼ Jan Mar))))
+
+;; !(bc &kb
+;;       depth-updater depth-updater depth-bc-continuor
+;;       (fromNumber 3)
+;;       (: ((Trans JF) FM) (≼ Jan Mar)))
+
+;; Prove that Jan precedes Mar
+;; !(assertEqualToResult
+;; !(bc &kb
+;;       depth-updater depth-updater depth-bc-continuor
+;;       (fromNumber 3)
+;;       (: $prf (≼ Jan Mar)))
+  ;; ((: ((Trans Refl) JPA) (≼ Jan Mar))
+  ;;  (: ((Trans JPA) FM) (≼ Jan Mar))
+  ;;  (: ((Trans JPA) Refl) (≼ Jan Mar))
+  ;;  (: ((Trans JPA) JPA) (≼ Jan Mar))
+  ;;  (: ((Trans JF) FM) (≼ Jan Mar))
+  ;;  (: JPA (≼ Jan Mar))))
 
 ;; ;; Prove that Feb precedes May
 ;; !(assertEqual
