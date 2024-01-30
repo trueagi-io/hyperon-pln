@@ -301,6 +301,10 @@
 ;;                          (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
 ;;                              (=== (Even (double (S $k))) (Even (S (S (double $k))))))))))
 
+;; NEXT: prove (-> (: $k Nat) (: (double (S $k)) Nat))
+
+;; NEXT: prove (-> (: $k Nat) (: (S (S (double $k))) Nat))
+
 ;; Prove NEXT
 ;;
 ;; (-> (: $k Nat)
