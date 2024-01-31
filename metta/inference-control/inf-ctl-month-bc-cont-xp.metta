@@ -161,20 +161,13 @@
 (= (fromNat Z) 0)
 (= (fromNat (S $k)) (+ 1 (fromNat $k)))
 
-;; Return True iff $x is a variable
-(: is-variable (-> Atom Bool))
-(= (is-variable $x)
-   (case (collapse (superpose (let $x 1 True)))
-     ((True True)
-      (%void% False))))
-
 ;; Return True iff $x is closed
 (: is-closed (-> Atom Bool))
-(= (is-closed $x) (if (is-variable $x)
-                      False
-                      (case $x
-                        ((($abs $arg) (and (is-closed $abs) (is-closed $arg)))
-                         ($x True)))))
+(= (is-closed $x)
+   (case ($x (get-metatype $x))
+     ((($_ Variable) False)
+      ((($abs $arg) Expression) (and (is-closed $abs) (is-closed $arg)))
+      ($_ True))))
 
 ;; Return the proof of a query iff it is closed.  Otherwise prune the branch.
 (: get-closed-proof (-> $a $a))
@@ -246,7 +239,7 @@
   (depth-continuor (: $prf $thm) (S Z))
   True)
 
-;;
+;; NEXT: problem comes the NoValidAlternatives Error
 ! "=== test depth-bc-continuor ==="
 !(let $results (collapse
                 (get-closed-proof
