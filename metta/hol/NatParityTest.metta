@@ -96,8 +96,7 @@
 ;; Define Nat
 !(add-atom &kb (: Nat Type))
 !(add-atom &kb (: Z Nat))
-!(add-atom &kb (: S (-> (: $x Nat)      ; Premise
-                        Nat)))          ; Conclusion
+!(add-atom &kb (: S (-> (: $x Nat) Nat)))
 
 ;; NEXT: deal with asummptions like (: $k Nat)
 ;; !(add-atom &kb (: $k
@@ -155,7 +154,7 @@
 ;; Composition operator
 !(add-atom &kb (: . (-> (: $g (-> (: $y $b) $c))     ; Premise 1
                         (-> (: $f (-> (: $x $a) $b)) ; Premise 2
-                            (-> (: ($x $a) $c))))))  ; Conclusion
+                            (-> (: $x $a) $c)))))    ; Conclusion
 
 ;; Flip operator
 !(add-atom &kb (: flip (-> (: $f (-> (: $x $a) (-> (: $y $b) $c))) ; Premise
@@ -233,6 +232,11 @@
 ;; ;; Synthesize natural numbers
 ;; !(bc (: $prf Nat) (fromNumber 3))
 
+;; Synthesize unary functions over natural numbers, that is
+;; prove (-> (: $k Nat) Nat).
+;; NEXT: explore lambda abstraction once the PANIC bug is fixed
+!(bc (: $prf (-> (: $k Nat) Nat)) (fromNumber 3))
+
 ;; ;; Prove that 0 is even
 ;; !(bc (: $prf (Even (fromNumber 0))) (fromNumber 0))
 
@@ -301,34 +305,30 @@
 ;;                          (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
 ;;                              (=== (Even (double (S $k))) (Even (S (S (double $k))))))))))
 
-;; NEXT: prove (-> (: $k Nat) (: (double (S $k)) Nat))
-
-;; NEXT: prove (-> (: $k Nat) (: (S (S (double $k))) Nat))
-
-;; Prove NEXT
-;;
-;; (-> (: $k Nat)
-;;     (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
-;;         (=== (Even (double (S $k))) (Even (S (S (double $k)))))))
-;;
-;; which could be
-;;
-;; (λ $k (((Cong Even) (double (S $k))) (S (S (double $k)))))
-;;
-;; or something not involving λ like
-;;
-;; (((Cong Even) (double (S $k))) (S (S (double $k)))) double_rec
-;;
-;; (λ $k (f (double_rec $k)))
-;;
-;; double_rec
-;;
-;; though this one is wrong, it should be corrected, maybe using flip,
-;; composition or such.
-  !(bc (: $prf (-> (: $k Nat)
-                   (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
-                       (=== (Even (double (S $k))) (Even (S (S (double $k))))))))
-       (fromNumber 7))
+;; ;; Prove NEXT
+;; ;;
+;; ;; (-> (: $k Nat)
+;; ;;     (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
+;; ;;         (=== (Even (double (S $k))) (Even (S (S (double $k)))))))
+;; ;;
+;; ;; which could be
+;; ;;
+;; ;; (λ $k (((Cong Even) (double (S $k))) (S (S (double $k)))))
+;; ;;
+;; ;; or something not involving λ like
+;; ;;
+;; ;; (((Cong Even) (double (S $k))) (S (S (double $k)))) double_rec
+;; ;;
+;; ;; (λ $k (f (double_rec $k)))
+;; ;;
+;; ;; double_rec
+;; ;;
+;; ;; though this one is wrong, it should be corrected, maybe using flip,
+;; ;; composition or such.
+;;   !(bc (: $prf (-> (: $k Nat)
+;;                    (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
+;;                        (=== (Even (double (S $k))) (Even (S (S (double $k))))))))
+;;        (fromNumber 7))
 
 ;; ;; Prove
 ;; ;;
