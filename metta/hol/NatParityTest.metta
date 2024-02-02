@@ -98,9 +98,6 @@
 !(add-atom &kb (: Z Nat))
 !(add-atom &kb (: S (-> (: $x Nat) Nat)))
 
-;; NEXT: deal with asummptions like (: $k Nat)
-;; !(add-atom &kb (: $k
-
 ;; Define Even
 !(add-atom &kb (: Even (-> (: $x Nat) Type)))
 !(add-atom &kb (: MkEvenZ (Even Z)))
