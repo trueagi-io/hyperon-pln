@@ -157,15 +157,19 @@
 !(add-atom &kb (: flip (-> (: $f (-> (: $x $a) (-> (: $y $b) $c))) ; Premise
                            (-> (: $y $b) (-> (: $x $a) $c)))))     ; Conclusion
 
-;; ;; Anything can serve as a variable.  Even a closed term, it simply
-;; ;; will not unify with any other closed term than itself, which makes
-;; ;; for a very specific, yet valid, abstraction.
-;; !(add-atom &kb (: $x Variable))
+;; ;; Lambda abstraction.  Note that $x does not need to be a MeTTa
+;; ;; variable, or even contain MeTTa variables at all.  As such a closed
+;; ;; term is a valid variable as well, which corresponds to a very
+;; ;; specific, yet valid, abstraction.
+;; ;;
+;; ;; The problem of that definition is that (: $y $b) needs to be
+;; ;; proven, and only a closed term can have such proof, thus it would
+;; ;; automatically limit lambda abstraction to constant functions.
+;; !(add-atom &kb (: (λ $x) (-> (: $y $b)            ; Premise (body)
+;;                              (-> (: $x $a) $b)))) ; Conclusion
 
-;; ;; Lambda abstraction
-;; !(add-atom &kb (: λ (-> (: $x Variable)           ; Premise 1
-;;                         (-> (: $y $b)             ; Premise 2
-;;                             (-> (: $x $a) $b))))) ; Conclusion
+;; Lambda identity
+!(add-atom &kb (: ((λ $x) $x) (-> (: $x $a) $a)))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Backward chainer ;;
@@ -222,44 +226,49 @@
 ;; Involution of flip
 (= (flip (flip $f)) $f)
 
+;; Identity
+(= (((λ $x) $x) $y) $y)
+
+;; Lambda composition
+(= ((. $f) ((λ $x) $y)) ((λ $x) ($f $y)))
+
 ;;;;;;;;;;;
 ;; Tests ;;
 ;;;;;;;;;;;
 
-;; ;; Synthesize natural numbers
-;; !(bc (: $prf Nat) (fromNumber 3))
+;; Synthesize natural numbers
+!(bc (: $prf Nat) (fromNumber 3))
+
+;; Prove that 0 is even
+!(bc (: $prf (Even (fromNumber 0))) (fromNumber 0))
+
+;; Prove that 2 is even
+!(bc (: $prf (Even (fromNumber 2))) (fromNumber 1))
+
+;; Synthesize even numbers
+!(bc (: $prf (Σ Nat Even)) (fromNumber 4))
 
 ;; Synthesize unary functions over natural numbers, that is
 ;; prove (-> (: $k Nat) Nat).
-;; NEXT: explore lambda abstraction once the PANIC bug is fixed
-!(bc (: $prf (-> (: $k Nat) Nat)) (fromNumber 3))
+!(bc (: $prf (-> (: $k Nat) Nat)) (fromNumber 2))
 
-;; ;; Prove that 0 is even
-;; !(bc (: $prf (Even (fromNumber 0))) (fromNumber 0))
-
-;; ;; Prove that 2 is even
-;; !(bc (: $prf (Even (fromNumber 2))) (fromNumber 1))
-
-;; ;; Synthesize even numbers
-;; !(bc (: $prf (Σ Nat Even)) (fromNumber 4))
-
-;; ;; Prove that (double Z) is even.
-;; ;;
-;; ;; A possible proof of that is represented by the following proof tree:
-;; ;;
-;; ;;                                  --(Z)       -----------------(double_base)
-;; ;;                                  Nat         (=== (double Z) Z)
-;; ;; -------------------(Even) --(Z)  --(double)  -----------------(Sym)
-;; ;; (-> (: $_ Nat) Type)      Nat    Nat         (=== Z (double Z))
-;; ;; --------------------------------------------------------------(Cong)  -------(MkEvenZ)
-;; ;;                (=== (Even Z) (Even (double Z)))                       (Even Z)
-;; ;;                --------------------------------------------------------------(Replace)
-;; ;;                                       (Even (double Z))
-;; ;;
-;; ;; Or in MeTTa format:
-;; ;;
-;; ;; (: ((Replace ((((Cong Even) Z) (double Z)) (Sym double_base))) MkEvenZ) (Even (double Z)))
-;; !(bc (: $prf (Even (double Z))) (fromNumber 6))
+;; Prove that (double Z) is even.
+;;
+;; A possible proof of that is represented by the following proof tree:
+;;
+;;                                  --(Z)       -----------------(double_base)
+;;                                  Nat         (=== (double Z) Z)
+;; -------------------(Even) --(Z)  --(double)  -----------------(Sym)
+;; (-> (: $_ Nat) Type)      Nat    Nat         (=== Z (double Z))
+;; --------------------------------------------------------------(Cong)  -------(MkEvenZ)
+;;                (=== (Even Z) (Even (double Z)))                       (Even Z)
+;;                --------------------------------------------------------------(Replace)
+;;                                       (Even (double Z))
+;;
+;; Or in MeTTa format:
+;;
+;; (: ((Replace ((((Cong Even) Z) (double Z)) (Sym double_base))) MkEvenZ) (Even (double Z)))
+!(bc (: $prf (Even (double Z))) (fromNumber 6))
 
 ;; ;; Prove
 ;; ;;
@@ -310,7 +319,7 @@
 ;; ;;
 ;; ;; which could be
 ;; ;;
-;; ;; (λ $k (((Cong Even) (double (S $k))) (S (S (double $k)))))
+;; ;; ((λ $k) (((Cong Even) (double (S $k))) (S (S (double $k)))))
 ;; ;;
 ;; ;; or something not involving λ like
 ;; ;;
