@@ -117,7 +117,7 @@
                (bc ;; Knowledge/rule base
                    $kb
                    ;; Context updaters and termination predicate
-                   $absupd $argupd $tmnpred
+                   $absupd $argupd $continue
                    ;; Updated context for proof abstraction
                    ($absupd (: ($prfabs $prfarg) $ccln) $ctx)
                    ;; Proof abstraction query
@@ -127,7 +127,7 @@
                (bc ;; Knowledge/rule base
                    $kb
                    ;; Context updaters and termination predicate
-                   $absupd $argupd $tmnpred
+                   $absupd $argupd $continue
                    ;; Updated context for proof argument
                    ($argupd (: ($prfabs $prfarg) $ccln) $ctx)
                    ;; Proof argument query
