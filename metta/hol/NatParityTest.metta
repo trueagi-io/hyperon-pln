@@ -148,6 +148,19 @@
 !(add-atom &kb (: double_rec (-> (: $k Nat)
                                  (=== (double (S $k)) (S (S (double $k)))))))
 
+;; NEXT: use combinatory logic
+;;
+;; AI = λx.x : (-> $a $a)
+;; AK = λx.λy.x : (-> $a
+;;                    (-> $b $a))
+;; AS = λx.λy.λz.((x z) (y z)) : (-> (-> $a (-> $b $c))
+;;                                   (-> $a $b)
+;;                                   (-> $a $c))
+;;
+;; K and S (and MP) form a complete system.  For more information, see
+;;
+;; https://en.wikipedia.org/wiki/Combinatory_logic
+
 ;; Composition operator
 !(add-atom &kb (: . (-> (: $g (-> (: $y $b) $c))     ; Premise 1
                         (-> (: $f (-> (: $x $a) $b)) ; Premise 2
