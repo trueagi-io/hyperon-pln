@@ -93,82 +93,78 @@
 ;; ;; ;; Or, alternatively
 ;; ;; ;; (= (EqualDoubleAndEven $x) (λ $k (× (=== $k (double $x)) (Even $k))))
 
-;; Define Nat
-!(add-atom &kb (: Nat Type))
-!(add-atom &kb (: Z Nat))
-!(add-atom &kb (: S (-> (: $x Nat) Nat)))
+;; ;; Define Nat
+;; !(add-atom &kb (: Nat Type))
+;; !(add-atom &kb (: Z Nat))
+;; !(add-atom &kb (: S (-> (: $x Nat) Nat)))
 
-;; Define Even
-!(add-atom &kb (: Even (-> (: $x Nat) Type)))
-!(add-atom &kb (: MkEvenZ (Even Z)))
-!(add-atom &kb (: MkEvenSS (-> (: $prf (Even $k))   ; Premise
-                               (Even (S (S $k)))))) ; Conclusion
+;; ;; Define Even
+;; !(add-atom &kb (: Even (-> (: $x Nat) Type)))
+;; !(add-atom &kb (: MkEvenZ (Even Z)))
+;; !(add-atom &kb (: MkEvenSS (-> (: $prf (Even $k))   ; Premise
+;;                                (Even (S (S $k)))))) ; Conclusion
 
-;; Define Σ
-!(add-atom &kb (: MkΣ (-> (: $p (-> (: $_ $a) Type)) ; Premise 1.  We
-                                                     ; need to use (: $_ $a)
-                                                     ; as opposed to just $a
-                                                     ; to be fully consistent with
-                                                     ; The (: PROOF PREMISE)
-                                                     ; notation, till it becomes
-                                                     ; optional.
-                          (-> (: $x $a)              ; Premise 2
-                              (-> (: $prf ($p $x))   ; Premise 3
-                                  (Σ $a $p))))))     ; Conclusion
+;; ;; Define Σ
+;; !(add-atom &kb (: MkΣ (-> (: $p (-> (: $_ $a) Type)) ; Premise 1.  We
+;;                                                      ; need to use (: $_ $a)
+;;                                                      ; as opposed to just $a
+;;                                                      ; to be fully consistent with
+;;                                                      ; The (: PROOF PREMISE)
+;;                                                      ; notation, till it becomes
+;;                                                      ; optional.
+;;                           (-> (: $x $a)              ; Premise 2
+;;                               (-> (: $prf ($p $x))   ; Premise 3
+;;                                   (Σ $a $p))))))     ; Conclusion
 
-;; Equality is transitive
-!(add-atom &kb (: Trans (-> (: $prf1 (=== $x $y))     ; Premise 1
-                            (-> (: $prf2 (=== $y $z)) ; Premise 2
-                                (=== $x $z)))))       ; Conclusion
+;; ;; Equality is transitive
+;; !(add-atom &kb (: Trans (-> (: $prf1 (=== $x $y))     ; Premise 1
+;;                             (-> (: $prf2 (=== $y $z)) ; Premise 2
+;;                                 (=== $x $z)))))       ; Conclusion
 
-;; Equality is symmetric
-!(add-atom &kb (: Sym (-> (: $prf (=== $x $y)) ; Premise
-                          (=== $y $x))))       ; Conclusion
+;; ;; Equality is symmetric
+;; !(add-atom &kb (: Sym (-> (: $prf (=== $x $y)) ; Premise
+;;                           (=== $y $x))))       ; Conclusion
 
-;; Equality respects function application
-!(add-atom &kb (: Cong (-> (: $f (-> (: $_ $a) $b))                 ; Premise 1
-                           (-> (: $x $a)                            ; Premise 2
-                               (-> (: $x' $a)                       ; Premise 3
-                                   (-> (: $prf (=== $x $x'))        ; Premise 4
-                                       (=== ($f $x) ($f $x')))))))) ; Conclusion
+;; ;; Equality respects function application
+;; !(add-atom &kb (: Cong (-> (: $f (-> (: $_ $a) $b))                 ; Premise 1
+;;                            (-> (: $x $a)                            ; Premise 2
+;;                                (-> (: $x' $a)                       ; Premise 3
+;;                                    (-> (: $prf (=== $x $x'))        ; Premise 4
+;;                                        (=== ($f $x) ($f $x')))))))) ; Conclusion
 
-;; Rule of replacement
-!(add-atom &kb (: Replace (-> (: $prf1 (=== $x $x')) ; Premise 1
-                              (-> (: $prf2 $x)       ; Premise 2
-                                  $x'))))            ; Conclusion
+;; ;; Rule of replacement
+;; !(add-atom &kb (: Replace (-> (: $prf1 (=== $x $x')) ; Premise 1
+;;                               (-> (: $prf2 $x)       ; Premise 2
+;;                                   $x'))))            ; Conclusion
 
 ;; ;; Modus Ponens (application)
-;; !(add-atom &kb (: ModusPonens (-> (: $f (-> (: $x $a) $b)) ; Premise 1
-;;                                   (-> (: $x $a)            ; Premise 2
-;;                                       $b))))               ; Conclusion
+;; !(add-atom &kb (: MP (-> (: $f (-> (: $x $a) $b)) ; Premise 1
+;;                          (-> (: $x $a)            ; Premise 2
+;;                              $b))))               ; Conclusion
 
-;; Define double
-!(add-atom &kb (: double (-> (: $k Nat) Nat)))
-!(add-atom &kb (: double_base (=== (double Z) Z)))
-!(add-atom &kb (: double_rec (-> (: $k Nat)
-                                 (=== (double (S $k)) (S (S (double $k)))))))
+;; ;; Define double
+;; !(add-atom &kb (: double (-> (: $k Nat) Nat)))
+;; !(add-atom &kb (: double_base (=== (double Z) Z)))
+;; !(add-atom &kb (: double_rec (-> (: $k Nat)
+;;                                  (=== (double (S $k)) (S (S (double $k)))))))
 
-;; NEXT: use combinatory logic
-;;
-;; AI = λx.x : (-> $a $a)
-;; AK = λx.λy.x : (-> $a
-;;                    (-> $b $a))
-;; AS = λx.λy.λz.((x z) (y z)) : (-> (-> $a (-> $b $c))
-;;                                   (-> $a $b)
-;;                                   (-> $a $c))
-;;
-;; K and S (and MP) form a complete system.  For more information, see
-;;
-;; https://en.wikipedia.org/wiki/Combinatory_logic
+;; K combinator
+!(add-atom &kb (: AK (-> (: $x $a)            ; Premise
+                         (-> (: $y $b) $a)))) ; Conclusion
 
-;; Composition operator
-!(add-atom &kb (: . (-> (: $g (-> (: $y $b) $c))     ; Premise 1
-                        (-> (: $f (-> (: $x $a) $b)) ; Premise 2
-                            (-> (: $x $a) $c)))))    ; Conclusion
+;; S combinator
+!(add-atom &kb (: AS (-> (: $g (-> (: $x $a) (-> (: $y $b) $c))) ; Premise 1
+                         (-> (: $f (-> (: $x $a) $b))            ; Premise 2
+                             (-> (: $x $a) $c)))))               ; Conclusion
 
-;; Flip operator
-!(add-atom &kb (: flip (-> (: $f (-> (: $x $a) (-> (: $y $b) $c))) ; Premise
-                           (-> (: $y $b) (-> (: $x $a) $c)))))     ; Conclusion
+;; ;; Composition operator
+;; !(add-atom &kb (: . (-> (: $g (-> (: $y $b) $c))     ; Premise 1
+;;                         (-> (: $f (-> (: $x $a) $b)) ; Premise 2
+;;                             (-> (: $x $a) $c)))))    ; Conclusion
+
+;; ;; Flip operator
+;; !(add-atom &kb (: flip (-> (: $f (-> (: $x $a) (-> (: $y $b) $c))) ; Premise
+;;                            (-> (: $y $b) (-> (: $x $a) $c)))))     ; Conclusion
 
 ;; ;; Lambda abstraction.  Note that $x does not need to be a MeTTa
 ;; ;; variable, or even contain MeTTa variables at all.  As such a closed
@@ -181,8 +177,8 @@
 ;; !(add-atom &kb (: (λ $x) (-> (: $y $b)            ; Premise (body)
 ;;                              (-> (: $x $a) $b)))) ; Conclusion
 
-;; Lambda identity
-!(add-atom &kb (: ((λ $x) $x) (-> (: $x $a) $a)))
+;; ;; Lambda identity
+;; !(add-atom &kb (: ((λ $x) $x) (-> (: $x $a) $a)))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Backward chainer ;;
@@ -230,58 +226,104 @@
 ;; TODO: these rules should be proven first.  Then they could
 ;; automatically be inserted.
 
-;; Involution of symmetry
-(= (Sym (Sym $f)) $f)
+;; ;; Involution of symmetry
+;; (= (Sym (Sym $f)) $f)
 
-;; Composition to application
-(= (((. $g) $f) $x) ($g ($f $x)))
+;; ;; Composition to application
+;; (= (((. $g) $f) $x) ($g ($f $x)))
 
-;; Involution of flip
-(= (flip (flip $f)) $f)
+;; ;; Involution of flip
+;; (= (flip (flip $f)) $f)
 
-;; Identity
-(= (((λ $x) $x) $y) $y)
+;; ;; Identity
+;; (= (((λ $x) $x) $y) $y)
 
-;; Lambda composition
-(= ((. $f) ((λ $x) $y)) ((λ $x) ($f $y)))
+;; ;; Lambda composition
+;; (= ((. $f) ((λ $x) $y)) ((λ $x) ($f $y)))
 
 ;;;;;;;;;;;
 ;; Tests ;;
 ;;;;;;;;;;;
 
-;; Synthesize natural numbers
-!(bc (: $prf Nat) (fromNumber 3))
+;; ;; Synthesize natural numbers
+;; !(bc (: $prf Nat) (fromNumber 3))
 
-;; Prove that 0 is even
-!(bc (: $prf (Even (fromNumber 0))) (fromNumber 0))
+;; ;; Prove that 0 is even
+;; !(bc (: $prf (Even (fromNumber 0))) (fromNumber 0))
 
-;; Prove that 2 is even
-!(bc (: $prf (Even (fromNumber 2))) (fromNumber 1))
+;; ;; Prove that 2 is even
+;; !(bc (: $prf (Even (fromNumber 2))) (fromNumber 1))
 
-;; Synthesize even numbers
-!(bc (: $prf (Σ Nat Even)) (fromNumber 4))
+;; ;; Synthesize even numbers
+;; !(bc (: $prf (Σ Nat Even)) (fromNumber 4))
 
-;; Synthesize unary functions over natural numbers, that is
-;; prove (-> (: $k Nat) Nat).
-!(bc (: $prf (-> (: $k Nat) Nat)) (fromNumber 2))
+;; ;; Synthesize unary functions over natural numbers, that is
+;; ;; prove (-> (: $k Nat) Nat).
+;; !(bc (: $prf (-> (: $k Nat) Nat)) (fromNumber 3))
 
-;; Prove that (double Z) is even.
+;; ;; Synthesize the identity function from AK and AS, that is prove
+;; ;;
+;; ;; (-> (: $x $a) $a)
+;; ;;
+;; ;; Such a proof could be
+;; ;;
+;; ;; ((AS AK) AK)
+;; !(bc (: $prf (-> (: $x $a) $a)) (fromNumber 2))
+
+;; ;; Synthesize the composition operator, also corresponding to the B
+;; ;; combinator, from AK and AS, that is prove
+;; ;;
+;; ;; (-> (: $g (-> (: $y $b) $c))
+;; ;;     (-> (: $f (-> (: $x $a) $b))
+;; ;;         (-> (: $x $a) $c)))
+;; ;;
+;; ;; such proof could be
+;; ;;
+;; ;; ((AS (AK AS)) AK)
+;; !(bc (: $prf (-> (: $g (-> (: $y $b) $c)) (-> (: $f (-> (: $x $a) $b)) (-> (: $x $a) $c))))
+;;      (fromNumber 3))
+
+;; NEXT: infer the C combinator, such that C = (S (S (K (S (K S) K)) S) (K K)).
 ;;
-;; A possible proof of that is represented by the following proof tree:
+;; 1. Infer its type with the backward chainer
 ;;
-;;                                  --(Z)       -----------------(double_base)
-;;                                  Nat         (=== (double Z) Z)
-;; -------------------(Even) --(Z)  --(double)  -----------------(Sym)
-;; (-> (: $_ Nat) Type)      Nat    Nat         (=== Z (double Z))
-;; --------------------------------------------------------------(Cong)  -------(MkEvenZ)
-;;                (=== (Even Z) (Even (double Z)))                       (Even Z)
-;;                --------------------------------------------------------------(Replace)
-;;                                       (Even (double Z))
-;;
-;; Or in MeTTa format:
-;;
-;; (: ((Replace ((((Cong Even) Z) (double Z)) (Sym double_base))) MkEvenZ) (Even (double Z)))
-!(bc (: $prf (Even (double Z))) (fromNumber 6))
+;; 2. Synthesize its definition given its type
+
+;; NEXT
+;; ;; Synthesize the flip operator from AK and AS, that is prove
+;; ;;
+;; ;; (-> (: $f (-> (: $x $a) (-> (: $y $b) $c)))
+;; ;;     (-> (: $y $b) (-> (: $x $a) $c)))))
+;; ;;
+;; ;; A possible proof could be
+;; ;;
+;; ;; ((AS ((AS (AK AS)) AK)) AS)
+!(bc (: $prf (-> (: $f (-> (: $x $a) (-> (: $y $b) $c))) (-> (: $y $b) (-> (: $x $a) $c))))
+     (fromNumber 5))
+;; !(bc (: ((AS ((AS (AK AS)) AK)) AS)
+;;         (-> (: $f (-> (: $x $a) (-> (: $y $b) $c))) (-> (: $z $b) (-> (: $w $a) $c))))
+;;      (fromNumber 10))
+;; !(bc (: ((AS ((AS (AK AS)) AK)) AS)
+;;         (-> (: $f (-> (: $x $a) (-> (: $y $b) $c))) (-> (: $y $b) (-> (: $x $a) $c))))
+;;      (fromNumber 20))
+
+;; ;; ;; Prove that (double Z) is even.
+;; ;; ;;
+;; ;; ;; A possible proof of that is represented by the following proof tree:
+;; ;; ;;
+;; ;; ;;                                  --(Z)       -----------------(double_base)
+;; ;; ;;                                  Nat         (=== (double Z) Z)
+;; ;; ;; -------------------(Even) --(Z)  --(double)  -----------------(Sym)
+;; ;; ;; (-> (: $_ Nat) Type)      Nat    Nat         (=== Z (double Z))
+;; ;; ;; --------------------------------------------------------------(Cong)  -------(MkEvenZ)
+;; ;; ;;                (=== (Even Z) (Even (double Z)))                       (Even Z)
+;; ;; ;;                --------------------------------------------------------------(Replace)
+;; ;; ;;                                       (Even (double Z))
+;; ;; ;;
+;; ;; ;; Or in MeTTa format:
+;; ;; ;;
+;; ;; ;; (: ((Replace ((((Cong Even) Z) (double Z)) (Sym double_base))) MkEvenZ) (Even (double Z)))
+;; !(bc (: $prf (Even (double Z))) (fromNumber 6))
 
 ;; ;; Prove
 ;; ;;
@@ -324,26 +366,26 @@
 ;;                          (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
 ;;                              (=== (Even (double (S $k))) (Even (S (S (double $k))))))))))
 
-;; ;; Prove NEXT
-;; ;;
-;; ;; (-> (: $k Nat)
-;; ;;     (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
-;; ;;         (=== (Even (double (S $k))) (Even (S (S (double $k)))))))
-;; ;;
-;; ;; which could be
-;; ;;
-;; ;; ((λ $k) (((Cong Even) (double (S $k))) (S (S (double $k)))))
-;; ;;
-;; ;; or something not involving λ like
-;; ;;
-;; ;; (((Cong Even) (double (S $k))) (S (S (double $k)))) double_rec
-;; ;;
-;; ;; (λ $k (f (double_rec $k)))
-;; ;;
-;; ;; double_rec
-;; ;;
-;; ;; though this one is wrong, it should be corrected, maybe using flip,
-;; ;; composition or such.
+;; ;; ;; Prove NEXT
+;; ;; ;;
+;; ;; ;; (-> (: $k Nat)
+;; ;; ;;     (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
+;; ;; ;;         (=== (Even (double (S $k))) (Even (S (S (double $k)))))))
+;; ;; ;;
+;; ;; ;; which could be
+;; ;; ;;
+;; ;; ;; ((λ $k) (((Cong Even) (double (S $k))) (S (S (double $k)))))
+;; ;; ;;
+;; ;; ;; or something not involving λ like
+;; ;; ;;
+;; ;; ;; (((Cong Even) (double (S $k))) (S (S (double $k)))) double_rec
+;; ;; ;;
+;; ;; ;; (λ $k (f (double_rec $k)))
+;; ;; ;;
+;; ;; ;; double_rec
+;; ;; ;;
+;; ;; ;; though this one is wrong, it should be corrected, maybe using flip,
+;; ;; ;; composition or such.
 ;;   !(bc (: $prf (-> (: $k Nat)
 ;;                    (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
 ;;                        (=== (Even (double (S $k))) (Even (S (S (double $k))))))))
