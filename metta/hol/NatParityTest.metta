@@ -289,6 +289,12 @@
 ;;
 ;; 2. Synthesize its definition given its type
 
+;; NEXT: see if flip = ((.) (.) f . (const . const))
+
+;; NEXT: see if S x y z = (x .) (y z)
+
+;; NEXT: write lambda-calculus to combinatory logic converter
+
 ;; NEXT
 ;; ;; Synthesize the flip operator from AK and AS, that is prove
 ;; ;;
