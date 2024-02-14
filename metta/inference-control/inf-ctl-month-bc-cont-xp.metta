@@ -46,23 +46,53 @@
 ;; Backward Controlled Chainer ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Backward Chainer.  The arguments of the backward chainer are:
+;; Control type definition.  Takes a query type and a context type.
+;; Holds the functions involved in inference control.
+(: Control (-> $a $ct Type))
+
+;; Control data type constructor.  Take various functions as inference
+;; control guides, specifically to update an inference context and
+;; decide whether to continue an inference.
 ;;
-;; * Context abstraction updater.  Given the current query and
+;; The functions are:
+;;
+;; * Abstraction context updater.  Given the current query and
 ;;   context, update the context before recursively calling the
 ;;   backward chainer on the proof abstraction.
 ;;
-;; * Context argument updater.  Given the current query and context,
+;; * Argument context updater.  Given the current query and context,
 ;;   update the context before recursively calling the backward
 ;;   chainer on the proof argument.
 ;;
-;; * Continuation predicate.  Given the current query and context,
-;;   provide the condition predicate of a conditional wrapping the
-;;   base case and recursive step functions, as well its match
-;;   results.  Continuing amounts to not pruning the current reduction
-;;   (as in evaluation) branches.  For now there is only one
-;;   continuation predicate for all types of intersection, in the
-;;   future we may want to split it.
+;; * Base case continuation predicate.  Given the current query and
+;;   context, provide the predicate of a conditional wrapping the base
+;;   case.  Continuing amounts to not pruning the current reduction
+;;   (as in evaluation) branches.
+;;
+;; * Recursive step continuation predicate.  Given the current query
+;;   and context, provide the predicate of a conditional wrapping the
+;;   recursive step functions, as well its match results.  Continuing
+;;   amounts to not pruning the current reduction (as in evaluation)
+;;   branches.
+;;
+;; * Match continuation predicate.  Given the current query and
+;;   context, provide the predicate of a conditional wrapping the
+;;   match results.  Continuing amounts to not pruning the current
+;;   reduction (as in evaluation) branches.
+(: MkControl (-> (-> $a $ct $ct)     ; Abstraction context updater
+                 (-> $a $ct $ct)     ; Argument context updater
+                 (-> $a $ct Bool)    ; Base case continuation predicate
+                 (-> $a $ct Bool)    ; Recursive step continuation predicate
+                 (-> $a $ct Bool)    ; Match continuation predicate
+                 (Control $a $ct)))  ; Control type
+
+;; Backward Chainer.  The arguments of the backward chainer are:
+;;
+;; * Knowledge base: pointer to a space containing axioms and rules in
+;;   the format (: <NAME> <RULE>).
+;;
+;; * Control: a control structure containing the functions used for
+;;   inference control.
 ;;
 ;; * Context: a context to be updated and passed to the recursive
 ;;   calls of the backward chainer.
@@ -79,26 +109,27 @@
 ;; and update that contextualized query instead.  However, that
 ;; removes the guaranty that the user-programmed inference control
 ;; does not interfere with the correctness of the chainer.
-(: bc (-> $kb                  ; Knowledge/rule base
-          (-> $a $ct $ct)      ; Context abstraction updater
-          (-> $a $ct $ct)      ; Context argument updater
-          (-> $a $ct Bool)     ; Continuation predicate
-          $ct                  ; Context
-          $a                   ; Query
-          $a))                 ; Query result
+(: bc (-> $kb               ; Knowledge base
+          (Control $a $ct)  ; Control
+          $ct               ; Context
+          $a                ; Query
+          $a))              ; Query result
 
 ;; Base case.  The call itself do not result into any recursion, no
 ;; matter what.  However, it may either terminate without pruning the
 ;; branch (thus leaving the interpreter keep that branch) or terminate
 ;; by pruning the branch (thus making the interpreter to drop that
 ;; branch).
-(= (bc $kb $absupd $argupd $continue $ctx (: $prf $ccln))
-   ;; Base case termination conditional
-   (if ($continue (: $prf $ccln) $ctx)
+(= (bc $kb                                               ; Knowledge base
+       (MkControl $absupd $argupd $bcont $rcont $mcont)  ; Control
+       $ctx                                              ; Context
+       (: $prf $ccln))                                   ; Query
+   ;; Base case continuation conditional
+   (if ($bcont (: $prf $ccln) $ctx)
        ;; Continue by querying the kb
        (match $kb (: $prf $ccln)
               ;; Match continuation conditional
-              (if ($continue (: $prf $ccln) $ctx)
+              (if ($mcont (: $prf $ccln) $ctx)
                   ;; Continue by returning the queried result
                   (: $prf $ccln)
                   ;; Terminate by pruning
@@ -108,30 +139,25 @@
 
 ;; Recursive step.  Recursion only happens if the continuation
 ;; condition is true.  Otherwise, the branch is pruned.
-(= (bc $kb $absupd $argupd $continue $ctx (: ($prfabs $prfarg) $ccln))
-   ;; Recursive step termination conditional
-   (if ($continue (: ($prfabs $prfarg) $ccln) $ctx)
+(= (bc $kb                                              ; Knowledge base
+       (MkControl $absupd $argupd $bcont $rcont $mcont) ; Control
+       $ctx                                             ; Context
+       (: ($prfabs $prfarg) $ccln))                     ; Query
+   ;; Recursive step continuation conditional
+   (if ($rcont (: ($prfabs $prfarg) $ccln) $ctx)
        ;; Continue by recursing
        (let* (;; Recurse on proof abstraction
               ((: $prfabs (-> $prms $ccln))
-               (bc ;; Knowledge/rule base
-                   $kb
-                   ;; Context updaters and termination predicate
-                   $absupd $argupd $continue
-                   ;; Updated context for proof abstraction
-                   ($absupd (: ($prfabs $prfarg) $ccln) $ctx)
-                   ;; Proof abstraction query
-                   (: $prfabs (-> $prms $ccln))))
+               (bc $kb                                         ; Knowledge base
+                   (MkControl $absupd $argupd $bcont $rcont $mcont)   ; Control
+                   ($absupd (: ($prfabs $prfarg) $ccln) $ctx) ; Updated context
+                   (: $prfabs (-> $prms $ccln))))     ; Proof abstraction query
               ;; Recurse on proof argument
               ((: $prfarg $prms)
-               (bc ;; Knowledge/rule base
-                   $kb
-                   ;; Context updaters and termination predicate
-                   $absupd $argupd $continue
-                   ;; Updated context for proof argument
-                   ($argupd (: ($prfabs $prfarg) $ccln) $ctx)
-                   ;; Proof argument query
-                   (: $prfarg $prms))))
+               (bc $kb                                         ; Knowledge base
+                   (MkControl $absupd $argupd $bcont $rcont $mcont)   ; Control
+                   ($argupd (: ($prfabs $prfarg) $ccln) $ctx) ; Updated context
+                   (: $prfarg $prms))))                  ; Proof argument query
          ;; Output result
          (: ($prfabs $prfarg) $ccln))
        ;; Terminate by pruning
@@ -194,120 +220,100 @@
 (: depth-updater (-> $a Nat Nat))
 (= (depth-updater $query $depth) (dec $depth))
 
-;; Define termination predicate, called inside a conditional wrapping
-;; the bc.  Terminates at 0.
+;; Define recursive continuation predicate.  Only continue if depth is
+;; greater than 0.
 (: is-zero (-> Nat Bool))
 (= (is-zero Z) True)
 (= (is-zero (S $k)) False)
-(: depth-continuor (-> $a Nat Bool))
-(= (depth-continuor $query $depth)
+(: gtz-continuor (-> $a Nat Bool))
+(= (gtz-continuor $query $depth)
    (not (is-zero $depth)))
 
+;; Define base case and match continuation predicate.  Always
+;; continue.
+(: top-continuor (-> $a Nat Bool))
+(= (top-continuor $query $depth) True)
+
 ;; Knowledge and rule base of the control space to evaluate, via
-;; reasoning, the termination predicate, only using depth for now.
-!(bind! &ctl-depth-kb (new-space))
+;; reasoning, the continuation predicate, only using depth for now.
+!(bind! &md-ctl-kb (new-space))
 
-;; ;; Define MDContinue type constructor (actually not useful for now)
-;; !(add-atom &ctl-depth-kb (: MDContinue (-> $a Nat Type)))
+;; To continue it is enough to prove that the depth is not 0.  MD
+;; stands for Maximum Depth.  CS stands from Continue Successor.
+!(add-atom &md-ctl-kb (: CS (MDContinue $query (S $k))))
 
-;; To continue it is enough to prove that the depth is not 0 (MD
-;; stands for Maximum Depth).
-!(add-atom &ctl-depth-kb (: CS (MDContinue $query (S $k))))
+;; Define maximum depth control structure.
+!(bind! &md-ctl (MkControl depth-updater    ; Abstraction context updater
+                           depth-updater    ; Argument context updater
+                           top-continuor    ; Base case continuor
+                           gtz-continuor    ; Recursive step continuor
+                           top-continuor))  ; Match continuor
 
-;; Define backward chainer based continuation predicate evaluator.
-;; Only continue if it finds a proof that it can continue.
-(: depth-bc-continuor (-> $a Nat Bool))
-(= (depth-bc-continuor $query $depth)
-   ;; TODO: explore a variation without collapse
+;; Define recursive step continuation predicate based on finding
+;; continuation proof.
+(: gtz-bc-continuor (-> $a Nat Bool))
+(= (gtz-bc-continuor $query $depth)
    (let $results (collapse
                   (get-closed-proof
-                   (bc &ctl-depth-kb               ; Knowledge base for control
-                       depth-updater depth-updater ; Depth updaters for control
-                       depth-continuor             ; Depth continuor for control
-                       (fromNumber 1)              ; Depth for control
+                   (bc &md-ctl-kb     ; Knowledge base for control
+                       &md-ctl          ; Control structure
+                       (fromNumber 0)  ; Context for control
                        (: $prf (MDContinue $query $depth))))) ; Continue query
      (not (== () $results))))
+
+;; Define maximum depth control structure based on backward chaining
+;; (i.e. using gtz-bc-continuor).
+!(bind! &md-bc-ctl (MkControl depth-updater    ; Abstraction context updater
+                              depth-updater    ; Argument context updater
+                              top-continuor    ; Base case continuor
+                              gtz-bc-continuor ; Recursive step continuor
+                              top-continuor))  ; Match continuor
 
 ;;;;;;;;;;;
 ;; Tests ;;
 ;;;;;;;;;;;
 
-;; ;; Test depth continuor
+;; ;; Test greater than zero continuor
 ;; !(assertEqual
-;;   (depth-continuor (: $prf $thm) Z)
+;;   (gtz-continuor (: $prf $thm) Z)
 ;;   False)
 ;; !(assertEqual
-;;   (depth-continuor (: $prf $thm) (S Z))
+;;   (gtz-continuor (: $prf $thm) (S Z))
 ;;   True)
 
-;; ;; Prove that (S Z) continues
-;; !(assertEqualToResult
-;;   (get-closed-proof
-;;    (bc &ctl-depth-kb               ; Knowledge base for control
-;;        depth-updater depth-updater ; Depth updaters for control
-;;        depth-continuor             ; Depth continuor for control
-;;        (fromNumber 2)              ; Depth for control
-;;        (: $prf (Continue $query (S Z)))))
-;;   (CS))
-
-;; ;; Prove that Z does not continue
-;; !(assertEqualToResult
-;;   (get-closed-proof
-;;    (bc &ctl-depth-kb               ; Knowledge base for control
-;;        depth-updater depth-updater ; Depth updaters for control
-;;        depth-continuor             ; Depth continuor for control
-;;        (fromNumber 2)              ; Depth for control
-;;        (: $prf (Continue $query Z))))
-;;   ())
-
-;; ;; Test depth bc continuor
+;; ;; Test greater than zero backward chaining based continuor
 ;; !(assertEqual
-;;   (depth-bc-continuor (: $prf $thm) Z)
+;;   (gtz-bc-continuor (: $prf $thm) Z)
 ;;   False)
 ;; !(assertEqual
-;;   (depth-bc-continuor (: $prf $thm) (S Z))
+;;   (gtz-bc-continuor (: $prf $thm) (S Z))
 ;;   True)
 
 ;; ;; Prove that Jan non-strictly precedes Jan
 ;; !(assertEqualToResult
-;;   (bc &kb
-;;       depth-updater depth-updater depth-bc-continuor
-;;       (fromNumber 2)
-;;       (: $prf (≼ Jan Jan)))
+;;   (bc &kb &md-bc-ctl (fromNumber 0) (: $prf (≼ Jan Jan)))
 ;;   ((: JPA (≼ Jan Jan))
 ;;    (: Refl (≼ Jan Jan))))
 
 ;; ;; Prove that Feb non-strictly precedes Feb
 ;; !(assertEqual
-;;   (bc &kb
-;;       depth-updater depth-updater depth-bc-continuor
-;;       (fromNumber 2)
-;;       (: $prf (≼ Feb Feb)))
+;;   (bc &kb &md-bc-ctl (fromNumber 0) (: $prf (≼ Feb Feb)))
 ;;   (: Refl (≼ Feb Feb)))
 
 ;; ;; Prove that Jan precedes Feb
 ;; !(assertEqualToResult
-;;   (bc &kb
-;;       depth-updater depth-updater depth-bc-continuor
-;;       (fromNumber 2)
-;;       (: $prf (≼ Jan Feb)))
+;;   (bc &kb &md-bc-ctl (fromNumber 0) (: $prf (≼ Jan Feb)))
 ;;   ((: JF (≼ Jan Feb))
 ;;    (: JPA (≼ Jan Feb))))
 
 ;; ;; Verify a proof that Jan precedes Mar
 ;; !(assertEqual
-;;   (bc &kb
-;;       depth-updater depth-updater depth-bc-continuor
-;;       (fromNumber 3)
-;;       (: ((Trans JF) FM) (≼ Jan Mar)))
+;;   (bc &kb &md-bc-ctl (fromNumber 2) (: ((Trans JF) FM) (≼ Jan Mar)))
 ;;   (: ((Trans JF) FM) (≼ Jan Mar)))
 
 ;; ;; Prove that Jan precedes Mar
 ;; !(assertEqualToResult
-;;   (bc &kb
-;;       depth-updater depth-updater depth-bc-continuor
-;;       (fromNumber 3)
-;;       (: $prf (≼ Jan Mar)))
+;;   (bc &kb &md-bc-ctl (fromNumber 2) (: $prf (≼ Jan Mar)))
 ;;   ((: JPA (≼ Jan Mar))
 ;;    (: ((Trans Refl) JPA) (≼ Jan Mar))
 ;;    (: ((Trans JF) FM) (≼ Jan Mar))
@@ -315,44 +321,32 @@
 ;;    (: ((Trans JPA) JPA) (≼ Jan Mar))
 ;;    (: ((Trans JPA) FM) (≼ Jan Mar))))
 
-;; Prove that Feb precedes May
-!(assertEqual
-  (bc &kb
-      depth-updater depth-updater depth-bc-continuor
-      (fromNumber 4)
-      (: $prf (≼ Feb May)))
-  (: ((Trans FM) ((Trans MA) AM)) (≼ Feb May)))
-
-;; Prove that Feb precedes Jun
-!(assertEqualToResult
-  (bc &kb
-      depth-updater depth-updater depth-bc-continuor
-      (fromNumber 5)
-      (: $prf (≼ Feb Jun)))
-  ((: ((Trans FM) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))
-   (: ((Trans ((Trans FM) MA)) ((Trans AM) MJ)) (≼ Feb Jun))
-   (: ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans MJ) Refl))) (≼ Feb Jun))
-   (: ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans Refl) MJ))) (≼ Feb Jun))
-   (: ((Trans ((Trans FM) MA)) ((Trans Refl) ((Trans AM) MJ))) (≼ Feb Jun))
-   (: ((Trans ((Trans FM) Refl)) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))
-   (: ((Trans ((Trans Refl) FM)) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))))
-
-;; Prove that Feb precedes Jul (to long to list)
+;; ;; Prove that Feb precedes May
 ;; !(assertEqual
-  !(bc &kb
-      depth-updater depth-updater depth-bc-continuor
-      (fromNumber 6)
-      (: $prf (≼ Feb Jul)))
-  ;; (: ((Trans FM) ((Trans MA) ((Trans AM) ((Trans MJ) JJ)))) (≼ Feb Jul))
+;;   (bc &kb &md-bc-ctl (fromNumber 3) (: $prf (≼ Feb May)))
+;;   (: ((Trans FM) ((Trans MA) AM)) (≼ Feb May)))
 
-;; Disabled because it takes 3h.
-;;
+;; ;; Prove that Feb precedes Jun
+;; !(assertEqualToResult
+;;   (bc &kb &md-bc-ctl (fromNumber 4) (: $prf (≼ Feb Jun)))
+;;   ((: ((Trans FM) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))
+;;    (: ((Trans ((Trans FM) MA)) ((Trans AM) MJ)) (≼ Feb Jun))
+;;    (: ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans MJ) Refl))) (≼ Feb Jun))
+;;    (: ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans Refl) MJ))) (≼ Feb Jun))
+;;    (: ((Trans ((Trans FM) MA)) ((Trans Refl) ((Trans AM) MJ))) (≼ Feb Jun))
+;;    (: ((Trans ((Trans FM) Refl)) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))
+;;    (: ((Trans ((Trans Refl) FM)) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))))
+
+;; ;; Prove that Feb precedes Jul (to long to list)
+;; ;; !(assertEqual
+;;   !(bc &kb &md-bc-ctl (fromNumber 5) (: $prf (≼ Feb Jul)))
+;;   ;; (: ((Trans FM) ((Trans MA) ((Trans AM) ((Trans MJ) JJ)))) (≼ Feb Jul))
+
+;; Disabled because it takes Xh.
+
 ;; ;; Prove that Feb precedes Aug
 ;; ;; !(assertEqual
-;;   !(bc &kb
-;;       depth-updater depth-updater depth-terminator
-;;       (fromNumber 7)
-;;       (: $prf (≼ Feb Aug)))
+;;   !(bc &kb &md-bc-ctl (fromNumber 6) (: $prf (≼ Feb Aug)))
 ;;   ;; (: ((Trans FM) ((Trans MA) ((Trans AM) ((Trans MJ) JJ)))) (≼ Feb Jul))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -383,11 +377,11 @@
 
 ;; Knowledge and rule base of the control space to evaluate, via
 ;; reasoning, the termination predicate, using depth, target theorem
-;; and current query.
-!(bind! &ctl-td-kb (new-space))
+;; and current query.  Used by the match continuor predicate.
+!(bind! &td-ctl-kb (new-space))
 
 ;; ;; Define TDContinue type constructor (actually not useful for now)
-;; !(add-atom &ctl-td-kb (: TDContinue (-> $a ; Query
+;; !(add-atom &td-ctl-kb (: TDContinue (-> $a ; Query
 ;;                                         TD ; Context
 ;;                                         Type)))
 
@@ -396,34 +390,67 @@
 ;; - the current proof is Refl
 ;; - the maximum depth is greater than 0
 ;; then continue.
-!(add-atom &ctl-td-kb (: RS (TDContinue (: Refl $r) (MkTD (≼ $x $x) (S $k)))))
+!(add-atom &td-ctl-kb (: RS (TDContinue (: Refl $r) (MkTD (≼ $x $x) $k))))
 
 ;; 2nd observation: if
 ;; - the target theorem is (≼ Jan x)
 ;; - the current proof is JPA
 ;; - the maximum depth is greater than 0
 ;; then continue.
-!(add-atom &ctl-td-kb (: JS (TDContinue (: JPA $r) (MkTD (≼ Jan $x) (S $k)))))
-
-;; NEXT: the 3rd observation is hard to capture, should we
-;; - use 3 continuation predicates (one per intersection)?
-;; - ???
+!(add-atom &td-ctl-kb (: JS (TDContinue (: JPA $r) (MkTD (≼ Jan $x) $k))))
 
 ;; 3rd observation: if
 ;; - the target theorem is (≼ $x $y) such that $x ≠ $y
-;; - the current proof Trans
+;; - the current proof is Trans
 ;; - the maximum depth is greater than 0
 ;; then continue.
-!(add-atom &ctl-td-kb (: TS (-> (≠ $x $y)
-                                (TDContinue (: Trans $r) (MkTD (≼ $x $y) (S $k))))))
+;;
+;; In order to emulate a ≠ function we exhaustively add all
+;; combinations of differences as axioms.  TODO: replace by a proper
+;; function evaluation.
+!(let* (($m1 (superpose (Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov)))
+        ($m2 (superpose (Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov))))
+   (if (== $m1 $m2)
+       (empty)
+       (add-atom &td-ctl-kb (: (WitnessOf (≠ $m1 $m2)) (≠ $m1 $m2)))))
+!(add-atom &td-ctl-kb (: TS (-> (≠ $x $y)
+                                (TDContinue (: Trans $r) (MkTD (≼ $x $y) $k)))))
 
-;; ;; ;; ;; Prove that Jan non-strictly precedes Jan
-;; ;; ;; !(assertEqual
-;; ;; ;;   (bc &kb
-;; ;; ;;       td-updater td-updater td-terminator
-;; ;; ;;       (MkTD (≼ Jan Jan) (fromNumber 2))
-;; ;; ;;       (: $prf (≼ Jan Jan)))
-;; ;; ;;   (: Refl (≼ Jan Jan)))
+;; Always continue the base case
+(: base-td-continuor (-> $a $ct Bool))
+(= (base-td-continuor $query (MkTD $thm $depth)) True)
+
+;; Only continue the recursive step if the depth is greater than 0
+(: rec-td-continuor (-> $a $ct Bool))
+(= (rec-td-continuor $query (MkTD $thm $depth)) (not (is-zero $depth)))
+
+;; Match contination predicate for the TD (Target theorem, Maximum
+;; depth) context.  The maximum depth of the backward chainer call is
+;; 1 because axiom TS (the 3rd observation) has 1 premise, therefore
+;; requires 1 recursion.
+(: match-td-continuor (-> $a $ct Bool))
+(= (match-td-continuor $query $ctx)
+   (let $results (collapse
+                  (get-closed-proof
+                   (bc &td-ctl-kb                  ; Knowledge base for control
+                       &mdctl                               ; Control structure
+                       (fromNumber 1)                     ; Context for control
+                       (: $prf (TDContinue $query $ctx)))))    ; Continue query
+     (not (== () $results))))
+
+;; Inference control structure for TD.
+!(bind! &td-ctl (MkControl td-updater            ; Abstraction context updater
+                           td-updater            ; Argument context updater
+                           base-td-continuor     ; Base case continuor
+                           rec-td-continuor      ; Recursive step continuor
+                           match-td-continuor))  ; Match continuor
+
+;; NEXT
+
+;; Prove that Jan non-strictly precedes Jan
+;; !(assertEqual
+  (bc &kb &td-ctl (MkTD (≼ Jan Jan) (fromNumber 1)) (: $prf (≼ Jan Jan)))
+  ;; (: Refl (≼ Jan Jan)))
 
 ;; ;; ;; ;; Prove that Feb non-strictly precedes Feb
 ;; ;; ;; !(assertEqual
