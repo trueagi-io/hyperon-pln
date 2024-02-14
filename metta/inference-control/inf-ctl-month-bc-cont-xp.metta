@@ -207,11 +207,12 @@
 ;; reasoning, the termination predicate, only using depth for now.
 !(bind! &ctl-depth-kb (new-space))
 
-;; ;; Define Continue type constructor (actually not useful for now)
-;; !(add-atom &ctl-depth-kb (: Continue (-> $a Nat Type)))
+;; ;; Define MDContinue type constructor (actually not useful for now)
+;; !(add-atom &ctl-depth-kb (: MDContinue (-> $a Nat Type)))
 
-;; To continue it is enough to prove that the depth is not 0.
-!(add-atom &ctl-depth-kb (: CS (Continue $query (S $k))))
+;; To continue it is enough to prove that the depth is not 0 (MD
+;; stands for Maximum Depth).
+!(add-atom &ctl-depth-kb (: CS (MDContinue $query (S $k))))
 
 ;; Define backward chainer based continuation predicate evaluator.
 ;; Only continue if it finds a proof that it can continue.
@@ -224,7 +225,7 @@
                        depth-updater depth-updater ; Depth updaters for control
                        depth-continuor             ; Depth continuor for control
                        (fromNumber 1)              ; Depth for control
-                       (: $prf (Continue $query $depth))))) ; Continue query
+                       (: $prf (MDContinue $query $depth))))) ; Continue query
      (not (== () $results))))
 
 ;;;;;;;;;;;
@@ -239,20 +240,25 @@
 ;;   (depth-continuor (: $prf $thm) (S Z))
 ;;   True)
 
-;; NEXT: problem comes the NoValidAlternatives Error
-! "=== test depth-bc-continuor ==="
-!(get-closed-proof (: CS (Continue $query (S Z))))
-!(let $results
-     (collapse
-      (get-closed-proof
-       (bc &ctl-depth-kb               ; Knowledge base for control
-           depth-updater depth-updater ; Depth updaters for control
-           depth-continuor             ; Depth continuor for control
-           (fromNumber 2)              ; Depth for control
-           (: $prf (Continue $query Z)))))
-   $results)
-   ;; (not (== () $results))); Continue query
-! "~~~ test depth-bc-continuor ~~~"
+;; ;; Prove that (S Z) continues
+;; !(assertEqualToResult
+;;   (get-closed-proof
+;;    (bc &ctl-depth-kb               ; Knowledge base for control
+;;        depth-updater depth-updater ; Depth updaters for control
+;;        depth-continuor             ; Depth continuor for control
+;;        (fromNumber 2)              ; Depth for control
+;;        (: $prf (Continue $query (S Z)))))
+;;   (CS))
+
+;; ;; Prove that Z does not continue
+;; !(assertEqualToResult
+;;   (get-closed-proof
+;;    (bc &ctl-depth-kb               ; Knowledge base for control
+;;        depth-updater depth-updater ; Depth updaters for control
+;;        depth-continuor             ; Depth continuor for control
+;;        (fromNumber 2)              ; Depth for control
+;;        (: $prf (Continue $query Z))))
+;;   ())
 
 ;; ;; Test depth bc continuor
 ;; !(assertEqual
@@ -261,28 +267,6 @@
 ;; !(assertEqual
 ;;   (depth-bc-continuor (: $prf $thm) (S Z))
 ;;   True)
-
-;; ;; Prove that (S Z) continues
-;; !(assertEqual
-;;   (get-closed-proof
-;;    (bc &ctl-depth-kb
-;;        depth-updater depth-updater depth-continuor
-;;        (fromNumber 1)
-;;        (: $prf (Continue $query (S Z)))))
-;;   CS)
-
-;; ;; Do not prove that Z continues
-;; !(assertEqualToResult
-;;   ;; (get-closed-proof
-;;   ;;
-;;   ;; get-closed-proof is removed because it leads to the error
-;;   ;; NoValidAlternatives.  Maybe MeTTa should instead not raise an
-;;   ;; error and return an empty branch set instead.
-;;   (bc &ctl-depth-kb
-;;       depth-updater depth-updater depth-continuor
-;;       (fromNumber 1)
-;;       (: $prf (Continue $query Z)))
-;;   ())
 
 ;; ;; Prove that Jan non-strictly precedes Jan
 ;; !(assertEqualToResult
@@ -310,156 +294,128 @@
 ;;   ((: JF (≼ Jan Feb))
 ;;    (: JPA (≼ Jan Feb))))
 
-;; ;; NEXT
-
-;; !(bc &kb
+;; ;; Verify a proof that Jan precedes Mar
+;; !(assertEqual
+;;   (bc &kb
 ;;       depth-updater depth-updater depth-bc-continuor
-;;       (fromNumber 0)
-;;       (: Trans (-> (≼ Jan Feb) (-> (≼ Feb Mar) (≼ Jan Mar)))))
-
-;; ;; !(bc &kb
-;; ;;       depth-updater depth-updater depth-bc-continuor
-;; ;;       (fromNumber 3)
-;; ;;       (: (Trans JF) (-> (≼ Feb Mar) (≼ Jan Mar))))
-
-;; ;; !(bc &kb
-;; ;;       depth-updater depth-updater depth-bc-continuor
-;; ;;       (fromNumber 3)
-;; ;;       (: ((Trans JF) FM) (≼ Jan Mar)))
+;;       (fromNumber 3)
+;;       (: ((Trans JF) FM) (≼ Jan Mar)))
+;;   (: ((Trans JF) FM) (≼ Jan Mar)))
 
 ;; ;; Prove that Jan precedes Mar
-;; ;; !(assertEqualToResult
-;; ;; !(bc &kb
-;; ;;       depth-updater depth-updater depth-bc-continuor
-;; ;;       (fromNumber 3)
-;; ;;       (: $prf (≼ Jan Mar)))
-;;   ;; ((: ((Trans Refl) JPA) (≼ Jan Mar))
-;;   ;;  (: ((Trans JPA) FM) (≼ Jan Mar))
-;;   ;;  (: ((Trans JPA) Refl) (≼ Jan Mar))
-;;   ;;  (: ((Trans JPA) JPA) (≼ Jan Mar))
-;;   ;;  (: ((Trans JF) FM) (≼ Jan Mar))
-;;   ;;  (: JPA (≼ Jan Mar))))
+;; !(assertEqualToResult
+;;   (bc &kb
+;;       depth-updater depth-updater depth-bc-continuor
+;;       (fromNumber 3)
+;;       (: $prf (≼ Jan Mar)))
+;;   ((: JPA (≼ Jan Mar))
+;;    (: ((Trans Refl) JPA) (≼ Jan Mar))
+;;    (: ((Trans JF) FM) (≼ Jan Mar))
+;;    (: ((Trans JPA) Refl) (≼ Jan Mar))
+;;    (: ((Trans JPA) JPA) (≼ Jan Mar))
+;;    (: ((Trans JPA) FM) (≼ Jan Mar))))
 
-;; ;; ;; Prove that Feb precedes May
+;; Prove that Feb precedes May
+!(assertEqual
+  (bc &kb
+      depth-updater depth-updater depth-bc-continuor
+      (fromNumber 4)
+      (: $prf (≼ Feb May)))
+  (: ((Trans FM) ((Trans MA) AM)) (≼ Feb May)))
+
+;; Prove that Feb precedes Jun
+!(assertEqualToResult
+  (bc &kb
+      depth-updater depth-updater depth-bc-continuor
+      (fromNumber 5)
+      (: $prf (≼ Feb Jun)))
+  ((: ((Trans FM) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))
+   (: ((Trans ((Trans FM) MA)) ((Trans AM) MJ)) (≼ Feb Jun))
+   (: ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans MJ) Refl))) (≼ Feb Jun))
+   (: ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans Refl) MJ))) (≼ Feb Jun))
+   (: ((Trans ((Trans FM) MA)) ((Trans Refl) ((Trans AM) MJ))) (≼ Feb Jun))
+   (: ((Trans ((Trans FM) Refl)) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))
+   (: ((Trans ((Trans Refl) FM)) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))))
+
+;; Prove that Feb precedes Jul (to long to list)
+;; !(assertEqual
+  !(bc &kb
+      depth-updater depth-updater depth-bc-continuor
+      (fromNumber 6)
+      (: $prf (≼ Feb Jul)))
+  ;; (: ((Trans FM) ((Trans MA) ((Trans AM) ((Trans MJ) JJ)))) (≼ Feb Jul))
+
+;; Disabled because it takes 3h.
+;;
+;; ;; Prove that Feb precedes Aug
 ;; ;; !(assertEqual
-;; ;;   (bc &kb
-;; ;;       depth-updater depth-updater depth-terminator
-;; ;;       (fromNumber 4)
-;; ;;       (: $prf (≼ Feb May)))
-;; ;;   (: ((Trans FM) ((Trans MA) AM)) (≼ Feb May)))
+;;   !(bc &kb
+;;       depth-updater depth-updater depth-terminator
+;;       (fromNumber 7)
+;;       (: $prf (≼ Feb Aug)))
+;;   ;; (: ((Trans FM) ((Trans MA) ((Trans AM) ((Trans MJ) JJ)))) (≼ Feb Jul))
 
-;; ;; ;; Prove that Feb precedes Jun
-;; ;; ;; !(assertEqualToResult
-;; ;;   !(bc &kb
-;; ;;       depth-updater depth-updater depth-terminator
-;; ;;       (fromNumber 5)
-;; ;;       (: $prf (≼ Feb Jun)))
-;; ;; ;; (: ((Trans ((Trans FM) MA)) ((Trans AM) MJ)) (≼ Feb Jun))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Context is depth and target theorem ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; ;; ;; Prove that Feb precedes Jul (to long to list)
-;; ;; ;; !(assertEqual
-;; ;;   !(bc &kb
-;; ;;       depth-updater depth-updater depth-terminator
-;; ;;       (fromNumber 6)
-;; ;;       (: $prf (≼ Feb Jul)))
-;; ;;   ;; (: ((Trans FM) ((Trans MA) ((Trans AM) ((Trans MJ) JJ)))) (≼ Feb Jul))
+;; From the above experiment we make the following observations:
+;;
+;; 1. Refl is useful iff the theorem is (≼ x x).
+;;
+;; 2. For theorems (≼ Jan x), JPA is enough.
+;;
+;; 3. Otherwise, Trans is enough.
 
-;; ;; ;; Disabled because it takes 3h.
-;; ;; ;;
-;; ;; ;; ;; Prove that Feb precedes Aug
-;; ;; ;; ;; !(assertEqual
-;; ;; ;;   !(bc &kb
-;; ;; ;;       depth-updater depth-updater depth-terminator
-;; ;; ;;       (fromNumber 7)
-;; ;; ;;       (: $prf (≼ Feb Aug)))
-;; ;; ;;   ;; (: ((Trans FM) ((Trans MA) ((Trans AM) ((Trans MJ) JJ)))) (≼ Feb Jul))
+;; Context (type and ctor):
+;; 1. Target theorem
+;; 2. Maximum depth
+(: TD Type)
+(: MkTD (-> $a                     ; Target theorem
+            Nat                    ; Maximum depth
+            TD))
 
-;; ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; ;; Context is depth and target theorem ;;
-;; ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Define context updater, same for both proof abstraction and proof
+;; argument.  Decrement the depth, leave the target theorem unchanged.
+(: td-updater (-> $a TD TD))
+(= (td-updater $query (MkTD $trg-thm $depth))
+   (MkTD $trg-thm (dec $depth)))
 
-;; ;; ;; From the above experiment we make the following observations:
-;; ;; ;;
-;; ;; ;; 1. Refl is useful iff the theorem is (≼ x x).
-;; ;; ;;
-;; ;; ;; 2. For theorems (≼ Jan x), JPA is enough.
-;; ;; ;;
-;; ;; ;; 3. Otherwise, Trans is enough.
+;; Knowledge and rule base of the control space to evaluate, via
+;; reasoning, the termination predicate, using depth, target theorem
+;; and current query.
+!(bind! &ctl-td-kb (new-space))
 
-;; ;; ;; Context type and ctor
-;; ;; (: TD Type)
-;; ;; (: MkTD (-> $a                     ; Target theorem
-;; ;;             Nat                    ; Maximum depth
-;; ;;             TD))
+;; ;; Define TDContinue type constructor (actually not useful for now)
+;; !(add-atom &ctl-td-kb (: TDContinue (-> $a ; Query
+;;                                         TD ; Context
+;;                                         Type)))
 
-;; ;; ;; Define context updater, same for both proof abstraction and proof
-;; ;; ;; argument.  Decrement the depth, leave the target theorem unchanged.
-;; ;; (: td-updater (-> $a TD TD))
-;; ;; (= (td-updater $query (MkTD $trg-thm $depth))
-;; ;;    (MkTD $trg-thm (dec $depth)))
+;; 1st observation: if
+;; - the target theorem is (≼ x x)
+;; - the current proof is Refl
+;; - the maximum depth is greater than 0
+;; then continue.
+!(add-atom &ctl-td-kb (: RS (TDContinue (: Refl $r) (MkTD (≼ $x $x) (S $k)))))
 
-;; ;; ;; Knowledge and rule base of the control space to evaluate, via
-;; ;; ;; reasoning, the termination predicate, using depth, target theorem
-;; ;; ;; and current query.
-;; ;; !(bind! &ctl-td-kb (new-space))
+;; 2nd observation: if
+;; - the target theorem is (≼ Jan x)
+;; - the current proof is JPA
+;; - the maximum depth is greater than 0
+;; then continue.
+!(add-atom &ctl-td-kb (: JS (TDContinue (: JPA $r) (MkTD (≼ Jan $x) (S $k)))))
 
-;; ;; ;; ;; Define Terminate type constructor (actually not useful for now)
-;; ;; ;; !(add-atom &ctl-td-kb (: Terminate (-> $a ; Query
-;; ;; ;;                                        TD ; Context
-;; ;; ;;                                        Type)))
+;; NEXT: the 3rd observation is hard to capture, should we
+;; - use 3 continuation predicates (one per intersection)?
+;; - ???
 
-;; ;; ;; If the depth is zero then it terminates
-;; ;; !(add-atom &ctl-td-kb (: TerminateZ (Terminate $query (MkTD $trg-thm Z))))
-
-;; ;; ;; 1st observation: if the target theorem is (≼ x x) and current proof
-;; ;; ;; is Trans or JPA then terminate.
-;; ;; ;;
-;; ;; ;; TODO: the problem with the following rule, is that a control query
-;; ;; ;; such as
-;; ;; ;;
-;; ;; ;; (: $tmn-prf (Terminate (: $prf $thm) (MkTD (≼ $x $x) $depth)))
-;; ;; ;;
-;; ;; ;; would unify with
-;; ;; ;;
-;; ;; ;; (: TerminateTrans (Terminate (: Trans $thm) (MkTD (≼ $x $x) $depth)))
-;; ;; ;;
-;; ;; ;; which would result in prematurely terminating the backward chainer.
-;; ;; ;; It's unclear what is the proper way to address that. I can think of
-;; ;; ;; three solutions:
-;; ;; ;;
-;; ;; ;; 1. Have the Terminate type takes quoted query and context, instead
-;; ;; ;;    of open terms.  The problem is that there is no quotation
-;; ;; ;;    mechanism in MeTTa capabable of preventing unification and
-;; ;; ;;    substitution.
-;; ;; ;;
-;; ;; ;; 2. Use DeBruinj indices instead of variables to build a Terminate
-;; ;; ;;    control query involving only closed terms.  This could be an
-;; ;; ;;    alternative way to providing quoted terms.
-;; ;; ;;
-;; ;; ;; 3. Replace Terminate by Continue.  It could be that this way the
-;; ;; ;;    super-type effect that unification provides (which leads to
-;; ;; ;;    over-terminating in the case of a Terminate type), would lead to
-;; ;; ;;    over-continuing in the case of a Continue type, which could be a
-;; ;; ;;    feature rather than a bug.
-;; ;; !(add-atom &ctl-td-kb (: TerminateTrans (Terminate (: Trans $thm)
-;; ;;                                                    (MkTD (≼ $x $x) $depth))))
-
-;; ;; ;; ;; Define termination predicate.  Terminate at depth 0, and respect
-;; ;; ;; ;; the 3 observations above.
-;; ;; ;; (: td-terminator (-> $a TD Bool))
-;; ;; ;; (= (td-terminator (: $prf $thm) (MkTD $trg-thm $depth))
-;; ;; ;;    (or ;; Terminate at depth 0
-;; ;; ;;        (is-zero $depth)
-;; ;; ;;        (if (≐ $trg-thm (≼ $x $x))
-;; ;; ;;            ;; [1st observation] If the target theorem is (≼ x x) and
-;; ;; ;;            ;; current proof is Trans or JPA then terminate.
-;; ;; ;;            (or (== $prf Trans) (== $prf JPA))
-;; ;; ;;            (if (≐ $trg-thm (≼ Jan $y))
-;; ;; ;;                ;; [2nd observation] If the target theorem is (≼ Jan x)
-;; ;; ;;                ;; and current proof is Trans or Refl then terminate.
-;; ;; ;;                (or (== $prf Trans) (== $prf Refl))
-;; ;; ;;                ;; [3th observation] Otherwise, Trans is enough.
-;; ;; ;;                (or (== $prf JPA) (== $prf Refl))))))
+;; 3rd observation: if
+;; - the target theorem is (≼ $x $y) such that $x ≠ $y
+;; - the current proof Trans
+;; - the maximum depth is greater than 0
+;; then continue.
+!(add-atom &ctl-td-kb (: TS (-> (≠ $x $y)
+                                (TDContinue (: Trans $r) (MkTD (≼ $x $y) (S $k))))))
 
 ;; ;; ;; ;; Prove that Jan non-strictly precedes Jan
 ;; ;; ;; !(assertEqual
