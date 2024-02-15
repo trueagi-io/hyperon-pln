@@ -449,7 +449,7 @@
 
 ;; Prove that Jan non-strictly precedes Jan
 ;; !(assertEqual
-  (bc &kb &td-ctl (MkTD (≼ Jan Jan) (fromNumber 1)) (: $prf (≼ Jan Jan)))
+  !(bc &kb &td-ctl (MkTD (≼ Jan Jan) (fromNumber 1)) (: $prf (≼ Jan Jan)))
   ;; (: Refl (≼ Jan Jan)))
 
 ;; ;; ;; ;; Prove that Feb non-strictly precedes Feb
