@@ -24,15 +24,16 @@
 ;; Recursive step
 (= (cl2lc ($f $g)) ((cl2lc $f) (cl2lc $g)))
 
-;; Convert lambda-calculus term to combinatory logic term
-(: lc2cl (-> Atom Atom))
-;; Base case
-(= (lc2cl ((λ $x) $x)) ID)
-;; Recursive steps
-;; NEXT
-;; (= (lc2cl ((λ $x) $f)) (AK (lc2cl $f))) if $x does not occur freely in $f
-(= (lc2cl ((λ $x) ($f $g))) ((S (lc2cl ((λ $x) $f))) (lc2cl ((λ $x) $g))))
-(= (lc2cl ($f $g)) ((lc2cl $f) (lc2cl $g)))
+;; ;; NEXT: complete the following
+;;
+;; ;; Convert lambda-calculus term to combinatory logic term
+;; (: lc2cl (-> Atom Atom))
+;; ;; Base case
+;; (= (lc2cl ((λ $x) $x)) ID)
+;; ;; Recursive steps
+;; ;; (= (lc2cl ((λ $x) $f)) (AK (lc2cl $f))) if $x does not occur freely in $f
+;; (= (lc2cl ((λ $x) ($f $g))) ((S (lc2cl ((λ $x) $f))) (lc2cl ((λ $x) $g))))
+;; (= (lc2cl ($f $g)) ((lc2cl $f) (lc2cl $g)))
 
 ;; According to ChatGPT:
 ;;
@@ -55,3 +56,41 @@
 ;; times (multiplication) would be represented by
 ;; - combinatory logic: ((S ((S (K S)) K)) I)
 ;; - lambda calculus: ((λ $m) ((λ $n) ((λ $f) ((λ $x) (($m ($n $f)) $x)))))
+
+;;;;;;;;;;;;;;;;;;;;;
+;; Reduction rules ;;
+;;;;;;;;;;;;;;;;;;;;;
+
+;; ;; Reduce lambda application
+(= (((λ $x) $f) $y) (let $x $y $f))
+
+;;;;;;;;;;;
+;; Tests ;;
+;;;;;;;;;;;
+
+;; Convert zero to lambda calculus.
+;;
+;; TODO: re-enable assertEqual when it will support alpha-equivalence.
+;; Maybe we should introduce something like assertAlphaEqual.
+;;
+;; !(assertEqual
+  ;; !(cl2lc (AK ID))
+  ;; ((λ $f) ((λ $x) $x)))
+
+;; NEXT: pursue according to the outcome of
+;; https://github.com/trueagi-io/hyperon-experimental/issues/242#issuecomment-1948089755
+
+;; NEXT: maybe dig into minimal metta, here are starting points
+;;
+;; https://github.com/trueagi-io/hyperon-experimental/blob/main/docs/minimal-metta.md
+;; https://github.com/trueagi-io/hyperon-experimental/blob/main/lib/src/metta/runner/stdlib.metta
+
+;; Convert successor to lambda calculus
+!(cl2lc (AK AS))
+;; (((λ $x#20) ((λ $y#21) $x#20)) ((λ $f#41) ((λ $g#42) ((λ $x#43) (($f#41 $x#43) ($g#42 $x#43))))))
+;; -->
+;; ((λ $y#21) ((λ $f#41) ((λ $g#42) ((λ $x#43) (($f#41 $x#43) ($g#42 $x#43))))))
+;; !(cl2lc (AS (AK AS)))
+;; !(cl2lc ((AS (AK AS)) AK))
+
+;; (((λ $x#20) ((λ $y#21) $x#20)) ((λ $x#41) $x#41))
