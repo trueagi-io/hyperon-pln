@@ -359,7 +359,7 @@
 ;;
 ;; 2. For theorems (≼ Jan x), JPA is enough.
 ;;
-;; 3. Otherwise, Trans is enough.
+;; 3. Otherwise, Trans, FM to ND are enough.
 
 ;; Context (type and ctor):
 ;; 1. Target theorem
@@ -388,21 +388,18 @@
 ;; 1st observation: if
 ;; - the target theorem is (≼ x x)
 ;; - the current proof is Refl
-;; - the maximum depth is greater than 0
 ;; then continue.
 !(add-atom &td-ctl-kb (: RS (TDContinue (: Refl $r) (MkTD (≼ $x $x) $k))))
 
 ;; 2nd observation: if
 ;; - the target theorem is (≼ Jan x)
 ;; - the current proof is JPA
-;; - the maximum depth is greater than 0
 ;; then continue.
 !(add-atom &td-ctl-kb (: JS (TDContinue (: JPA $r) (MkTD (≼ Jan $x) $k))))
 
 ;; 3rd observation: if
-;; - the target theorem is (≼ $x $y) such that $x ≠ $y
-;; - the current proof is Trans
-;; - the maximum depth is greater than 0
+;; - the target theorem is (≼ $x $y) such that $x ≠ Jan and $x ≠ $y
+;; - the current proof is Trans or FM to ND
 ;; then continue.
 ;;
 ;; In order to emulate a ≠ function we exhaustively add all
@@ -413,8 +410,11 @@
    (if (== $m1 $m2)
        (empty)
        (add-atom &td-ctl-kb (: (WitnessOf (≠ $m1 $m2)) (≠ $m1 $m2)))))
-!(add-atom &td-ctl-kb (: TS (-> (≠ $x $y)
-                                (TDContinue (: Trans $r) (MkTD (≼ $x $y) $k)))))
+!(let $rn (superpose (Trans FM MA AM MJ JJ JA AS SO ON ND))
+   (add-atom &td-ctl-kb (: TS (-> (≠ Jan $x)
+                                  (-> (≠ $x $y)
+                                      (TDContinue (: $rn $rc)
+                                                  (MkTD (≼ $x $y) $k)))))))
 
 ;; Always continue the base case
 (: base-td-continuor (-> $a $ct Bool))
@@ -426,15 +426,15 @@
 
 ;; Match contination predicate for the TD (Target theorem, Maximum
 ;; depth) context.  The maximum depth of the backward chainer call is
-;; 1 because axiom TS (the 3rd observation) has 1 premise, therefore
-;; requires 1 recursion.
+;; 2 because axiom TS (the 3rd observation) has 2 premises, therefore
+;; requires 2 recursions.
 (: match-td-continuor (-> $a $ct Bool))
 (= (match-td-continuor $query $ctx)
    (let $results (collapse
                   (get-closed-proof
                    (bc &td-ctl-kb                  ; Knowledge base for control
-                       &mdctl                               ; Control structure
-                       (fromNumber 1)                     ; Context for control
+                       &md-ctl                              ; Control structure
+                       (fromNumber 2)                     ; Context for control
                        (: $prf (TDContinue $query $ctx)))))    ; Continue query
      (not (== () $results))))
 
@@ -445,88 +445,70 @@
                            rec-td-continuor      ; Recursive step continuor
                            match-td-continuor))  ; Match continuor
 
-;; NEXT
-
 ;; Prove that Jan non-strictly precedes Jan
-;; !(assertEqual
-  !(bc &kb &td-ctl (MkTD (≼ Jan Jan) (fromNumber 1)) (: $prf (≼ Jan Jan)))
-  ;; (: Refl (≼ Jan Jan)))
+!(assertEqualToResult
+  (let $thm (≼ Jan Jan)
+    (bc &kb &td-ctl (MkTD $thm (fromNumber 0)) (: $prf $thm)))
+  ((: Refl (≼ Jan Jan))
+   (: JPA (≼ Jan Jan))))
 
-;; ;; ;; ;; Prove that Feb non-strictly precedes Feb
-;; ;; ;; !(assertEqual
-;; ;; ;;   (bc &kb
-;; ;; ;;       td-updater td-updater td-terminator
-;; ;; ;;       (MkTD (≼ Feb Feb) (fromNumber 2))
-;; ;; ;;       (: $prf (≼ Feb Feb)))
-;; ;; ;;   (: Refl (≼ Feb Feb)))
+;; Prove that Feb non-strictly precedes Feb
+!(assertEqual
+  (let $thm (≼ Feb Feb)
+    (bc &kb &td-ctl (MkTD $thm (fromNumber 0)) (: $prf $thm)))
+  (: Refl (≼ Feb Feb)))
 
-;; ;; ;; ;; Prove that Jan precedes Feb
-;; ;; ;; !(assertEqualToResult
-;; ;; ;;   (bc &kb
-;; ;; ;;       td-updater td-updater td-terminator
-;; ;; ;;       (MkTD (≼ Jan Feb) (fromNumber 2))
-;; ;; ;;       (: $prf (≼ Jan Feb)))
-;; ;; ;;   ((: JF (≼ Jan Feb))
-;; ;; ;;    (: JPA (≼ Jan Feb))))
+!(assertEqual
+  (let $thm (≼ Jan Feb)
+    (bc &kb &td-ctl (MkTD $thm (fromNumber 0)) (: $prf $thm)))
+  (: JPA (≼ Jan Feb)))
 
-;; ;; ;; ;; Prove that Jan precedes Mar
-;; ;; ;; !(assertEqual
-;; ;; ;;   (bc &kb
-;; ;; ;;       td-updater td-updater td-terminator
-;; ;; ;;       (MkTD (≼ Jan Mar) (fromNumber 4))
-;; ;; ;;       (: $prf (≼ Jan Mar)))
-;; ;; ;;   (: JPA (≼ Jan Mar)))
+;; Prove that Jan precedes Mar
+!(assertEqual
+  (let $thm (≼ Jan Mar)
+    (bc &kb &td-ctl (MkTD $thm (fromNumber 3)) (: $prf $thm)))
+  (: JPA (≼ Jan Mar)))
 
-;; ;; ;; ;; Prove that Feb precedes May
-;; ;; ;; !(assertEqual
-;; ;; ;;   (bc &kb
-;; ;; ;;       td-updater td-updater td-terminator
-;; ;; ;;       (MkTD (≼ Feb May) (fromNumber 4))
-;; ;; ;;       (: $prf (≼ Feb May)))
-;; ;; ;;   (: ((Trans FM) ((Trans MA) AM)) (≼ Feb May)))
+;; Prove that Feb precedes May
+!(assertEqual
+  (let $thm (≼ Feb May)
+    (bc &kb &td-ctl (MkTD $thm (fromNumber 3)) (: $prf $thm)))
+  (: ((Trans FM) ((Trans MA) AM)) (≼ Feb May)))
 
-;; ;; ;; ;; Prove that Feb precedes Jun
-;; ;; ;; !(assertEqualToResult
-;; ;; ;;   (bc &kb
-;; ;; ;;       td-updater td-updater td-terminator
-;; ;; ;;       (MkTD (≼ Feb Jun) (fromNumber 5))
-;; ;; ;;       (: $prf (≼ Feb Jun)))
-;; ;; ;;   ((: ((Trans ((Trans FM) MA)) ((Trans AM) MJ)) (≼ Feb Jun))
-;; ;; ;;    (: ((Trans FM) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))))
+;; Prove that Feb precedes Jun
+!(assertEqualToResult
+  (let $thm (≼ Feb Jun)
+    (bc &kb &td-ctl (MkTD $thm (fromNumber 4)) (: $prf $thm)))
+  ((: ((Trans ((Trans FM) MA)) ((Trans AM) MJ)) (≼ Feb Jun))
+   (: ((Trans FM) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))))
 
-;; ;; ;; ;; Prove that Feb precedes Jul
-;; ;; ;; !(assertEqualToResult
-;; ;; ;;   (bc &kb
-;; ;; ;;       td-updater td-updater td-terminator
-;; ;; ;;       (MkTD (≼ Feb Jul) (fromNumber 6))
-;; ;; ;;       (: $prf (≼ Feb Jul)))
-;; ;; ;;   ((: ((Trans ((Trans FM) ((Trans MA) AM))) ((Trans MJ) JJ)) (≼ Feb Jul))
-;; ;; ;;    (: ((Trans ((Trans FM) MA)) ((Trans ((Trans AM) MJ)) JJ)) (≼ Feb Jul))
-;; ;; ;;    (: ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans MJ) JJ))) (≼ Feb Jul))
-;; ;; ;;    (: ((Trans FM) ((Trans ((Trans MA) AM)) ((Trans MJ) JJ))) (≼ Feb Jul))
-;; ;; ;;    (: ((Trans FM) ((Trans MA) ((Trans AM) ((Trans MJ) JJ)))) (≼ Feb Jul))))
+;; Prove that Feb precedes Jul
+!(assertEqualToResult
+  (let $thm (≼ Feb Jul)
+    (bc &kb &td-ctl (MkTD $thm (fromNumber 5)) (: $prf $thm)))
+  ((: ((Trans ((Trans FM) ((Trans MA) AM))) ((Trans MJ) JJ)) (≼ Feb Jul))
+   (: ((Trans ((Trans FM) MA)) ((Trans ((Trans AM) MJ)) JJ)) (≼ Feb Jul))
+   (: ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans MJ) JJ))) (≼ Feb Jul))
+   (: ((Trans FM) ((Trans ((Trans MA) AM)) ((Trans MJ) JJ))) (≼ Feb Jul))
+   (: ((Trans FM) ((Trans MA) ((Trans AM) ((Trans MJ) JJ)))) (≼ Feb Jul))))
 
-;; ;; ;; ;; Disabled because it takes 1h40.
-;; ;; ;; ;;
-;; ;; ;; ;; ;; Prove that Feb precedes Aug
-;; ;; ;; ;; ;; !(assertEqual
-;; ;; ;; ;;   !(bc &kb
-;; ;; ;; ;;       td-updater td-updater td-terminator
-;; ;; ;; ;;       (MkTD (≼ Feb Aug) (fromNumber 7))
-;; ;; ;; ;;       (: $prf (≼ Feb Aug)))
-;; ;; ;;    ;; ((: ((Trans ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans MJ) JJ)))) JA) (≼ Feb Aug))
-;; ;; ;;    ;;  (: ((Trans ((Trans ((Trans FM) MA)) ((Trans AM) MJ))) ((Trans JJ) JA)) (≼ Feb Aug))
-;; ;; ;;    ;;  (: ((Trans ((Trans ((Trans FM) MA)) AM)) ((Trans ((Trans MJ) JJ)) JA)) (≼ Feb Aug))
-;; ;; ;;    ;;  (: ((Trans ((Trans ((Trans FM) MA)) AM)) ((Trans MJ) ((Trans JJ) JA))) (≼ Feb Aug))
-;; ;; ;;    ;;  (: ((Trans ((Trans FM) ((Trans MA) ((Trans AM) MJ)))) ((Trans JJ) JA)) (≼ Feb Aug))
-;; ;; ;;    ;;  (: ((Trans ((Trans FM) ((Trans MA) AM))) ((Trans ((Trans MJ) JJ)) JA)) (≼ Feb Aug))
-;; ;; ;;    ;;  (: ((Trans ((Trans FM) ((Trans MA) AM))) ((Trans MJ) ((Trans JJ) JA))) (≼ Feb Aug))
-;; ;; ;;    ;;  (: ((Trans ((Trans FM) MA)) ((Trans ((Trans AM) ((Trans MJ) JJ))) JA)) (≼ Feb Aug))
-;; ;; ;;    ;;  (: ((Trans ((Trans FM) MA)) ((Trans ((Trans AM) MJ)) ((Trans JJ) JA))) (≼ Feb Aug))
-;; ;; ;;    ;;  (: ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans ((Trans MJ) JJ)) JA))) (≼ Feb Aug))
-;; ;; ;;    ;;  (: ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans MJ) ((Trans JJ) JA)))) (≼ Feb Aug))
-;; ;; ;;    ;;  (: ((Trans FM) ((Trans ((Trans MA) ((Trans AM) MJ))) ((Trans JJ) JA))) (≼ Feb Aug))
-;; ;; ;;    ;;  (: ((Trans FM) ((Trans ((Trans MA) AM)) ((Trans ((Trans MJ) JJ)) JA))) (≼ Feb Aug))
-;; ;; ;;    ;;  (: ((Trans FM) ((Trans ((Trans MA) AM)) ((Trans MJ) ((Trans JJ) JA)))) (≼ Feb Aug))
-;; ;; ;;    ;;  (: ((Trans FM) ((Trans MA) ((Trans ((Trans AM) MJ)) ((Trans JJ) JA)))) (≼ Feb Aug))
-;; ;; ;;    ;;  (: ((Trans FM) ((Trans MA) ((Trans AM) ((Trans MJ) ((Trans JJ) JA))))) (≼ Feb Aug)))
+;; Prove that Feb precedes Aug (takes 7h)
+!(assertEqualToResult
+  (let $thm (≼ Feb Aug)
+    (bc &kb &td-ctl (MkTD $thm (fromNumber 6)) (: $prf $thm)))
+  ((: ((Trans ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans MJ) JJ)))) JA) (≼ Feb Aug))
+   (: ((Trans ((Trans ((Trans FM) MA)) ((Trans AM) MJ))) ((Trans JJ) JA)) (≼ Feb Aug))
+   (: ((Trans ((Trans ((Trans FM) MA)) AM)) ((Trans ((Trans MJ) JJ)) JA)) (≼ Feb Aug))
+   (: ((Trans ((Trans ((Trans FM) MA)) AM)) ((Trans MJ) ((Trans JJ) JA))) (≼ Feb Aug))
+   (: ((Trans ((Trans FM) ((Trans MA) ((Trans AM) MJ)))) ((Trans JJ) JA)) (≼ Feb Aug))
+   (: ((Trans ((Trans FM) ((Trans MA) AM))) ((Trans ((Trans MJ) JJ)) JA)) (≼ Feb Aug))
+   (: ((Trans ((Trans FM) ((Trans MA) AM))) ((Trans MJ) ((Trans JJ) JA))) (≼ Feb Aug))
+   (: ((Trans ((Trans FM) MA)) ((Trans ((Trans AM) ((Trans MJ) JJ))) JA)) (≼ Feb Aug))
+   (: ((Trans ((Trans FM) MA)) ((Trans ((Trans AM) MJ)) ((Trans JJ) JA))) (≼ Feb Aug))
+   (: ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans ((Trans MJ) JJ)) JA))) (≼ Feb Aug))
+   (: ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans MJ) ((Trans JJ) JA)))) (≼ Feb Aug))
+   (: ((Trans FM) ((Trans ((Trans MA) ((Trans AM) MJ))) ((Trans JJ) JA))) (≼ Feb Aug))
+   (: ((Trans FM) ((Trans ((Trans MA) AM)) ((Trans ((Trans MJ) JJ)) JA))) (≼ Feb Aug))
+   (: ((Trans FM) ((Trans ((Trans MA) AM)) ((Trans MJ) ((Trans JJ) JA)))) (≼ Feb Aug))
+   (: ((Trans FM) ((Trans MA) ((Trans ((Trans AM) MJ)) ((Trans JJ) JA)))) (≼ Feb Aug))
+   (: ((Trans FM) ((Trans MA) ((Trans AM) ((Trans MJ) ((Trans JJ) JA))))) (≼ Feb Aug))))
