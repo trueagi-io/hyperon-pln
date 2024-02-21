@@ -48,7 +48,7 @@
 
 ;; Control type definition.  Takes a query type and a context type.
 ;; Holds the functions involved in inference control.
-(: Control (-> $a $ct Type))
+(: Control (-> $b $c Type))
 
 ;; Control data type constructor.  Take various functions as inference
 ;; control guides, specifically to update an inference context and
@@ -79,12 +79,12 @@
 ;;   context, provide the predicate of a conditional wrapping the
 ;;   match results.  Continuing amounts to not pruning the current
 ;;   reduction (as in evaluation) branches.
-(: MkControl (-> (-> $a $ct $ct)     ; Abstraction context updater
-                 (-> $a $ct $ct)     ; Argument context updater
-                 (-> $a $ct Bool)    ; Base case continuation predicate
-                 (-> $a $ct Bool)    ; Recursive step continuation predicate
-                 (-> $a $ct Bool)    ; Match continuation predicate
-                 (Control $a $ct)))  ; Control type
+(: MkControl (-> (-> $a $c $c)      ; Abstraction context updater
+                 (-> $a $c $c)      ; Argument context updater
+                 (-> $a $c Bool)    ; Base case continuation predicate
+                 (-> $a $c Bool)    ; Recursive step continuation predicate
+                 (-> $a $c Bool)    ; Match continuation predicate
+                 (Control $a $c)))  ; Control type
 
 ;; Backward Chainer.  The arguments of the backward chainer are:
 ;;
@@ -109,11 +109,11 @@
 ;; and update that contextualized query instead.  However, that
 ;; removes the guaranty that the user-programmed inference control
 ;; does not interfere with the correctness of the chainer.
-(: bc (-> $kb               ; Knowledge base
-          (Control $a $ct)  ; Control
-          $ct               ; Context
-          $a                ; Query
-          $a))              ; Query result
+(: bc (-> $a               ; Knowledge base
+          (Control $b $c)  ; Control structure
+          $c               ; Context
+          $b               ; Query
+          $b))             ; Query result
 
 ;; Base case.  The call itself do not result into any recursion, no
 ;; matter what.  However, it may either terminate without pruning the
@@ -273,74 +273,74 @@
 ;; Tests ;;
 ;;;;;;;;;;;
 
-;; ;; Test greater than zero continuor
+;; Test greater than zero continuor
+!(assertEqual
+  (gtz-continuor (: $prf $thm) Z)
+  False)
+!(assertEqual
+  (gtz-continuor (: $prf $thm) (S Z))
+  True)
+
+;; Test greater than zero backward chaining based continuor
+!(assertEqual
+  (gtz-bc-continuor (: $prf $thm) Z)
+  False)
+!(assertEqual
+  (gtz-bc-continuor (: $prf $thm) (S Z))
+  True)
+
+;; Prove that Jan non-strictly precedes Jan
+!(assertEqualToResult
+  (bc &kb &md-bc-ctl (fromNumber 0) (: $prf (≼ Jan Jan)))
+  ((: JPA (≼ Jan Jan))
+   (: Refl (≼ Jan Jan))))
+
+;; Prove that Feb non-strictly precedes Feb
+!(assertEqual
+  (bc &kb &md-bc-ctl (fromNumber 0) (: $prf (≼ Feb Feb)))
+  (: Refl (≼ Feb Feb)))
+
+;; Prove that Jan precedes Feb
+!(assertEqualToResult
+  (bc &kb &md-bc-ctl (fromNumber 0) (: $prf (≼ Jan Feb)))
+  ((: JF (≼ Jan Feb))
+   (: JPA (≼ Jan Feb))))
+
+;; Verify a proof that Jan precedes Mar
+!(assertEqual
+  (bc &kb &md-bc-ctl (fromNumber 2) (: ((Trans JF) FM) (≼ Jan Mar)))
+  (: ((Trans JF) FM) (≼ Jan Mar)))
+
+;; Prove that Jan precedes Mar
+!(assertEqualToResult
+  (bc &kb &md-bc-ctl (fromNumber 2) (: $prf (≼ Jan Mar)))
+  ((: JPA (≼ Jan Mar))
+   (: ((Trans Refl) JPA) (≼ Jan Mar))
+   (: ((Trans JF) FM) (≼ Jan Mar))
+   (: ((Trans JPA) Refl) (≼ Jan Mar))
+   (: ((Trans JPA) JPA) (≼ Jan Mar))
+   (: ((Trans JPA) FM) (≼ Jan Mar))))
+
+;; Prove that Feb precedes May
+!(assertEqual
+  (bc &kb &md-bc-ctl (fromNumber 3) (: $prf (≼ Feb May)))
+  (: ((Trans FM) ((Trans MA) AM)) (≼ Feb May)))
+
+;; Prove that Feb precedes Jun
+!(assertEqualToResult
+  (bc &kb &md-bc-ctl (fromNumber 4) (: $prf (≼ Feb Jun)))
+  ((: ((Trans FM) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))
+   (: ((Trans ((Trans FM) MA)) ((Trans AM) MJ)) (≼ Feb Jun))
+   (: ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans MJ) Refl))) (≼ Feb Jun))
+   (: ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans Refl) MJ))) (≼ Feb Jun))
+   (: ((Trans ((Trans FM) MA)) ((Trans Refl) ((Trans AM) MJ))) (≼ Feb Jun))
+   (: ((Trans ((Trans FM) Refl)) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))
+   (: ((Trans ((Trans Refl) FM)) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))))
+
+;; Prove that Feb precedes Jul (too long to run)
 ;; !(assertEqual
-;;   (gtz-continuor (: $prf $thm) Z)
-;;   False)
-;; !(assertEqual
-;;   (gtz-continuor (: $prf $thm) (S Z))
-;;   True)
-
-;; ;; Test greater than zero backward chaining based continuor
-;; !(assertEqual
-;;   (gtz-bc-continuor (: $prf $thm) Z)
-;;   False)
-;; !(assertEqual
-;;   (gtz-bc-continuor (: $prf $thm) (S Z))
-;;   True)
-
-;; ;; Prove that Jan non-strictly precedes Jan
-;; !(assertEqualToResult
-;;   (bc &kb &md-bc-ctl (fromNumber 0) (: $prf (≼ Jan Jan)))
-;;   ((: JPA (≼ Jan Jan))
-;;    (: Refl (≼ Jan Jan))))
-
-;; ;; Prove that Feb non-strictly precedes Feb
-;; !(assertEqual
-;;   (bc &kb &md-bc-ctl (fromNumber 0) (: $prf (≼ Feb Feb)))
-;;   (: Refl (≼ Feb Feb)))
-
-;; ;; Prove that Jan precedes Feb
-;; !(assertEqualToResult
-;;   (bc &kb &md-bc-ctl (fromNumber 0) (: $prf (≼ Jan Feb)))
-;;   ((: JF (≼ Jan Feb))
-;;    (: JPA (≼ Jan Feb))))
-
-;; ;; Verify a proof that Jan precedes Mar
-;; !(assertEqual
-;;   (bc &kb &md-bc-ctl (fromNumber 2) (: ((Trans JF) FM) (≼ Jan Mar)))
-;;   (: ((Trans JF) FM) (≼ Jan Mar)))
-
-;; ;; Prove that Jan precedes Mar
-;; !(assertEqualToResult
-;;   (bc &kb &md-bc-ctl (fromNumber 2) (: $prf (≼ Jan Mar)))
-;;   ((: JPA (≼ Jan Mar))
-;;    (: ((Trans Refl) JPA) (≼ Jan Mar))
-;;    (: ((Trans JF) FM) (≼ Jan Mar))
-;;    (: ((Trans JPA) Refl) (≼ Jan Mar))
-;;    (: ((Trans JPA) JPA) (≼ Jan Mar))
-;;    (: ((Trans JPA) FM) (≼ Jan Mar))))
-
-;; ;; Prove that Feb precedes May
-;; !(assertEqual
-;;   (bc &kb &md-bc-ctl (fromNumber 3) (: $prf (≼ Feb May)))
-;;   (: ((Trans FM) ((Trans MA) AM)) (≼ Feb May)))
-
-;; ;; Prove that Feb precedes Jun
-;; !(assertEqualToResult
-;;   (bc &kb &md-bc-ctl (fromNumber 4) (: $prf (≼ Feb Jun)))
-;;   ((: ((Trans FM) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))
-;;    (: ((Trans ((Trans FM) MA)) ((Trans AM) MJ)) (≼ Feb Jun))
-;;    (: ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans MJ) Refl))) (≼ Feb Jun))
-;;    (: ((Trans ((Trans FM) MA)) ((Trans AM) ((Trans Refl) MJ))) (≼ Feb Jun))
-;;    (: ((Trans ((Trans FM) MA)) ((Trans Refl) ((Trans AM) MJ))) (≼ Feb Jun))
-;;    (: ((Trans ((Trans FM) Refl)) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))
-;;    (: ((Trans ((Trans Refl) FM)) ((Trans MA) ((Trans AM) MJ))) (≼ Feb Jun))))
-
-;; ;; Prove that Feb precedes Jul (to long to list)
-;; ;; !(assertEqual
-;;   !(bc &kb &md-bc-ctl (fromNumber 5) (: $prf (≼ Feb Jul)))
-;;   ;; (: ((Trans FM) ((Trans MA) ((Trans AM) ((Trans MJ) JJ)))) (≼ Feb Jul))
+  !(bc &kb &md-bc-ctl (fromNumber 5) (: $prf (≼ Feb Jul)))
+  ;; (: ((Trans FM) ((Trans MA) ((Trans AM) ((Trans MJ) JJ)))) (≼ Feb Jul))
 
 ;; Disabled because it takes Xh.
 
