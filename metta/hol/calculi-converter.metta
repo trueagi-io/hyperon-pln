@@ -1,7 +1,8 @@
-;; Implement functions to convert terms between lambda-calculus and
-;; combinatory logic.
+;; Implement functions to convert terms between MeTTa, lambda calculus
+;; and combinatory logic.
 ;;
-;; The code is extracted from:
+;; For the lambda calculus <-> combinatory logic part, the code is
+;; inspired from the paper:
 ;;
 ;; A correct-by-construction conversion from lambda calculus to
 ;; combinatory logic, by Wouter Swierstra.
@@ -15,6 +16,10 @@
 ;; On the lambda-calculus side, the MeTTa representation of a lambda
 ;; abstraction is ((λ <VAR>) <BODY>), all explicitly curried as well.
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Combinatory logic to λ-calculus ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;; Convert combinatory logic term to lambda-calculus
 (: cl2lc (-> Atom Atom))
 ;; Base cases
@@ -23,6 +28,10 @@
 (= (cl2lc AS) ((λ $f) ((λ $g) ((λ $x) (($f $x) ($g $x))))))
 ;; Recursive step
 (= (cl2lc ($f $g)) ((cl2lc $f) (cl2lc $g)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; λ-calculus to combinatory logic ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; ;; NEXT: complete the following
 ;;
@@ -35,7 +44,44 @@
 ;; (= (lc2cl ((λ $x) ($f $g))) ((S (lc2cl ((λ $x) $f))) (lc2cl ((λ $x) $g))))
 ;; (= (lc2cl ($f $g)) ((lc2cl $f) (lc2cl $g)))
 
-;; According to ChatGPT:
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; MeTTa to λ-calculus ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Return True iff $x is a variable
+(: is-variable (-> Atom Bool))
+(= (is-variable $x)
+   (case (let $x 1 True)
+     ((True True)
+      (%void% False))))
+
+;; NEXT:
+;; 1. replace LET by let (if possible)
+;; 2. support let*
+
+;; Convert a MeTTa expression to lambda calculus
+(: mt2lc (-> Atom Atom))
+(= (mt2lc $expr)
+   (if (is-variable $expr)
+       $expr
+       (case $expr
+         (((LET $x $y $f) (((λ $x) (mt2lc $f)) (mt2lc $y))) ; Let
+          (($f $x) ((mt2lc $f) (mt2lc $x)))                 ; Application
+          ($s $s)))))                                       ; Symbol
+
+;;;;;;;;;;;;;;;;;;;;;
+;; Reduction rules ;;
+;;;;;;;;;;;;;;;;;;;;;
+
+;; ;; Reduce lambda application
+;; (= (((λ $x) $f) $y) (let $x $y $f))
+
+;;;;;;;;;;;
+;; Tests ;;
+;;;;;;;;;;;
+
+;; According to ChatGPT the following holds (NEXT: make sure there are
+;; no hallucination):
 ;;
 ;; Z (zero) would be represented by
 ;; - combinatory logic: (AK ID)
@@ -57,17 +103,6 @@
 ;; - combinatory logic: ((S ((S (K S)) K)) I)
 ;; - lambda calculus: ((λ $m) ((λ $n) ((λ $f) ((λ $x) (($m ($n $f)) $x)))))
 
-;;;;;;;;;;;;;;;;;;;;;
-;; Reduction rules ;;
-;;;;;;;;;;;;;;;;;;;;;
-
-;; ;; Reduce lambda application
-(= (((λ $x) $f) $y) (let $x $y $f))
-
-;;;;;;;;;;;
-;; Tests ;;
-;;;;;;;;;;;
-
 ;; Convert zero to lambda calculus.
 ;;
 ;; TODO: re-enable assertEqual when it will support alpha-equivalence.
@@ -86,7 +121,7 @@
 ;; https://github.com/trueagi-io/hyperon-experimental/blob/main/lib/src/metta/runner/stdlib.metta
 
 ;; Convert successor to lambda calculus
-!(cl2lc (AK AS))
+;; !(cl2lc (AK AS))
 ;; (((λ $x#20) ((λ $y#21) $x#20)) ((λ $f#41) ((λ $g#42) ((λ $x#43) (($f#41 $x#43) ($g#42 $x#43))))))
 ;; -->
 ;; ((λ $y#21) ((λ $f#41) ((λ $g#42) ((λ $x#43) (($f#41 $x#43) ($g#42 $x#43))))))
@@ -94,3 +129,26 @@
 ;; !(cl2lc ((AS (AK AS)) AK))
 
 ;; (((λ $x#20) ((λ $y#21) $x#20)) ((λ $x#41) $x#41))
+
+!(mt2lc
+  (LET $spleeter-output
+       (snet.sound-spleeter.spleeter ((snet.sound-spleeter.MkInput "") $input))
+       (LET $english-vocals (snet.sound-spleeter.Output.vocals $spleeter-output)
+            (LET $chinese-lyrics
+                 (naint.machine-translation.Output.translation
+                  (naint.machine-translation.translate
+                   (((naint.machine-translation.MkInput "English") "Chinese")
+                    (snet.speech-recognition.Text.text
+                     (snet.speech-recognition.s2t
+                      (snet.speech-recognition.MkAudio $english-vocals))))))
+                 (LET $midi-notes (tomidi.MIDI.data (tomidi.MkAudio $english-vocals))
+                      (LET $chinese-vocals
+                           (naint.midi2voice-zh.Answer.output_audio
+                            (naint.midi2voice-zh.singingZH
+                             (((naint.midi2voice-zh.MkQuery $chinese-lyrics)
+                               $midi-notes) 1.0)))
+                           (mixer.Audio.data
+                            (mixer.mix
+                             ((mixer.MkMultiAudio
+                               (snet.sound-spleeter.Output.accomp $spleeter-output))
+                              $chinese-vocals)))))))))
