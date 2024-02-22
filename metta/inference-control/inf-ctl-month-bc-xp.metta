@@ -163,10 +163,7 @@
 
 ;; Return True iff $x is a variable
 (: is-variable (-> Atom Bool))
-(= (is-variable $x)
-   (case (collapse (superpose (let $x 1 True)))
-     ((True True)
-      (%void% False))))
+(= (is-variable $x) (case (let $x 1 True) ((True True) (%void% False))))
 
 ;; Return True iff $x is closed
 (: is-closed (-> Atom Bool))
