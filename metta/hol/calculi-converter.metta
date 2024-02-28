@@ -8,13 +8,16 @@
 ;; combinatory logic, by Wouter Swierstra.
 ;;
 ;; As in the paper, the version of combinatory logic in consideration
-;; is S, K, I.  In MeTTa these combinators are represented as AS, AK,
-;; ID to not be confused with the successor function S.  Also all
+;; is S, K, I.  For now S, the combinator, cannot be confused with S,
+;; the successor function, because Nat is not defined here, however we
+;; may want in the future to represent these combinators as AS, AK, ID
+;; to not be confused with S, the successor function.  Also all
 ;; functions are explicitly curried, thus K x y is represented in
 ;; MeTTa as ((K x) y).
 ;;
 ;; On the lambda-calculus side, the MeTTa representation of a lambda
-;; abstraction is ((λ <VAR>) <BODY>), all explicitly curried as well.
+;; abstraction is (λ <VAR> <BODY>).  Applications are explicitly
+;; curried as well, thus (x y z) is represented ((x y) z).
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Combinatory logic to λ-calculus ;;
@@ -23,9 +26,10 @@
 ;; Convert combinatory logic term to lambda-calculus
 (: cl2lc (-> Atom Atom))
 ;; Base cases
-(= (cl2lc ID) ((λ $x) $x))
-(= (cl2lc AK) ((λ $x) ((λ $y) $x)))
-(= (cl2lc AS) ((λ $f) ((λ $g) ((λ $x) (($f $x) ($g $x))))))
+(= (cl2lc ID) (λ $x $x))
+(= (cl2lc AK) (λ $x (λ $y $x)))
+(= (cl2lc AS) (λ $f (λ $g (λ $x (($f $x) ($g $x))))))
+(= (cl2lc AM) (λ $x ($x $x)))
 ;; Recursive step
 (= (cl2lc ($f $g)) ((cl2lc $f) (cl2lc $g)))
 
@@ -33,16 +37,58 @@
 ;; λ-calculus to combinatory logic ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; ;; NEXT: complete the following
+;; Return True iff the first argument is a subterm of the second
+;; argument.
 ;;
-;; ;; Convert lambda-calculus term to combinatory logic term
-;; (: lc2cl (-> Atom Atom))
-;; ;; Base case
-;; (= (lc2cl ((λ $x) $x)) ID)
-;; ;; Recursive steps
-;; ;; (= (lc2cl ((λ $x) $f)) (AK (lc2cl $f))) if $x does not occur freely in $f
-;; (= (lc2cl ((λ $x) ($f $g))) ((S (lc2cl ((λ $x) $f))) (lc2cl ((λ $x) $g))))
-;; (= (lc2cl ($f $g)) ((lc2cl $f) (lc2cl $g)))
+;; For instance
+;;
+;; (is-subterm A A) returns True
+;; (is-subterm A (A B)) returns True
+;; (is-subterm A B) returns False
+;; (is-subterm A (B C)) returns False
+;;
+;; It should handle variables properly (that is assume that variables
+;; with different names are different terms), for instance
+;;
+;; (is-subterm $x $x) returns True
+;; (is-subterm $x ($x $y)) returns True
+;; (is-subterm $x $y) returns False
+;; (is-subterm $x ($y $z)) return False
+;;
+;; Terms can of course contain both symbols and variables, for
+;; instance
+;;
+;; (is-subterm A ($x A)) returns True
+;; (is-subterm $x ($x A)) returns True
+;; (is-subterm A ($x B)) returns False
+;; (is-subterm $x ($y A)) returns False
+;;
+;; It should of course detect a subterm when it is buried deeper
+;; inside the superterm, for instance
+;;
+;; (is-subterm A (C (B A))) returns True
+;; (is-subterm A (B (C D))) returns False
+(: is-subterm (-> Atom Atom Bool))
+
+;; NEXT: complete.  It would be good if there is a notion of guards
+;; Return True iff $x is a subterm of $f
+(= (is-subterm $x $x) True)
+;; (= (is-subterm $x $y) False)            ; NEXT if $x ≠ $y
+;; (= (is-subterm $x ($x $y)) True)
+;; (= (is-subterm $x ($y $x)) True)
+;; (= (is-subterm $x ($y $z)) False)       ; NEXT if $x ≠ $y and $x ≠ $z
+;; (= (is-subterm $x $y) (if (== $x $y)
+;;                           True
+;;                           ;; NEXT
+
+;; Convert lambda-calculus term to combinatory logic term
+(: lc2cl (-> Atom Atom))
+;; Base case
+(= (lc2cl (λ $x $x)) ID)
+;; Recursive steps
+(= (lc2cl (λ $x $f)) (if (is-subterm $x $f) (empty) (AK (lc2cl $f))))
+(= (lc2cl (λ $x ($f $g))) ((AS (lc2cl (λ $x $f))) (lc2cl (λ $x $g))))
+(= (lc2cl ($f $g)) ((lc2cl $f) (lc2cl $g)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MeTTa to λ-calculus ;;
@@ -65,16 +111,19 @@
    (if (is-variable $expr)
        $expr
        (case $expr
-         (((LET $x $y $f) (((λ $x) (mt2lc $f)) (mt2lc $y))) ; Let
-          (($f $x) ((mt2lc $f) (mt2lc $x)))                 ; Application
-          ($s $s)))))                                       ; Symbol
+         (((LET $x $y $f) ((λ $x (mt2lc $f)) (mt2lc $y)))  ; Let
+          (($f $x) ((mt2lc $f) (mt2lc $x)))                ; Application
+          ($s $s)))))                                      ; Symbol
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Reduction rules ;;
 ;;;;;;;;;;;;;;;;;;;;;
 
-;; ;; Reduce lambda application
-;; (= (((λ $x) $f) $y) (let $x $y $f))
+;; NEXT: fix lambda application reduction, see
+;; https://github.com/trueagi-io/metta-examples/issues/39
+
+;; Reduce lambda application
+(= ((λ $x $f) $y) (let $x $y $f))
 
 ;;;;;;;;;;;
 ;; Tests ;;
@@ -85,70 +134,76 @@
 ;;
 ;; Z (zero) would be represented by
 ;; - combinatory logic: (AK ID)
-;; - lambda calculus: ((λ $f) ((λ $x) $x))
+;; - lambda calculus: (λ $f (λ $x $x))
 ;;
-;; S (successor) would be represented by
+;; S (successor) would be represented by (NEXT: is it really the case?)
 ;; - combinatory logic: ((AS (AK AS)) AK)
-;; - lambda calculus: ((λ $n) ((λ $f) ((λ $x) ($f (($n $f) $x)))))
+;; - lambda calculus: (λ $n (λ $f (λ $x ($f (($n $f) $x)))))
+;;
+;; 1 would be represented by
+;; - combinatory logic: NEXT
+;; - lambda calculus: (λ $f (λ $x ($f $x)))
 ;;
 ;; 2 would be represented by
-;; - combinatory logic: ((((S (K S)) K) ((S (K S)) K)) (K I))
-;; - lambda calculus: ((λ $f) ((λ $x) ($f ($f $x))))
+;; - combinatory logic: ((((AS (AK AS)) AK) ((AS (AK AS)) AK)) (AK ID))
+;; - lambda calculus: (λ $f (λ $x ($f ($f $x))))
 ;;
 ;; plus (addition) would be represented by
 ;; - combinatory logic: ((AS (AS AK)) ID)
 ;; - lambda calculus: ((λ $m) ((λ $n) ((λ $f) ((λ $x) (($m f) (($n $f) $x))))))
 ;;
 ;; times (multiplication) would be represented by
-;; - combinatory logic: ((S ((S (K S)) K)) I)
+;; - combinatory logic: ((AS ((AS (AK AS)) AK)) ID)
 ;; - lambda calculus: ((λ $m) ((λ $n) ((λ $f) ((λ $x) (($m ($n $f)) $x)))))
 
-;; Convert zero to lambda calculus.
-;;
-;; TODO: re-enable assertEqual when it will support alpha-equivalence.
-;; Maybe we should introduce something like assertAlphaEqual.
-;;
-;; !(assertEqual
-  ;; !(cl2lc (AK ID))
-  ;; ((λ $f) ((λ $x) $x)))
+;; ;; Convert (AK ID) to (λ $f (λ $x $x)) (zero in lambda calculus)
+;; ;;
+;; ;; TODO: re-enable assertEqual when it will support alpha-equivalence.
+;; ;; Maybe we should introduce something like assertAlphaEqual.
+;; ;;
+;; ;; !(assertEqual
+;;   !(cl2lc (AK ID))
+;;   ;; (λ $f (λ $x $x)))
 
-;; NEXT: pursue according to the outcome of
-;; https://github.com/trueagi-io/hyperon-experimental/issues/242#issuecomment-1948089755
+;; ;; Convert ((AS ID) ID) to (λ $x ($x $x)) (M, the Mockingbird combinator)
+;; !(cl2lc ((AS ID) ID))
 
-;; NEXT: maybe dig into minimal metta, here are starting points
-;;
-;; https://github.com/trueagi-io/hyperon-experimental/blob/main/docs/minimal-metta.md
-;; https://github.com/trueagi-io/hyperon-experimental/blob/main/lib/src/metta/runner/stdlib.metta
+;; Convert (M M) (reduction should not halt)
+;; !(cl2lc (M M))
 
-;; Convert successor to lambda calculus
-;; !(cl2lc (AK AS))
-;; (((λ $x#20) ((λ $y#21) $x#20)) ((λ $f#41) ((λ $g#42) ((λ $x#43) (($f#41 $x#43) ($g#42 $x#43))))))
-;; -->
-;; ((λ $y#21) ((λ $f#41) ((λ $g#42) ((λ $x#43) (($f#41 $x#43) ($g#42 $x#43))))))
-;; !(cl2lc (AS (AK AS)))
+;; NEXT: fix lambda application reduction, see
+;; https://github.com/trueagi-io/metta-examples/issues/39
+!(let $x (λ $y ($y $y)) ($x $x))
+
+;; ;; Convert ((AS (AK AS)) AK) to
+;; ;; (λ $n (λ $f (λ $x ($f (($n $f) $x))))) (successor in lambda calculus)
 ;; !(cl2lc ((AS (AK AS)) AK))
 
-;; (((λ $x#20) ((λ $y#21) $x#20)) ((λ $x#41) $x#41))
+;; ;; Convert 1 to lambda calculus
+;; !(cl2lc ((((AS (AK AS)) AK) ((AS (AK AS)) AK)) (AK ID)))
 
-!(mt2lc
-  (LET $spleeter-output
-       (snet.sound-spleeter.spleeter ((snet.sound-spleeter.MkInput "") $input))
-       (LET $english-vocals (snet.sound-spleeter.Output.vocals $spleeter-output)
-            (LET $chinese-lyrics
-                 (naint.machine-translation.Output.translation
-                  (naint.machine-translation.translate
-                   (((naint.machine-translation.MkInput "English") "Chinese")
-                    (snet.speech-recognition.Text.text
-                     (snet.speech-recognition.s2t
-                      (snet.speech-recognition.MkAudio $english-vocals))))))
-                 (LET $midi-notes (tomidi.MIDI.data (tomidi.MkAudio $english-vocals))
-                      (LET $chinese-vocals
-                           (naint.midi2voice-zh.Answer.output_audio
-                            (naint.midi2voice-zh.singingZH
-                             (((naint.midi2voice-zh.MkQuery $chinese-lyrics)
-                               $midi-notes) 1.0)))
-                           (mixer.Audio.data
-                            (mixer.mix
-                             ((mixer.MkMultiAudio
-                               (snet.sound-spleeter.Output.accomp $spleeter-output))
-                              $chinese-vocals)))))))))
+;; ;; Convert 2 to lambda calculus
+;; !(cl2lc ((((AS (AK AS)) AK) ((AS (AK AS)) AK)) (AK ID)))
+
+;; !(mt2lc
+;;   (LET $spleeter-output
+;;        (snet.sound-spleeter.spleeter ((snet.sound-spleeter.MkInput "") $input))
+;;        (LET $english-vocals (snet.sound-spleeter.Output.vocals $spleeter-output)
+;;             (LET $chinese-lyrics
+;;                  (naint.machine-translation.Output.translation
+;;                   (naint.machine-translation.translate
+;;                    (((naint.machine-translation.MkInput "English") "Chinese")
+;;                     (snet.speech-recognition.Text.text
+;;                      (snet.speech-recognition.s2t
+;;                       (snet.speech-recognition.MkAudio $english-vocals))))))
+;;                  (LET $midi-notes (tomidi.MIDI.data (tomidi.MkAudio $english-vocals))
+;;                       (LET $chinese-vocals
+;;                            (naint.midi2voice-zh.Answer.output_audio
+;;                             (naint.midi2voice-zh.singingZH
+;;                              (((naint.midi2voice-zh.MkQuery $chinese-lyrics)
+;;                                $midi-notes) 1.0)))
+;;                            (mixer.Audio.data
+;;                             (mixer.mix
+;;                              ((mixer.MkMultiAudio
+;;                                (snet.sound-spleeter.Output.accomp $spleeter-output))
+;;                               $chinese-vocals)))))))))
