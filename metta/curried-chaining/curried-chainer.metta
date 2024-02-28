@@ -1,8 +1,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Examples of both backward and forward curried chainers.             ;;
 ;;                                                                     ;;
-;; Indeed, for the forward chainer to be curried it must be able to go ;;
-;; backward in order to unfold the rules.                              ;;
+;; The curried forward chainer relies on the curried backward chainer  ;;
+;; to unfold the rules.                                                ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;
@@ -28,6 +28,10 @@
 ;;;;;;;;;;;;;;;;;;;;
 ;; Knowledge base ;;
 ;;;;;;;;;;;;;;;;;;;;
+
+;; Simple knowledge base for expository purpose.  Do not confuse `->`,
+;; the MeTTa arrow type, and `→`, a regular MeTTa symbol denoting a
+;; relationship.
 
 !(bind! &kb (new-space))
 
