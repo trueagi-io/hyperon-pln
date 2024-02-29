@@ -127,15 +127,15 @@
 ;; Combinatory logic to λ-calculus ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; ;; Convert combinatory logic term to lambda-calculus
-;; (: cl2lc (-> Atom Atom))
-;; ;; Base cases
-;; (= (cl2lc ID) (λ $x $x))
-;; (= (cl2lc AK) (λ $x (λ $y $x)))
-;; (= (cl2lc AS) (λ $f (λ $g (λ $x (($f $x) ($g $x))))))
-;; (= (cl2lc AM) (λ $x ($x $x)))
-;; ;; Recursive step
-;; (= (cl2lc ($f $g)) ((cl2lc $f) (cl2lc $g)))
+;; Convert combinatory logic term to lambda-calculus
+(: cl2lc (-> Atom Atom))
+;; Base cases
+(= (cl2lc ID) (λ $x $x))
+(= (cl2lc AK) (λ $x (λ $y $x)))
+(= (cl2lc AS) (λ $f (λ $g (λ $x (($f $x) ($g $x))))))
+(= (cl2lc AM) (λ $x ($x $x)))
+;; Recursive step
+(= (cl2lc ($f $g)) ((cl2lc $f) (cl2lc $g)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; λ-calculus to combinatory logic ;;
