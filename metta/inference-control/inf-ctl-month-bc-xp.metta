@@ -163,15 +163,16 @@
 
 ;; Return True iff $x is a variable
 (: is-variable (-> Atom Bool))
-(= (is-variable $x) (case (let $x 1 True) ((True True) (%void% False))))
+(= (is-variable $x) (== (get-metatype $x) Variable))
 
 ;; Return True iff $x is closed
 (: is-closed (-> Atom Bool))
 (= (is-closed $x) (if (is-variable $x)
                       False
-                      (case $x
-                        ((($abs $arg) (and (is-closed $abs) (is-closed $arg)))
-                         ($x True)))))
+                      (if (is-expression $x)
+                          (or (let $head (car-atom $y) (is-closed $head))
+                              (let $tail (cdr-atom $y) (is-closed $tail)))
+                          True)))
 
 ;; Return the proof of a query iff it is closed.  Otherwise prune the branch.
 (: get-closed-proof (-> $a $a))
