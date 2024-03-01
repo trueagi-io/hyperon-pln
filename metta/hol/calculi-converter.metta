@@ -123,6 +123,17 @@
 !(assertEqual (is-subterm-of A (C (B A))) True)
 !(assertEqual (is-subterm-of A (B (C D))) False)
 
+;;;;;;;;;;;;;;;;;;;;;
+;; Reduction rules ;;
+;;;;;;;;;;;;;;;;;;;;;
+
+;; NEXT: fix lambda application reduction, see
+;; https://github.com/trueagi-io/metta-examples/issues/39
+
+;; Reduce lambda application
+;; (= ((λ $x $f) $y) (let $x $y $f))
+(= ((λ $x $f) $y) (let ($νx $νf) (sealed ($x) ($x $f)) (let $νx $y $νf)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Combinatory logic to λ-calculus ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -137,50 +148,7 @@
 ;; Recursive step
 (= (cl2lc ($f $g)) ((cl2lc $f) (cl2lc $g)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; λ-calculus to combinatory logic ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Convert lambda-calculus term to combinatory logic term
-(: lc2cl (-> Atom Atom))
-;; Base case
-(= (lc2cl (λ $x $x)) ID)
-;; Recursive steps
-(= (lc2cl (λ $x $f)) (if (is-subterm-of $x $f) (empty) (AK (lc2cl $f))))
-(= (lc2cl (λ $x ($f $g))) ((AS (lc2cl (λ $x $f))) (lc2cl (λ $x $g))))
-(= (lc2cl ($f $g)) ((lc2cl $f) (lc2cl $g)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;
-;; MeTTa to λ-calculus ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; NEXT:
-;; 1. replace LET by let (if possible)
-;; 2. support let*
-
-;; Convert a MeTTa expression to lambda calculus
-(: mt2lc (-> Atom Atom))
-(= (mt2lc $expr)
-   (if (is-variable $expr)
-       $expr
-       (case $expr
-         (((LET $x $y $f) ((λ $x (mt2lc $f)) (mt2lc $y)))  ; Let
-          (($f $x) ((mt2lc $f) (mt2lc $x)))                ; Application
-          ($s $s)))))                                      ; Symbol
-
-;;;;;;;;;;;;;;;;;;;;;
-;; Reduction rules ;;
-;;;;;;;;;;;;;;;;;;;;;
-
-;; NEXT: fix lambda application reduction, see
-;; https://github.com/trueagi-io/metta-examples/issues/39
-
-;; Reduce lambda application
-(= ((λ $x $f) $y) (let $x $y $f))
-
-;;;;;;;;;;;
-;; Tests ;;
-;;;;;;;;;;;
+;; Test cl2lc
 
 ;; According to ChatGPT the following holds (NEXT: make sure there are
 ;; no hallucination):
@@ -209,24 +177,26 @@
 ;; - combinatory logic: ((AS ((AS (AK AS)) AK)) ID)
 ;; - lambda calculus: ((λ $m) ((λ $n) ((λ $f) ((λ $x) (($m ($n $f)) $x)))))
 
-;; ;; Convert (AK ID) to (λ $f (λ $x $x)) (zero in lambda calculus)
-;; ;;
-;; ;; TODO: re-enable assertEqual when it will support alpha-equivalence.
-;; ;; Maybe we should introduce something like assertAlphaEqual.
-;; ;;
-;; ;; !(assertEqual
-;;   !(cl2lc (AK ID))
-;;   ;; (λ $f (λ $x $x)))
+;; Convert (AK ID) to (λ $f (λ $x $x)) (zero in lambda calculus)
+;;
+;; TODO: re-enable assertEqual when it will support alpha-equivalence.
+;; Maybe we should introduce something like assertAlphaEqual.
+;;
+;; !(assertEqual
+  !(cl2lc (AK ID))
+  ;; (λ $f (λ $x $x)))
 
-;; ;; Convert ((AS ID) ID) to (λ $x ($x $x)) (M, the Mockingbird combinator)
-;; !(cl2lc ((AS ID) ID))
+;; Convert ((AS ID) ID) to (λ $x ($x $x)) (M, the Mockingbird combinator)
+!(cl2lc ((AS ID) ID))
 
-;; Convert (M M) (reduction should not halt)
-;; !(cl2lc (M M))
+;; Disabled because it does not half, as it should
+;; Convert (AM AM) (reduction should not halt)
+;; !(cl2lc (AM AM))
 
-;; NEXT: fix lambda application reduction, see
-;; https://github.com/trueagi-io/metta-examples/issues/39
-;; !(let $x (λ $y ($y $y)) ($x $x))
+;; Convert (AS ID) to
+!(cl2lc (AS ID))
+
+;; ;; NEXT: find out if the following is correct
 
 ;; ;; Convert ((AS (AK AS)) AK) to
 ;; ;; (λ $n (λ $f (λ $x ($f (($n $f) $x))))) (successor in lambda calculus)
@@ -237,6 +207,107 @@
 
 ;; ;; Convert 2 to lambda calculus
 ;; !(cl2lc ((((AS (AK AS)) AK) ((AS (AK AS)) AK)) (AK ID)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; λ-calculus to combinatory logic ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; NEXT: can we avoid the is-variable condition by using the type checker?
+
+;; Return True iff the expression is a tuple of variables
+(: all-variables (-> Expression Bool))
+(= (all-variables $x) (if (== $x ())
+                             True
+                             (and (let $head (car-atom $x) (is-variable $head))
+                                  (let $tail (cdr-atom $x) (all-variables $tail)))))
+
+;; Return True iff the expression is a tuple of unique variables.
+;; Note that it only supports pairs and triples because that is all we
+;; need here.
+(: uniq-vars (-> Expression Bool))
+(= (uniq-vars ($x $y)) (and (all-variables ($x $y)) (not (== $x $y))))
+(= (uniq-vars ($x $y $z)) (and (all-variables ($x $y $z))
+                               (and (not (== $x $y))
+                                    (and (not (== $y $z))
+                                         (not (== $x $z))))))
+
+;; Convert lambda-calculus term to combinatory logic term
+(: lc2cl (-> Atom Atom))
+;; Base cases
+(= (lc2cl (λ $x $x)) (if (is-variable $x) ID (empty)))
+(= (lc2cl (λ $x (λ $y $x))) (if (uniq-vars ($x $y)) AK (empty)))
+(= (lc2cl (λ $f (λ $g (λ $x (($f $x) ($g $x)))))) (if (uniq-vars ($f $g $x))
+                                                      AS
+                                                      (empty)))
+(= (lc2cl (λ $x ($x $x))) (if (is-variable $x) AM (empty)))
+;; Recursive steps
+(= (lc2cl (λ $x $f)) (if (and (is-variable $x) (not (is-subterm-of $x $f)))
+                         (AK (lc2cl $f))
+                         (empty)))
+(= (lc2cl (λ $x ($f $g))) (if (is-variable $x)
+                              ((AS (lc2cl (λ $x $f))) (lc2cl (λ $x $g)))
+                              (empty)))
+(= (lc2cl ($f $g)) ((lc2cl $f) (lc2cl $g)))
+
+;; Test lc2cl
+
+;; Convert (λ $x $x) to ID
+!(assertEqual (lc2cl (λ $x $x)) ID)
+
+;; Convert (λ $x (λ $y $x)) to AK
+!(assertEqual (lc2cl (λ $x (λ $y $x))) AK)
+
+;; Convert (λ $f (λ $g (λ $x (($f $x) ($g $x))))) to AS
+!(assertEqual (lc2cl (λ $f (λ $g (λ $x (($f $x) ($g $x)))))) AS)
+
+;; Convert (λ $x ($x $x)) to AM
+!(assertEqualToResult
+  (lc2cl (λ $x ($x $x)))
+  (AM
+   ((AS ID) ID)))
+
+;; Convert Z from lambda calculus to combinatory logic, that is
+;; (λ $f (λ $x $x)) |-> (AK ID)
+!(assertEqual
+  (lc2cl (λ $f (λ $x $x)))
+  (AK ID))
+
+;; NEXT: find out why the following does not work
+
+;; Convert (λ $g (λ $x ($g $x))) to ?
+!(lc2cl (λ $g (λ $x ($g $x))))
+
+;; ;; Convert (λ $g (λ $x ($x ($g $x)))) to ?
+;; !(lc2cl (λ $g (λ $x ($x ($g $x)))))
+
+;; ;; Convert ((λ $f (λ $g (λ $x (($f $x) ($g $x))))) (λ $y $y)) to (AS ID)
+;; !(lc2cl ((λ $f (λ $g (λ $x (($f $x) ($g $x))))) (λ $y $y)))
+
+;; ;; Convert S from lambda calculus to combinatory logic.  That is
+;; ;; (λ $n (λ $f (λ $x ($f (($n $f) $x))))) |-> ((AS (AK AS)) AK)
+;; !(lc2cl (λ $n (λ $f (λ $x ($f (($n $f) $x))))))
+
+;; (λ $n (λ $f (λ $x ($f (($n $f) $x)))))
+;; -->
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; MeTTa to λ-calculus ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; NEXT:
+;; 1. replace LET by let (if possible)
+;; 2. support let*
+
+;; Convert a MeTTa expression to lambda calculus
+(: mt2lc (-> Atom Atom))
+(= (mt2lc $expr)
+   (if (is-variable $expr)
+       $expr
+       (case $expr
+         (((LET $x $y $f) ((λ $x (mt2lc $f)) (mt2lc $y)))  ; Let
+          (($f $x) ((mt2lc $f) (mt2lc $x)))                ; Application
+          ($s $s)))))                                      ; Symbol
 
 ;; !(mt2lc
 ;;   (LET $spleeter-output
