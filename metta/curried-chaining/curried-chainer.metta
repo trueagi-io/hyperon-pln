@@ -58,7 +58,9 @@
 ;;
 ;; * Maximum depth: maximum depth of the generated proof tree.
 ;;
-;; Results are returned as a superposition.
+;; A result is the query with its variables grounded, fully or
+;; partially.  If multiple results are possible, they are returned as
+;; a superposition.
 (: bc (-> $a                            ; Knowledge base space
           $b                            ; Query
           Nat                           ; Maximum depth
@@ -102,12 +104,14 @@
 ;;
 ;; * Maximum depth: maximum depth of the generated proof tree.
 ;;
-;; Results are returned as a superposition.
+;; A result is a conclusion that can be reached from the source.  If
+;; multiple results are possible, they are returned as a
+;; superposition.
 (: fc (-> $a                            ; Knowledge base space
           $b                            ; Source
           Nat                           ; Maximum depth
           $b))                          ; Conclusion
-;; Base case.  Beware that the provided source is assumed to be true.
+;; Base case
 (= (fc $kb (: $prf $prms) $_) (: $prf $prms))
 ;; Recursive step
 (= (fc $kb (: $prfarg $prms) (S $k))
