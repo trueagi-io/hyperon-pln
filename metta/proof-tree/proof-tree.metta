@@ -136,3 +136,108 @@
    (: ((ModusPonens (: ab (→ A B))) (: a A)) B)
    (: ((ModusPonens (: bc (→ B C))) (: ((ModusPonens (: ab (→ A B))) (: a A)) B)) C)))
 
+;;;;;;;;;;;;;;;
+;; Flattener ;;
+;;;;;;;;;;;;;;;
+
+;; Concatenate two expressions
+;;
+;; for instance
+;;
+;; (concat-atom (a b) (c d)) returns (a b c d)
+(: concat-atom (-> Expression Expression Expression))
+(= (concat-atom $el $er)
+   (if (== $el ())
+       $er
+       (let* (($hd (car-atom $el))
+              ($tl (cdr-atom $el))
+              ($tler (concat-atom $tl $er)))
+         (cons-atom $hd $tler))))
+
+;; Test concat-atom
+!(assertEqual
+  (concat-atom (a b) ())
+  (a b))
+!(assertEqual
+  (concat-atom (a b) (c d))
+  (a b c d))
+
+;; Flatten a curried expression.  For instance
+;;
+;; (flatten ((f a) b)) returns (f a b)
+;;
+;; Note that it only flattens left-associative application.  Therefore
+;; it will not work on the arrow type as it is right-associative.  For
+;; instance
+;;
+;; (flatten (-> T1 (-> T2 T3))) returns (-> T1 (-> T2 T3)), not (-> T1 T2 T3)
+(= (flatten $term)
+   (case (get-metatype $term)
+     ((Symbol $term)
+      (Variable $term)
+      (Expression
+       (if (== $term ())
+           ()
+           (let* (($hd (flatten (car-atom $term)))
+                  ($tl (flatten (cdr-atom $term))))
+             (case (get-metatype $hd)
+               ((Symbol (cons-atom $hd $tl))
+                (Variable (cons-atom $hd $tl))
+                (Expression
+                 (if (== $hd ())
+                     (cons-atom $hd $tl)
+                     (let* (($hd-hd (car-atom $hd))
+                            ($tl-hd (cdr-atom $hd))
+                            ($tl-hd-tl (concat-atom $tl-hd $tl)))
+                       (trace! ((term $term)
+                                (hd $hd)
+                                (tl $tl)
+                                (hd-hd $hd-hd)
+                                (tl-hd $tl-hd)
+                                (tl-hd-tl $tl-hd-tl)
+                                (result (cons-atom $hd-hd $tl-hd-tl)))
+                               (cons-atom $hd-hd $tl-hd-tl)))))))))))))
+
+;; Test flatten
+;; !(assertEqual
+;;   (flatten a)
+;;   a)
+;; !(assertEqual
+;;   (flatten $x)
+;;   $x)
+;; !(assertEqual
+;;   (flatten ())
+;;   ())
+;; !(assertEqual
+;;   (flatten (()))
+;;   (()))
+;; !(assertEqual
+;;   (flatten (f a))
+;;   (f a))
+!(assertEqual
+  (flatten ((f a)))
+  ((f a)))                        ; NEXT: what should it be? (f a) or ((f a))?
+;; !(assertEqual
+;;   (flatten (() a))
+;;   (() a))
+;; !(assertEqual
+;;   (flatten ((f a) b))
+;;   (f a b))
+;; !(assertEqual
+;;   (flatten ((f a) ()))
+;;   (f a ()))
+;; !(assertEqual
+;;   (flatten ((f a b) c))
+;;   (f a b c))
+;; !(assertEqual
+;;   (flatten (((f a) b) c))
+;;   (f a b c))
+;; !(assertEqual
+;;   (flatten ((f a) (g c)))
+;;   (f a (g c))) ; NEXT
+;; !(assertEqual
+;;   (flatten (((f a) b) (g c)))
+;;   (f a b (g c))) ; NEXT
+;; !(assertEqual
+;;   (flatten (((f a) b) ((g c) d)))
+;;   (f a b (g c d))) ; NEXT
