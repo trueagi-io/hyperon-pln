@@ -59,10 +59,10 @@
 ;; Curried Forward Chainer
 (: fc (-> $a Nat $a))
 ;; Base case.  Beware that the provided source is assumed to be true.
-(= (fc (: $proof $premise) $_) (: $proof $premise))
+(= (fc (: $prf $prms) $_) (: $prf $prms))
 ;; Recursive step
-(= (fc (: $prfarg $premise) (S $k))
-   (let (: $prfabs (-> $premise $ccln)) (bc (: $prfabs (-> $premise $ccln)) $k)
+(= (fc (: $prfarg $prms) (S $k))
+   (let (: $prfabs (-> $prms $ccln)) (bc (: $prfabs (-> $prms $ccln)) $k)
      (fc (: ($prfabs $prfarg) $ccln) $k)))
 (= (fc (: $prfabs (-> $prms $ccln)) (S $k))
     (let (: $prfarg $prms) (bc (: $prfarg $prms) $k)
