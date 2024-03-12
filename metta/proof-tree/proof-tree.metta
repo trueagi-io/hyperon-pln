@@ -140,6 +140,10 @@
 ;; Flattener ;;
 ;;;;;;;;;;;;;;;
 
+;; Return True iff $term is an expression
+(: is-expression (-> Atom Bool))
+(= (is-expression $term) (== (get-metatype $term) Expression))
+
 ;; Concatenate two expressions
 ;;
 ;; for instance
@@ -162,6 +166,18 @@
   (concat-atom (a b) (c d))
   (a b c d))
 
+;; Like flatten but treat the given tuple as a list of expressions
+;; instead of an expression
+(: flatten-map (-> Expression Expression))
+(= (flatten-map $tuple)
+   (if (== $tuple ())
+       ()
+       (let* (($head (car-atom $tuple))
+              ($tail (cdr-atom $tuple))
+              ($flat-head (flatten $head))
+              ($flat-tail (flatten-map $tail)))
+         (cons-atom $flat-head $flat-tail))))
+
 ;; Flatten a curried expression.  For instance
 ;;
 ;; (flatten ((f a) b)) returns (f a b)
@@ -171,73 +187,75 @@
 ;; instance
 ;;
 ;; (flatten (-> T1 (-> T2 T3))) returns (-> T1 (-> T2 T3)), not (-> T1 T2 T3)
+(: flatten (-> Atom Atom))
 (= (flatten $term)
-   (case (get-metatype $term)
-     ((Symbol $term)
-      (Variable $term)
-      (Expression
+   (if (is-expression $term)
        (if (== $term ())
            ()
-           (let* (($hd (flatten (car-atom $term)))
-                  ($tl (flatten (cdr-atom $term))))
-             (case (get-metatype $hd)
-               ((Symbol (cons-atom $hd $tl))
-                (Variable (cons-atom $hd $tl))
-                (Expression
-                 (if (== $hd ())
-                     (cons-atom $hd $tl)
-                     (let* (($hd-hd (car-atom $hd))
-                            ($tl-hd (cdr-atom $hd))
-                            ($tl-hd-tl (concat-atom $tl-hd $tl)))
-                       (trace! ((term $term)
-                                (hd $hd)
-                                (tl $tl)
-                                (hd-hd $hd-hd)
-                                (tl-hd $tl-hd)
-                                (tl-hd-tl $tl-hd-tl)
-                                (result (cons-atom $hd-hd $tl-hd-tl)))
-                               (cons-atom $hd-hd $tl-hd-tl)))))))))))))
+           (let* (($head (car-atom $term))
+                  ($tail (cdr-atom $term))
+                  ($flat-head (flatten $head))
+                  ($flat-tail (flatten-map $tail)))
+             (if (is-expression $flat-head)
+                 (if (== $flat-head ())
+                     (cons-atom $flat-head $flat-tail)
+                     (let* (($hd-hd (car-atom $flat-head))
+                            ($tl-hd (cdr-atom $flat-head))
+                            ($tl-hd-tl (concat-atom $tl-hd $flat-tail)))
+                       (cons-atom $hd-hd $tl-hd-tl)))
+                 (cons-atom $flat-head $flat-tail))))
+       $term))
 
 ;; Test flatten
-;; !(assertEqual
-;;   (flatten a)
-;;   a)
-;; !(assertEqual
-;;   (flatten $x)
-;;   $x)
-;; !(assertEqual
-;;   (flatten ())
-;;   ())
-;; !(assertEqual
-;;   (flatten (()))
-;;   (()))
-;; !(assertEqual
-;;   (flatten (f a))
-;;   (f a))
+!(assertEqual
+  (flatten a)
+  a)
+!(assertEqual
+  (flatten $x)
+  $x)
+!(assertEqual
+  (flatten ())
+  ())
+!(assertEqual
+  (flatten (()))
+  (()))
+!(assertEqual
+  (flatten (f a))
+  (f a))
 !(assertEqual
   (flatten ((f a)))
-  ((f a)))                        ; NEXT: what should it be? (f a) or ((f a))?
-;; !(assertEqual
-;;   (flatten (() a))
-;;   (() a))
-;; !(assertEqual
-;;   (flatten ((f a) b))
-;;   (f a b))
-;; !(assertEqual
-;;   (flatten ((f a) ()))
-;;   (f a ()))
-;; !(assertEqual
-;;   (flatten ((f a b) c))
-;;   (f a b c))
-;; !(assertEqual
-;;   (flatten (((f a) b) c))
-;;   (f a b c))
-;; !(assertEqual
-;;   (flatten ((f a) (g c)))
-;;   (f a (g c))) ; NEXT
-;; !(assertEqual
-;;   (flatten (((f a) b) (g c)))
-;;   (f a b (g c))) ; NEXT
-;; !(assertEqual
-;;   (flatten (((f a) b) ((g c) d)))
-;;   (f a b (g c d))) ; NEXT
+  (f a))
+!(assertEqual
+  (flatten (() a))
+  (() a))
+!(assertEqual
+  (flatten ((f a) b))
+  (f a b))
+!(assertEqual
+  (flatten ((f a) ()))
+  (f a ()))
+!(assertEqual
+  (flatten ((f a b) c))
+  (f a b c))
+!(assertEqual
+  (flatten (((f a) b) c))
+  (f a b c))
+!(assertEqual
+  (flatten ((f a) b c))
+  (f a b c))
+!(assertEqual
+  (flatten ((f a) (g c)))
+  (f a (g c)))
+!(assertEqual
+  (flatten (((f a) b) (g c)))
+  (f a b (g c)))
+!(assertEqual
+  (flatten ((f a) (g c) (h d)))
+  (f a (g c) (h d)))
+!(assertEqual
+  (flatten (((f a) b) ((g c) d)))
+  (f a b (g c d)))
+!(assertEqual
+  (flatten (: ((ModusPonens (: bc (→ B C)))
+               (: ((ModusPonens (: ab (→ A B))) (: a A)) B)) C))
+  (: (ModusPonens (: bc (→ B C)) (: (ModusPonens (: ab (→ A B)) (: a A)) B)) C))
