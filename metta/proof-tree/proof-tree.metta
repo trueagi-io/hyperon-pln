@@ -23,6 +23,11 @@
 (= (fromNat Z) 0)
 (= (fromNat (S $k)) (+ 1 (fromNat $k)))
 
+;; Return the ceiling of a non negative number.  If the number is
+;; negative it returns 1.
+(: ceil (-> Number Number))
+(= (ceil $n) (fromNat (fromNumber $n)))
+
 ;;;;;;;;;;;;;;;;;;;;
 ;; Knowledge base ;;
 ;;;;;;;;;;;;;;;;;;;;
@@ -259,3 +264,169 @@
   (flatten (: ((ModusPonens (: bc (→ B C)))
                (: ((ModusPonens (: ab (→ A B))) (: a A)) B)) C))
   (: (ModusPonens (: bc (→ B C)) (: (ModusPonens (: ab (→ A B)) (: a A)) B)) C))
+
+;;;;;;;;;;;;
+;; Drawer ;;
+;;;;;;;;;;;;
+
+;; Return the arity of an expression
+(: arity (-> Expression Number))
+(= (arity $expr)
+   (if (== $expr ())
+       0
+       (let* (($head (car-atom $expr))
+              ($tail (cdr-atom $expr)))
+         (+ 1 (arity $tail)))))
+
+;; Split tuple into two tuple from a given position.  For instance
+;;
+;; (split-tuple (a b c) 0) returns (() (a b c))
+;; (split-tuple (a b c) 1) returns ((a) (b c))
+;; (split-tuple (a b c) 2) returns ((a b) (c))
+;;
+;; If the position exceeds the arity of the tuple, then it behaves as
+;; if the position was the arity.  For instance
+;;
+;; (split-tuple (a b c) 4) returns ((a b c) ())
+;;
+;; If $position is negative then it does not terminate.
+(: split-tuple (-> Expression Number Expression))
+(= (split-tuple $tuple $position)
+   (if (== $position 0)
+       (() $tuple)
+       (if (== $tuple ())
+           (() ())
+           (let* (($head (car-atom $tuple))
+                  ($tail (cdr-atom $tuple))
+                  (($split-head $split-tail) (split-tuple $tail (- $position 1))))
+             ((cons-atom $head $split-head) $split-tail)))))
+
+;; Test split-tuple
+!(assertEqual
+  (split-tuple (a b c) 0)
+  (() (a b c)))
+!(assertEqual
+  (split-tuple (a b c) 1)
+  ((a) (b c)))
+!(assertEqual
+  (split-tuple (a b c) 2)
+  ((a b) (c)))
+!(assertEqual
+  (split-tuple (a b c) 3)
+  ((a b c) ()))
+!(assertEqual
+  (split-tuple (a b c) 4)
+  ((a b c) ()))
+
+;; Return the maximum of two number
+(: max (-> Number Number Number))
+(= (max $x $y) (if (< $x $y) $y $x))
+
+;; Given a tuple of numbers, return the maximum, or 0 if empty.
+(: max-element (-> Expression Number))
+(= (max-element $tuple)
+   (if (== $tuple ())
+       0
+       (let* (($head (car-atom $tuple))
+              ($tail (cdr-atom $tuple))
+              ($max-tl (max-element $tail)))
+         (max $head $max-tl))))
+
+;; Append a term to an expression
+(: append (-> Expression Atom Expression))
+(= (append $expr $term)
+   (if (== $expr ())
+       ($term)
+       (let* (($head (car-atom $expr))
+              ($tail (cdr-atom $expr))
+              ($tail-term (append $tail $term)))
+         (cons-atom $head $tail-term))))
+
+;; Append a character to a string
+(: append-char (-> String Char String))
+(= (append-char $s $c)
+   (let* (($cs (stringToChars $s))
+          ($csc (append $cs $c)))
+     (charsToString $csc)))
+
+;; ;; Return the length of a string
+;; (: len-str (-> String Number))
+;; (= (len-str $s) (let $cs (stringToChars $s) (arity $cs)))
+
+;; ;; Concatenate two strings
+;; (: concat-str (-> String String String))
+;; (= (concat-str $ls $rs)
+;;    (let* (($lcs (stringToChars $ls))
+;;           ($rcs (stringToChars $rs))
+;;           ($lrcs (concat-atom $lcs $rcs)))
+;;      (charsToString $lrcs)))
+
+;; Generate a String composed of a repeated String.
+(: repeat-str (-> String Number String))
+(= (repeat-str $s $n)
+   (if (== $n 0)
+       ""
+       (let $r (repeat-str $s (- $n 1))
+         (concat-str $s $r))))
+
+;; !(len-str "abc")
+;; !(concat-str "abc" "def")
+;; !(repeat-str "abc" 3)
+
+;; Given a fully annotated proof, return a string corresponding to an
+;; ascii drawing of its proof in a Gentzen style.  For now, due to
+;; MeTTa not supporting escaped characters, the ascii representation
+;; is a tuple of lines, where each line is a String.  For instance the
+;; string "abc\ndef" is represented by `("abs" "def")`.
+(: draw (-> Expression Expression))
+(= (draw (: $prf $thrm))
+   (if (is-expression $prf)
+       ;; The proof is an expression
+       (if (== $prf ())
+           ()
+           (let* (($prfabs (car-atom $prf))
+                  ($prfabs-str (repr $prfabs))
+                  ($prfabs-str-len (len-str $prfabs))
+                  ($prfargs (cdr-atom $prf))
+                  ($prfargs-strs (draw-tuple $prfargs))
+                  ($prfargs-strs-len (max-element $prfargs-strs))
+                  ($thrm-str (repr $thrm))
+                  ($thrm-str-len (len-str $thrm-str))
+                  ($line-str-len (max $prfargs-strs-len $thrm-str-len))
+                  ($line-str (repeat-str "-" $line-str-len))
+                  ($prfabs-par-str (concat-str (concat-str "(" $prfabs-str) ")"))
+                  ($line-prfabs-str (concat-str $line-str $prfabs-par-str))
+                  ($pad-len (ceil (/ (- $line-str-len $thrm-str-len)) 2))
+                  ($space-pad (repeat-str " " $pad-len))
+                  ($padded-thrm-str (concat-str $space-pad $thrm-str)))
+             (concat-atom $prfargs-strs ($line-prfabs-str $padded-thrm-str))))
+       ;; The proof is a symbol, or else
+       (let* (($prf-str (repr $prf))
+              ($prf-par-str (concat-str (concat-str "(" $prf-str) ")"))
+              ($thrm-str (repr $thrm))
+              ($thrm-str-len (len-str $thrm-str))
+              ($line-str (repeat-str "-" $thrm-str-len))
+              ($line-prf-str (concat-str $line-str $prf-par-str)))
+         ($line-prf-str $thrm-str))))
+
+;; Given a tuple of expressions of the form (: PROOF THEOREM), return
+;; an ascii drawing of these proofs in a Gentzen style side by side.
+;; Like for draw, a multi-line string is represented by a tuple of
+;; strings, one on each line.
+(: draw-tuple (-> Expression Expression))
+(= (draw-tuple $expr)
+   (if (== $expr ())
+       ()
+       (let* (($head (car-atom $expr))
+              ($tail (cdr-atom $expr))
+              ($drawn-head (draw $head))
+              ($drawn-tail (draw-tuple $tail))
+              ($drawn-head-nlines (arity $drawn-head))
+              ($drawn-tail-nlines (arity $drawn-tail)))
+         (if (< $drawn-head-nlines $drawn-tail-nlines)
+             ;; The tail is taller
+             (let* ((
+                    ($max-len-top-tail NEXT))))))))
+
+;; Test draw
+!(draw (: Refl (=== $x $x)))
