@@ -155,47 +155,37 @@
 (: α-Binding Type)
 (: ↔α (-> Variable Variable α-Binding))
 
-;; Given a list of α-bindings and a variable, return the α-binding
-;; corresponding to the provided variable viewed as key, or nothing if
-;; no such α-binding exists in the list.
-(: α-find↦ (-> (List α-Binding) Variable (Maybe α-Binding)))
-(= (α-find↦ Nil $x) Nothing)
-(= (α-find↦ (Cons (↔α $x $y) $tl) $z) (if (== $x $z)
-                                          (Just (↔α $x $y))
-                                          (α-find↦ $tl $z)))
+;; Insert an α-binding in a list of α-bindings.  Returns maybe the new
+;; list of α-bindings if the insertion succeeded, that is the
+;; α-binding is consistent with the list, or entirely missing from it.
+(: α-insert (-> α-Binding (List α-Binding) (Maybe (List α-Binding))))
+;; Base case
+(= (α-insert (↔α $x $y) Nil) (Just (Cons (↔α $x $y) Nil)))
+;; Recursive step
+(= (α-insert (↔α $x $y) (Cons (↔α $z $w) $tail))
+   (if (== $x $z)
+       (if (== $y $w)
+           (Just (Cons (↔α $z $w) $tail))
+           Nothing)
+       (if (== $y $w)
+           Nothing
+           (case (α-insert (↔α $x $y) $tail)
+             ((Nothing Nothing)
+              ((Just $νtl) (Just (Cons (↔α $z $w) $νtl))))))))
 
-;; Given a list of α-bindings and a variable, return the α-binding
-;; corresponding to the provided variable viewed as value, or nothing
-;; if no such α-binding exists in the list.
-(: α-find↤ (-> (List α-Binding) Variable (Maybe α-Binding)))
-(= (α-find↤ Nil $x) Nothing)
-(= (α-find↤ (Cons (↔α $x $y) $tl) $z) (if (== $y $z)
-                                          (Just (↔α $x $y))
-                                          (α-find↤ $tl $z)))
-
-;; Test α-find↦
+;; Test α-insert
 !(assertEqual
-  (α-find↦ Nil $x)
+  (α-insert (↔α $x $y) Nil)
+  (Just (Cons (↔α $x $y) Nil)))
+!(assertEqual
+  (α-insert (↔α $x $y) (Cons (↔α $x $y) Nil))
+  (Just (Cons (↔α $x $y) Nil)))
+!(assertEqual
+  (α-insert (↔α $x $y) (Cons (↔α $x $z) Nil))
   Nothing)
 !(assertEqual
-  (α-find↦ (Cons (↔α $x $y) Nil) $z)
-  Nothing)
-!(assertEqual
-  (α-find↦ (Cons (↔α $x $y) (Cons (↔α $z $w) Nil)) $z)
-  (Just (↔α $z $w)))
-
-;; Test α-find↤
-!(assertEqual
-  (α-find↤ Nil $x)
-  Nothing)
-!(assertEqual
-  (α-find↤ (Cons (↔α $x $y) Nil) $z)
-  Nothing)
-!(assertEqual
-  (α-find↤ (Cons (↔α $x $y) (Cons (↔α $z $w) Nil)) $w)
-  (Just (↔α $z $w)))
-
-;; NEXT
+  (α-insert (↔α $x $y) (Cons (↔α $z $w) Nil))
+  (Just (Cons (↔α $z $w) (Cons (↔α $x $y) Nil))))
 
 ;; Join two α-bindings to produce an α-bindings consisting of the
 ;; union of these.  If the two α-bindings provided in input are
@@ -203,40 +193,40 @@
 (: α-join (-> (Maybe (List α-Binding))
               (Maybe (List α-Binding))
               (Maybe (List α-Binding))))
+;; Base cases
 (= (α-join Nothing Nothing) Nothing)
 (= (α-join Nothing (Just $_)) Nothing)
 (= (α-join (Just $_) Nothing) Nothing)
-(= (α-join (Just Nil) (Just Nil)) (Just Nil))
-(= (α-join (Just Nil) (Just (Cons $hd $tl))) (Just (Cons $hd $tl)))
-(= (α-join (Just (Cons $hd $tl)) (Just Nil)) (Just (Cons $hd $tl)))
-(= (α-join (Just (Cons (↦α $x $y) $lhs-tl)) (Just (Cons $rhs-hd $rhs-tl)))
-   (case (α-find (Cons $rhs-hd $rhs-tl) $x)
-     ((Nothing (α-join (Just $lhs-tl)
-                       (Just (Cons (↦α $x $y) (Cons $rhs-hd $rhs-tl)))))
-      ((Just (↦α $x $z)) (if (== $y $z)
-                             (α-join (Just $lhs-tl)
-                                     (Just (Cons $rhs-hd $rhs-tl)))
-                             Nothing)))))
+(= (α-join (Just Nil) (Just $other)) (Just $other))
+;; Recursive step
+(= (α-join (Just (Cons $head $tail)) (Just $other))
+   (α-join (Just $tail) (α-insert $head $other)))
 
 ;; Test α-join
 !(assertEqual
   (α-join Nothing Nothing)
   Nothing)
 !(assertEqual
-  (α-join (Just (Cons (↦α $x $y) Nil)) (Just Nil))
-  (Just (Cons (↦α $x $y) Nil)))
+  (α-join (Just Nil) (Just Nil))
+  (Just Nil))
 !(assertEqual
-  (α-join (Just Nil) (Just (Cons (↦α $x $y) Nil)))
-  (Just (Cons (↦α $x $y) Nil)))
+  (α-join (Just Nil) (Just (Cons (↔α $x $y) Nil)))
+  (Just (Cons (↔α $x $y) Nil)))
 !(assertEqual
-  (α-join (Just (Cons (↦α $x $y) Nil)) (Just (Cons (↦α $x $z) Nil)))
+  (α-join (Just (Cons (↔α $x $y) Nil)) (Just Nil))
+  (Just (Cons (↔α $x $y) Nil)))
+!(assertEqual
+  (α-join (Just Nil) (Just (Cons (↔α $x $y) Nil)))
+  (Just (Cons (↔α $x $y) Nil)))
+!(assertEqual
+  (α-join (Just (Cons (↔α $x $y) Nil)) (Just (Cons (↔α $x $z) Nil)))
   Nothing)
 !(assertEqual
-  (α-join (Just (Cons (↦α $x $y) Nil)) (Just (Cons (↦α $x $y) Nil)))
-  (Just (Cons (↦α $x $y) Nil)))
+  (α-join (Just (Cons (↔α $x $y) Nil)) (Just (Cons (↔α $x $y) Nil)))
+  (Just (Cons (↔α $x $y) Nil)))
 !(assertEqual
-  (α-join (Just (Cons (↦α $x $y) Nil)) (Just (Cons (↦α $z $w) Nil)))
-  (Just (Cons (↦α $x $y) (Cons (↦α $z $w) Nil))))
+  (α-join (Just (Cons (↔α $x $y) Nil)) (Just (Cons (↔α $z $w) Nil)))
+  (Just (Cons (↔α $z $w) (Cons (↔α $x $y) Nil))))
 
 ;; Given two terms, $lhs and $rhs, return maybe a list of α-bindings
 ;; so that if $lhs is α-equivalent to $rhs, substituting all variables
@@ -249,9 +239,11 @@
      ((Symbol (if (== $lhs $rhs)
                   (Just Nil)
                   Nothing))
-      ;; NEXT: add Grounded case
+      (Grounded (if (== $lhs $rhs)
+                    (Just Nil)
+                    Nothing))
       (Variable (if (is-variable $rhs)
-                    (Just (Cons (↦α $lhs $rhs) Nil))
+                    (Just (Cons (↔α $lhs $rhs) Nil))
                     Nothing))
       (Expression (if (== $lhs ())
                       ;; $lhs is ()
@@ -281,10 +273,10 @@
   (Just Nil))
 !(assertEqual
   (α-bindings $x $y)
-  (Just (Cons (↦α $x $y) Nil)))
+  (Just (Cons (↔α $x $y) Nil)))
 !(assertEqual
   (α-bindings (R $x) (R $y))
-  (Just (Cons (↦α $x $y) Nil)))
+  (Just (Cons (↔α $x $y) Nil)))
 !(assertEqual
   (α-bindings ((R $x) A) ((R $y) $z))
   Nothing)
@@ -296,18 +288,15 @@
   Nothing)
 !(assertEqual
   (α-bindings ((R $x) $y) ((R $z) $w))
-  (Just (Cons (↦α $x $z) (Cons (↦α $y $w) Nil))))
+  (Just (Cons (↔α $y $w) (Cons (↔α $x $z) Nil))))
 
 ;; Return True iff two given terms are alpha-equivalent.  For now all
 ;; variables are assumed to be free, the notion of scope is not
 ;; implemented.
 (: =α (-> Atom Atom Bool))
-(= (=α $lhs $rhs) (if (== $lhs $rhs)
-                      True
-                      (case (get-metatype $lhs)
-                        ((Symbol False)
-                         (Variable (is-variable $rhs))
-                         (Expression ...))))) ; NEXT
+(= (=α $lhs $rhs) (case (α-bindings $lhs $rhs)
+                    ((Nothing False)
+                     ((Just $_) True))))
 
 ;; Test =α
 !(assertEqual (=α $x $x) True)
@@ -315,6 +304,7 @@
 !(assertEqual (=α A B) False)
 !(assertEqual (=α A $y) False)
 !(assertEqual (=α (R $x) (R $y)) True)
+!(assertEqual (=α (R $x $x) (R $y $z)) False)
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Reduction rules ;;
