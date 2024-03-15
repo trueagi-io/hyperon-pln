@@ -326,8 +326,8 @@
 ;; NEXT: fix lambda application reduction, see
 ;; https://github.com/trueagi-io/metta-examples/issues/39
 
-;; ;; Reduce lambda application
-;; ;; (= ((λ $x $f) $y) (let $x $y $f))
+;; Reduce lambda application
+;; (= ((λ $x $f) $y) (let $x $y $f))
 ;; (= ((λ $x $f) $y) (let ($νx $νf) (sealed ($x) ($x $f)) (let $νx $y $νf)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -408,83 +408,62 @@
 ;; λ-calculus to combinatory logic ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; NEXT: can we avoid the is-variable condition by using the type checker?
+;; Convert lambda-calculus term to combinatory logic term.
+(: lc2cl (-> Atom Atom))
+(= (lc2cl $term)
+   (case (get-metatype $term)
+     ((Variable $term)
+      (Symbol $term)
+      (Grounded $term)
+      (Expression
+       ;; Base cases
+       (if (== $term ())
+           ()
+           (if (=α $term (λ $x $x))
+               ID
+               (if (=α $term (λ $x (λ $y $x)))
+                   AK
+                   (if (=α $term (λ $f (λ $g (λ $x (($f $x) ($g $x))))))
+                       AS
+                       (if (=α $term (λ $x ($x $x)))
+                           AM
+                           ;; Recursive steps
+                           (case $term
+                             (((λ $x ($f $g))
+                               (if (is-variable $x)
+                                   ((AS (lc2cl (λ $x $f))) (lc2cl (λ $x $g)))
+                                   (empty)))
+                              ((λ $x $f)
+                               (if (and (is-variable $x) (not (is-subterm-of $x $f)))
+                                   (AK (lc2cl $f))
+                                   (empty)))
+                              (($f $g) ((lc2cl $f) (lc2cl $g))))))))))))))
 
-;; ;; Convert lambda-calculus term to combinatory logic term.
-;; (: lc2cl (-> Atom Atom))
-;; (= (lc2cl $term)
-;;    (case (get-metatype $term)
-;;      ((Variable $term)
-;;       (Symbol $term)
-;;       (Expression (case $term
-;;                     (;; Base cases
-;;                      (() ())                                 ; Empty tuple
-;;                      ((λ $x $x)                              ; ID
-;;                       (if (is-variable $x) ID (empty)))
-;;                      ((λ $x (λ $y $x))                       ; AK
-;;                       (if (uniq-vars ($x $y)) AK (empty)))
-;;                      ((λ $f (λ $g (λ $x (($f $x) ($g $x))))) ; AS
-;;                       (if (uniq-vars ($f $g $x)) AS (empty)))
-;;                      ((λ $x ($x $x))                         ; AM
-;;                       (if (is-variable $x) AM (empty)))
-;;                      ;; Recursive steps
-;;                      ((λ $x $f)) (if (and (is-variable $x) (not (is-subterm-of $x $f)))
-;; ;;                          (AK (lc2cl $f))
-;; ;;                          (empty)))
+;; Test lc2cl
+!(assertEqual
+  (lc2cl (λ $x $x))
+  ID)
+!(assertEqual
+  (lc2cl (λ $x (λ $y $x)))
+  AK)
+!(assertEqual
+  (lc2cl (λ $f (λ $g (λ $x (($f $x) ($g $x))))))
+  AS)
+!(assertEqualToResult
+  (lc2cl (λ $x ($x $x)))
+  (AM
+   ((AS ID) ID)))                       ; NEXT: understand why result no longer
+!(assertEqual
+  (lc2cl (λ $f (λ $x $x)))    ; Z in lambda calculus
+  (AK ID))                    ; Z in combinatory logic
 
-;;                      (($f $g) ((lc2cl $f) (lc2cl $g)))
-
-;; ;; NEXT: test (λ $x (λ $y $z))
-
-;; ;; NEXT: maybe introduce alpha-equivalent
-
-;; ;; ;; Base cases
-;; ;; (= (lc2cl (λ $x $x)) (if (is-variable $x) ID (empty)))
-;; ;; (= (lc2cl (λ $x (λ $y $x))) (if (uniq-vars ($x $y)) AK (empty)))
-;; ;; (= (lc2cl (λ $f (λ $g (λ $x (($f $x) ($g $x)))))) (if (uniq-vars ($f $g $x))
-;; ;;                                                       AS
-;; ;;                                                       (empty)))
-;; ;; (= (lc2cl (λ $x ($x $x))) (if (is-variable $x) AM (empty)))
-;; ;; ;; Recursive steps
-;; ;; (= (lc2cl (λ $x $f)) (if (and (is-variable $x) (not (is-subterm-of $x $f)))
-;; ;;                          (AK (lc2cl $f))
-;; ;;                          (empty)))
-;; ;; (= (lc2cl (λ $x ($f $g))) (if (is-variable $x)
-;; ;;                               ((AS (lc2cl (λ $x $f))) (lc2cl (λ $x $g)))
-;; ;;                               (empty)))
-;; ;; (= (lc2cl ($f $g)) ((lc2cl $f) (lc2cl $g)))
-
-;; ;; ;; Test lc2cl
-
-;; ;; ;; Convert (λ $x $x) to ID
-;; ;; !(assertEqual (lc2cl (λ $x $x)) ID)
-
-;; ;; ;; Convert (λ $x (λ $y $x)) to AK
-;; ;; !(assertEqual (lc2cl (λ $x (λ $y $x))) AK)
-
-;; ;; ;; Convert (λ $f (λ $g (λ $x (($f $x) ($g $x))))) to AS
-;; ;; !(assertEqual (lc2cl (λ $f (λ $g (λ $x (($f $x) ($g $x)))))) AS)
-
-;; ;; ;; Convert (λ $x ($x $x)) to AM
-;; ;; !(assertEqualToResult
-;; ;;   (lc2cl (λ $x ($x $x)))
-;; ;;   (AM
-;; ;;    ((AS ID) ID)))
-
-;; ;; ;; Convert Z from lambda calculus to combinatory logic, that is
-;; ;; ;; (λ $f (λ $x $x)) |-> (AK ID)
-;; ;; !(assertEqual
-;; ;;   (lc2cl (λ $f (λ $x $x)))
-;; ;;   (AK ID))
-
+;; NEXT: find out why the following does not work
 
 ;; !(lc2cl $f)
 ;; ;; !(lc2cl ($f $x))
 ;; ;; !(lc2cl ($f ($f $x)))
 ;; ;; !(lc2cl (λ $x ($f ($f $x))))
 ;; ;; !(lc2cl (λ $f (λ $x ($f ($f $x)))))
-
-;; ;; ;; NEXT: find out why the following does not work
 
 ;; ;; ;; Convert (λ $g (λ $x ($g $x))) to ?
 ;; ;; !(lc2cl (λ $g (λ $x ($g $x))))
