@@ -253,13 +253,18 @@
                       ;; $lhs is not ()
                       (if (== $rhs ())
                           Nothing
-                          (let* (($hd-lhs (car-atom $lhs))
-                                 ($tl-lhs (cdr-atom $lhs))
-                                 ($hd-rhs (car-atom $rhs))
-                                 ($tl-rhs (cdr-atom $rhs))
-                                 ($hd-α-bs (α-bindings $hd-lhs $hd-rhs))
-                                 ($tl-α-bs (α-bindings $tl-lhs $tl-rhs)))
-                            (α-join $hd-α-bs $tl-α-bs))))))))
+                          (case (get-metatype $rhs)
+                            ((Symbol Nothing)
+                             (Grounded Nothing)
+                             (Variable Nothing)
+                             (Expression
+                              (let* (($hd-lhs (car-atom $lhs))
+                                     ($tl-lhs (cdr-atom $lhs))
+                                     ($hd-rhs (car-atom $rhs))
+                                     ($tl-rhs (cdr-atom $rhs))
+                                     ($hd-α-bs (α-bindings $hd-lhs $hd-rhs))
+                                     ($tl-α-bs (α-bindings $tl-lhs $tl-rhs)))
+                                (α-join $hd-α-bs $tl-α-bs)))))))))))
 
 ;; Test α-bindings
 !(assertEqual
@@ -271,6 +276,9 @@
 !(assertEqual
   (α-bindings () ())
   (Just Nil))
+!(assertEqual
+  (α-bindings (R $x) $y)
+  Nothing)
 !(assertEqual
   (α-bindings $x $y)
   (Just (Cons (↔α $x $y) Nil)))
@@ -285,6 +293,9 @@
   Nothing)
 !(assertEqual
   (α-bindings ((R $x) $y) ((R $z) $z))
+  Nothing)
+!(assertEqual
+  (α-bindings (R $x (R $y)) (R $z $z))
   Nothing)
 !(assertEqual
   (α-bindings ((R $x) $y) ((R $z) $w))
@@ -305,6 +316,8 @@
 !(assertEqual (=α A $y) False)
 !(assertEqual (=α (R $x) (R $y)) True)
 !(assertEqual (=α (R $x $x) (R $y $z)) False)
+!(assertEqual (=α (R $x (R $y)) (R $z $z)) False)
+!(assertEqual (=α (λ $x (λ $y $x)) (λ $z (λ $w $z))) True)
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Reduction rules ;;
