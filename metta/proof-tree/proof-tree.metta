@@ -349,10 +349,15 @@
           ($csc (append $cs $c)))
      (charsToString $csc)))
 
+;; len-str is added to MeTTa-Python stdlib instead
 ;; ;; Return the length of a string
 ;; (: len-str (-> String Number))
 ;; (= (len-str $s) (let $cs (stringToChars $s) (arity $cs)))
 
+;; Test len-str
+!(assertEqual (len-str "abc") 3)
+
+;; concat-str is added to MeTTa-Python stdlib instead
 ;; ;; Concatenate two strings
 ;; (: concat-str (-> String String String))
 ;; (= (concat-str $ls $rs)
@@ -360,6 +365,9 @@
 ;;           ($rcs (stringToChars $rs))
 ;;           ($lrcs (concat-atom $lcs $rcs)))
 ;;      (charsToString $lrcs)))
+
+;; Test concat-str
+!(assertEqual (concat-str "abc" "def") "abcdef")
 
 ;; Generate a String composed of a repeated String.
 (: repeat-str (-> String Number String))
@@ -369,15 +377,117 @@
        (let $r (repeat-str $s (- $n 1))
          (concat-str $s $r))))
 
-;; !(len-str "abc")
-;; !(concat-str "abc" "def")
-;; !(repeat-str "abc" 3)
+;; Test repeat-str
+!(assertEqual (repeat-str "abc" 3) "abcabcabc")
+
+;; Generate a string composed of a reapeated character
+;;
+;; For instance
+;;
+;; repeat-chr
+(: repeat-chr (-> Char Number String))
+(= (repeat-chr $c $n)
+   (repeat-str (charsToString ($c)) $n))
+
+;; Test repeat-chr
+!(assertEqual (repeat-chr ' ' 3) "   ")
+
+;; Given a tuple of strings, return the length of the string with
+;; maximum length.
+(: max-len-strs (-> Expression Number))
+(= (max-len-strs $strs)
+   (if (== $strs ())
+       0
+       (let $lens (len-str (superpose $strs))
+         (max-element (collapse $lens)))))
+
+;; Test max-len-strs
+!(assertEqual (max-len-strs ()) 0)
+!(assertEqual (max-len-strs ("abc" "a" "abcd")) 4)
+
+
+;; Pad the tailing part of a string with a given character to reach a
+;; given len.  If the string is longer than the target len, then the
+;; string is left untouched.
+;;
+;; For instance
+;;
+;; (pad-trail "abc" ' ' 5)
+;;
+;; outputs
+;;
+;; "abc  "
+(: pad-trail (-> String Char Number String))
+(= (pad-trail $s $c $n)
+   (let $len (len-str $s)
+     (if (< $len $n)
+         (concat-str $s (repeat-char $c (- $n $len)))
+         $s)))
+
+;; Test pad-trail
+!(assertEqual (pad-trail "abc" ' ' 5) "abc  ")
+
+;; Like pad-trail but applied to a tuple of strings
+(: pad-trails (-> Expression Char Number Expression))
+(= (pad-trails $strs $c $n)
+   (let* (($head (car-atom $strs))
+          ($tail (cdr-atom $strs))
+          ($padded-head (pad-trail $head $c $n))
+
+;; Given two tuples of lines, draw them side by side, as if they were
+;; both standing on the ground, with a given margin separating them.
+;;
+;; For instance
+;;
+;; (draw-side-by-side lhs rhs 1)
+;;
+;; where lhs represents
+;;
+;; "  / /"
+;; " /-/"
+;; "/ /"
+;;
+;; and rhs represents
+;;
+;; "  /"
+;; " /"
+;; "/"
+;;
+;; outputs
+;;
+;; "  / /   /"
+;; " /-/   /"
+;; "/ /   /"
+(: draw-side-by-side (-> Expression Expression Number Expression))
+(= (draw-side-by-side $lhs $rhs $margin)
+   (let* (($lhs-nlines (arity $lhs))
+          ($rhs-nlines (arity $rhs)))
+     (if (< $lhs-nlines $rhs-lines)
+         (let (($lhs-max-len (max-len-strs $lhs))
+               ($lhs-padded (pad-trails $lhs $lhs-max-len " "))
+         (repeat-str " " (pad-lines $lhs $lhs-max-len)
 
 ;; Given a fully annotated proof, return a string corresponding to an
 ;; ascii drawing of its proof in a Gentzen style.  For now, due to
 ;; MeTTa not supporting escaped characters, the ascii representation
 ;; is a tuple of lines, where each line is a String.  For instance the
 ;; string "abc\ndef" is represented by `("abs" "def")`.
+;;
+;; For instance
+;;
+;; (draw (: (ModusPonens (: bc (→ B C))
+;;                       (: (ModusPonens (: ab (→ A B))
+;;                                       (: a A)) B))
+;;           C))
+;;
+;; Outputs
+;;
+;; "             -------(ab)  -(a)"
+;; "             (→ A B)      A"
+;; "-------(bc)  --------------(ModusPonens)"
+;; "(→ B C)             B"
+;; "---------------------(ModusPonens)"
+;; "           C"
 (: draw (-> Expression Expression))
 (= (draw (: $prf $thrm))
    (if (is-expression $prf)
@@ -397,6 +507,7 @@
                   ($prfabs-par-str (concat-str (concat-str "(" $prfabs-str) ")"))
                   ($line-prfabs-str (concat-str $line-str $prfabs-par-str))
                   ($pad-len (ceil (/ (- $line-str-len $thrm-str-len)) 2))
+                  ;; NEXT: can we simplify using pad-trail?
                   ($space-pad (repeat-str " " $pad-len))
                   ($padded-thrm-str (concat-str $space-pad $thrm-str)))
              (concat-atom $prfargs-strs ($line-prfabs-str $padded-thrm-str))))
@@ -409,24 +520,36 @@
               ($line-prf-str (concat-str $line-str $prf-par-str)))
          ($line-prf-str $thrm-str))))
 
-;; Given a tuple of expressions of the form (: PROOF THEOREM), return
-;; an ascii drawing of these proofs in a Gentzen style side by side.
-;; Like for draw, a multi-line string is represented by a tuple of
-;; strings, one on each line.
-(: draw-tuple (-> Expression Expression))
-(= (draw-tuple $expr)
-   (if (== $expr ())
-       ()
-       (let* (($head (car-atom $expr))
-              ($tail (cdr-atom $expr))
-              ($drawn-head (draw $head))
-              ($drawn-tail (draw-tuple $tail))
-              ($drawn-head-nlines (arity $drawn-head))
-              ($drawn-tail-nlines (arity $drawn-tail)))
-         (if (< $drawn-head-nlines $drawn-tail-nlines)
-             ;; The tail is taller
-             (let* ((
-                    ($max-len-top-tail NEXT))))))))
+;; ;; Given a tuple of expressions of the form (: PROOF THEOREM), return
+;; ;; an ascii drawing of these proofs in a Gentzen style side by side.
+;; ;; Like for draw, a multi-line string is represented by a tuple of
+;; ;; strings, one on each line.
+;; ;;
+;; ;; For instance
+;; ;;
+;; ;; (draw-tuple ((: bc (→ B C))
+;; ;;              (: (ModusPonens (: ab (→ A B)) (: a A)) B))
+;; ;;
+;; ;; outputs
+;; ;;
+;; ;; "             -------(ab)  -(a)"
+;; ;; "             (→ A B)      A"
+;; ;; "-------(bc)  --------------(ModusPonens)"
+;; ;; "(→ B C)             B"
+;; (: draw-tuple (-> Expression Expression))
+;; (= (draw-tuple $expr)
+;;    (if (== $expr ())
+;;        ()
+;;        (let* (($head (car-atom $expr))
+;;               ($tail (cdr-atom $expr))
+;;               ($drawn-head (draw $head))
+;;               ($drawn-tail (draw-tuple $tail))
+;;               ($drawn-head-nlines (arity $drawn-head))
+;;               ($drawn-tail-nlines (arity $drawn-tail)))
+;;          (if (< $drawn-head-nlines $drawn-tail-nlines)
+;;              ;; The tail is taller
+;;              (let* (($head-max-len (max-element (len-str (superpose $drawn-head))
+;;                     ($max-len-top-tail NEXT))))))))
 
 ;; Test draw
 !(draw (: Refl (=== $x $x)))
