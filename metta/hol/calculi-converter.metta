@@ -411,11 +411,7 @@
 ;; Convert lambda-calculus term to combinatory logic term.
 (: lc2cl (-> Atom Atom))
 (= (lc2cl $term)
-   (case (get-metatype $term)
-     ((Variable $term)
-      (Symbol $term)
-      (Grounded $term)
-      (Expression
+   (if (is-expression $term)
        ;; Base cases
        (if (== $term ())
            ()
@@ -429,17 +425,32 @@
                            AM
                            ;; Recursive steps
                            (case $term
-                             (((λ $x ($f $g))
+                             (((λ $x $f)
                                (if (is-variable $x)
-                                   ((AS (lc2cl (λ $x $f))) (lc2cl (λ $x $g)))
+                                   (let $clf (lc2cl $f)
+                                     (if (is-subterm-of $x $f)
+                                         ;; Build AS
+                                         (if (is-expression $clf)
+                                             (case $clf
+                                               ((($g $h) ((AS (lc2cl (λ $x $g))) (lc2cl (λ $x $h))))
+                                                ($_ (empty))))
+                                             $clf)
+                                         ;; Build AK
+                                         (AK $clf)))
                                    (empty)))
-                              ((λ $x $f)
-                               (if (and (is-variable $x) (not (is-subterm-of $x $f)))
-                                   (AK (lc2cl $f))
-                                   (empty)))
-                              (($f $g) ((lc2cl $f) (lc2cl $g))))))))))))))
+                              (($f $g) ((lc2cl $f) (lc2cl $g))))))))))
+       $term))
 
 ;; Test lc2cl
+!(assertEqual
+  (lc2cl $f)
+  $f)
+!(assertEqual
+  (lc2cl ($f $x))
+  ($f $x))
+!(assertEqual
+  (lc2cl ($f ($f $x)))
+  ($f ($f $x)))
 !(assertEqual
   (lc2cl (λ $x $x))
   ID)
@@ -449,21 +460,26 @@
 !(assertEqual
   (lc2cl (λ $f (λ $g (λ $x (($f $x) ($g $x))))))
   AS)
-!(assertEqualToResult
-  (lc2cl (λ $x ($x $x)))
-  (AM
-   ((AS ID) ID)))                       ; NEXT: understand why result no longer
 !(assertEqual
-  (lc2cl (λ $f (λ $x $x)))    ; Z in lambda calculus
-  (AK ID))                    ; Z in combinatory logic
+  (lc2cl (λ $x ($x $x)))
+  AM)
+!(assertEqual
+  (lc2cl (λ $x $f))
+  (AK $f))
+!(assertEqual
+  (lc2cl (λ $x ($f $g)))
+  (K ($f $g)))
+!(assertEqual
+  (lc2cl (λ $x ($f ($f $x))))
+  ((AS (K $f)) (K ($f $g))))
+!(assertEqual
+  (lc2cl (λ $f (λ $x $x)))    ; Zero in lambda calculus
+  (AK ID))                    ; Zero in combinatory logic
+!(assertEqual
+  (lc2cl (λ $f (λ $x ($f ($f $x)))))    ; Two in lambda calculus
+  (...))                           ; NEXT: Two in combinatory logic
 
 ;; NEXT: find out why the following does not work
-
-;; !(lc2cl $f)
-;; ;; !(lc2cl ($f $x))
-;; ;; !(lc2cl ($f ($f $x)))
-;; ;; !(lc2cl (λ $x ($f ($f $x))))
-;; ;; !(lc2cl (λ $f (λ $x ($f ($f $x)))))
 
 ;; ;; ;; Convert (λ $g (λ $x ($g $x))) to ?
 ;; ;; !(lc2cl (λ $g (λ $x ($g $x))))
