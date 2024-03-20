@@ -3,9 +3,31 @@
 ;; proof tree.                                                         ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;
-;; Nat ;;
-;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Common types and functions ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; ;; Unary lambda
+;; (: λ (-> Variable Atom Atom))
+;; (= ((λ $x $f) $y) (let $x $y $f))
+
+;; ;; Test unary λ
+;; !(assertEqual
+;;   ((λ $x (+ 1 $x)) 1)
+;;   2)
+
+;; ;; Binary lambda
+;; (: λ (-> Variable Variable Atom Atom Atom))
+;; (= ((λ $x $y $f) $z $w) (let* (($x $z) ($y $w)) $f))
+
+;; ;; Test binary λ
+;; !(assertEqual
+;;   ((λ $x $y (+ $x $y)) 1 2)
+;;   3)
+
+;; Curry a binary function
+(: curry (-> (-> $a $b $c) (-> $a (-> $b $c))))
+(= (((curry $f) $x) $y) ($f $x $y))
 
 ;; Define Nat
 (: Nat Type)
@@ -27,6 +49,205 @@
 ;; negative it returns 1.
 (: ceil (-> Number Number))
 (= (ceil $n) (fromNat (fromNumber $n)))
+
+;; Apply a given function to every element of a List
+(: map (-> (-> $a $b) (List $a) (List $b)))
+(= (map $f Nil) Nil)
+(= (map $f (Cons $h $t)) (Cons ($f $h) (map $f $t)))
+
+;; Apply a given function to every element of a tuple
+(: map-tuple (-> (-> $a $b) $c $d))
+(= (map-tuple $f $xs)
+   (if (== $xs ())
+       ()
+       (let* (($h (car-atom $xs))
+              ($t (cdr-atom $xs))
+              ($fh ($f $h))
+              ($ft (map-tuple $f $t)))
+         (cons-atom $fh $ft))))
+
+;; Test map-tuple
+!(assertEqual
+  (map-tuple repr (1 2 3))
+  ("1" "2" "3"))
+
+;; Fold a tuple from right to left
+(: foldr-tuple (-> (-> $a $b $b) $b $c $d))
+(= (foldr-tuple $f $i $xs)
+   (if (== $xs ())
+       $i
+       (let* (($h (car-atom $xs))
+              ($t (cdr-atom $xs))
+              ($ft (foldr-tuple $f $i $t)))
+         ($f $h $ft))))
+
+;; Test foldr-tuple
+!(assertEqual
+  (foldr-tuple + 0 (1 2 3))
+  6)
+
+;; Return True iff $term is an expression
+(: is-expression (-> Atom Bool))
+(= (is-expression $term) (== (get-metatype $term) Expression))
+
+;; Concatenate two tuples
+;;
+;; for instance
+;;
+;; (concat-atom (a b) (c d)) returns (a b c d)
+(: concat-atom (-> $a $a $a))
+(= (concat-atom $lhs $rhs) (foldr-tuple cons-atom $rhs $lhs))
+
+
+;; Test concat-atom
+!(assertEqual
+  (concat-atom (a b) ())
+  (a b))
+!(assertEqual
+  (concat-atom (a b) (c d))
+  (a b c d))
+
+;; Split tuple into two tuple from a given position.  For instance
+;;
+;; (split-tuple (a b c) 0) returns (() (a b c))
+;; (split-tuple (a b c) 1) returns ((a) (b c))
+;; (split-tuple (a b c) 2) returns ((a b) (c))
+;;
+;; If the position exceeds the arity of the tuple, then it behaves as
+;; if the position was the arity.  For instance
+;;
+;; (split-tuple (a b c) 4) returns ((a b c) ())
+;;
+;; If $position is negative then it does not terminate.
+(: split-tuple (-> $a Number $a))
+(= (split-tuple $tuple $position)
+   (if (== $position 0)
+       (() $tuple)
+       (if (== $tuple ())
+           (() ())
+           (let* (($head (car-atom $tuple))
+                  ($tail (cdr-atom $tuple))
+                  (($split-head $split-tail) (split-tuple $tail (- $position 1))))
+             ((cons-atom $head $split-head) $split-tail)))))
+
+;; Test split-tuple
+!(assertEqual
+  (split-tuple (a b c) 0)
+  (() (a b c)))
+!(assertEqual
+  (split-tuple (a b c) 1)
+  ((a) (b c)))
+!(assertEqual
+  (split-tuple (a b c) 2)
+  ((a b) (c)))
+!(assertEqual
+  (split-tuple (a b c) 3)
+  ((a b c) ()))
+!(assertEqual
+  (split-tuple (a b c) 4)
+  ((a b c) ()))
+
+;; Return the arity of an expression
+(= (acc $x $n) (+ 1 $n))
+(: arity (-> $a Number))
+(= (arity $expr) (foldr-tuple acc 0 $expr))
+;; TODO: re-enable when the interpreter is fixed
+;; (= (arity $expr) (foldr-tuple (λ $x $n (+ 1 $n)) 0 $expr))
+
+;; Test arity
+!(assertEqual
+  (arity ())
+  0)
+!(assertEqual
+  (arity (a b c))
+  3)
+
+;; Return the maximum of two number
+(: max (-> Number Number Number))
+(= (max $x $y) (if (< $x $y) $y $x))
+
+;; Given a tuple of numbers, return the maximum, or 0 if empty.
+(: max-element (-> $a Number))
+(= (max-element $expr) (foldr-tuple max 0 $expr))
+
+;; Test max-element
+!(assertEqual
+  (max-element (1 3 2))
+  3)
+
+;; Test len-str
+!(assertEqual
+  (len-str "abc")
+  3)
+
+;; Test concat-str
+!(assertEqual
+  (concat-str "abc" "def")
+  "abcdef")
+
+;; Generate a String composed of a repeated String.
+(: repeat-str (-> String Number String))
+(= (repeat-str $s $n)
+   (if (== $n 0)
+       ""
+       (let $r (repeat-str $s (- $n 1))
+         (concat-str $s $r))))
+
+;; Test repeat-str
+!(assertEqual
+  (repeat-str "abc" 3)
+  "abcabcabc")
+
+;; Test join-str
+!(assertEqual
+  (join-str ", " ("A" "B" "C"))
+  "A, B, C")
+
+;; Test split-str
+!(assertEqual
+  (split-str "A, B, C" ", ")
+  ("A" "B" "C"))
+
+;; Given a tuple of strings, return the length of the string with
+;; maximum length.
+(: max-len-strs (-> $a Number))
+(= (max-len-strs $ss) (let $ls (map-tuple len-str $ss) (max-element $ls)))
+
+;; Test max-len-strs
+!(assertEqual (max-len-strs ()) 0)
+!(assertEqual (max-len-strs ("abc" "a" "abcd")) 4)
+
+;; Pad the tailing part of a string with a given character to reach a
+;; given len.  If the string is longer than the target len, then the
+;; string is left untouched.
+;;
+;; For instance
+;;
+;; (pad-trail ' ' 5 "abc")
+;;
+;; outputs
+;;
+;; "abc  "
+(: pad-trail (-> String Number String String))
+(= (pad-trail $c $n $s)
+   (let $len (len-str $s)
+     (if (< $len $n)
+         (concat-str $s (repeat-str $c (- $n $len)))
+         $s)))
+
+;; Test pad-trail
+!(assertEqual
+  (pad-trail " " 5 "abc")
+  "abc  ")
+
+;; Like pad-trail but applied to a tuple of strings
+(: pad-trails (-> String Number $a $b))
+(= (pad-trails $c $n $ss) (map-tuple (((curry pad-trail) $c) $n) $ss)) ; NEXT
+
+;; Test pad-trails
+!(assertEqual
+  (pad-trails " " 5 ("A" "AB" "ABC"))
+  ("A    " "AB   " "ABC  "))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Knowledge base ;;
@@ -145,35 +366,9 @@
 ;; Flattener ;;
 ;;;;;;;;;;;;;;;
 
-;; Return True iff $term is an expression
-(: is-expression (-> Atom Bool))
-(= (is-expression $term) (== (get-metatype $term) Expression))
-
-;; Concatenate two expressions
-;;
-;; for instance
-;;
-;; (concat-atom (a b) (c d)) returns (a b c d)
-(: concat-atom (-> Expression Expression Expression))
-(= (concat-atom $el $er)
-   (if (== $el ())
-       $er
-       (let* (($hd (car-atom $el))
-              ($tl (cdr-atom $el))
-              ($tler (concat-atom $tl $er)))
-         (cons-atom $hd $tler))))
-
-;; Test concat-atom
-!(assertEqual
-  (concat-atom (a b) ())
-  (a b))
-!(assertEqual
-  (concat-atom (a b) (c d))
-  (a b c d))
-
 ;; Like flatten but treat the given tuple as a list of expressions
 ;; instead of an expression
-(: flatten-map (-> Expression Expression))
+(: flatten-map (-> $a $a))
 (= (flatten-map $tuple)
    (if (== $tuple ())
        ()
@@ -268,171 +463,6 @@
 ;;;;;;;;;;;;
 ;; Drawer ;;
 ;;;;;;;;;;;;
-
-;; Return the arity of an expression
-(: arity (-> Expression Number))
-(= (arity $expr)
-   (if (== $expr ())
-       0
-       (let* (($head (car-atom $expr))
-              ($tail (cdr-atom $expr)))
-         (+ 1 (arity $tail)))))
-
-;; Split tuple into two tuple from a given position.  For instance
-;;
-;; (split-tuple (a b c) 0) returns (() (a b c))
-;; (split-tuple (a b c) 1) returns ((a) (b c))
-;; (split-tuple (a b c) 2) returns ((a b) (c))
-;;
-;; If the position exceeds the arity of the tuple, then it behaves as
-;; if the position was the arity.  For instance
-;;
-;; (split-tuple (a b c) 4) returns ((a b c) ())
-;;
-;; If $position is negative then it does not terminate.
-(: split-tuple (-> Expression Number Expression))
-(= (split-tuple $tuple $position)
-   (if (== $position 0)
-       (() $tuple)
-       (if (== $tuple ())
-           (() ())
-           (let* (($head (car-atom $tuple))
-                  ($tail (cdr-atom $tuple))
-                  (($split-head $split-tail) (split-tuple $tail (- $position 1))))
-             ((cons-atom $head $split-head) $split-tail)))))
-
-;; Test split-tuple
-!(assertEqual
-  (split-tuple (a b c) 0)
-  (() (a b c)))
-!(assertEqual
-  (split-tuple (a b c) 1)
-  ((a) (b c)))
-!(assertEqual
-  (split-tuple (a b c) 2)
-  ((a b) (c)))
-!(assertEqual
-  (split-tuple (a b c) 3)
-  ((a b c) ()))
-!(assertEqual
-  (split-tuple (a b c) 4)
-  ((a b c) ()))
-
-;; Return the maximum of two number
-(: max (-> Number Number Number))
-(= (max $x $y) (if (< $x $y) $y $x))
-
-;; Given a tuple of numbers, return the maximum, or 0 if empty.
-(: max-element (-> Expression Number))
-(= (max-element $tuple)
-   (if (== $tuple ())
-       0
-       (let* (($head (car-atom $tuple))
-              ($tail (cdr-atom $tuple))
-              ($max-tl (max-element $tail)))
-         (max $head $max-tl))))
-
-;; Append a term to an expression
-(: append (-> Expression Atom Expression))
-(= (append $expr $term)
-   (if (== $expr ())
-       ($term)
-       (let* (($head (car-atom $expr))
-              ($tail (cdr-atom $expr))
-              ($tail-term (append $tail $term)))
-         (cons-atom $head $tail-term))))
-
-;; Append a character to a string
-(: append-char (-> String Char String))
-(= (append-char $s $c)
-   (let* (($cs (stringToChars $s))
-          ($csc (append $cs $c)))
-     (charsToString $csc)))
-
-;; len-str is added to MeTTa-Python stdlib instead
-;; ;; Return the length of a string
-;; (: len-str (-> String Number))
-;; (= (len-str $s) (let $cs (stringToChars $s) (arity $cs)))
-
-;; Test len-str
-!(assertEqual (len-str "abc") 3)
-
-;; concat-str is added to MeTTa-Python stdlib instead
-;; ;; Concatenate two strings
-;; (: concat-str (-> String String String))
-;; (= (concat-str $ls $rs)
-;;    (let* (($lcs (stringToChars $ls))
-;;           ($rcs (stringToChars $rs))
-;;           ($lrcs (concat-atom $lcs $rcs)))
-;;      (charsToString $lrcs)))
-
-;; Test concat-str
-!(assertEqual (concat-str "abc" "def") "abcdef")
-
-;; Generate a String composed of a repeated String.
-(: repeat-str (-> String Number String))
-(= (repeat-str $s $n)
-   (if (== $n 0)
-       ""
-       (let $r (repeat-str $s (- $n 1))
-         (concat-str $s $r))))
-
-;; Test repeat-str
-!(assertEqual (repeat-str "abc" 3) "abcabcabc")
-
-;; Generate a string composed of a reapeated character
-;;
-;; For instance
-;;
-;; repeat-chr
-(: repeat-chr (-> Char Number String))
-(= (repeat-chr $c $n)
-   (repeat-str (charsToString ($c)) $n))
-
-;; Test repeat-chr
-!(assertEqual (repeat-chr ' ' 3) "   ")
-
-;; Given a tuple of strings, return the length of the string with
-;; maximum length.
-(: max-len-strs (-> Expression Number))
-(= (max-len-strs $strs)
-   (if (== $strs ())
-       0
-       (let $lens (len-str (superpose $strs))
-         (max-element (collapse $lens)))))
-
-;; Test max-len-strs
-!(assertEqual (max-len-strs ()) 0)
-!(assertEqual (max-len-strs ("abc" "a" "abcd")) 4)
-
-
-;; Pad the tailing part of a string with a given character to reach a
-;; given len.  If the string is longer than the target len, then the
-;; string is left untouched.
-;;
-;; For instance
-;;
-;; (pad-trail "abc" ' ' 5)
-;;
-;; outputs
-;;
-;; "abc  "
-(: pad-trail (-> String Char Number String))
-(= (pad-trail $s $c $n)
-   (let $len (len-str $s)
-     (if (< $len $n)
-         (concat-str $s (repeat-char $c (- $n $len)))
-         $s)))
-
-;; Test pad-trail
-!(assertEqual (pad-trail "abc" ' ' 5) "abc  ")
-
-;; Like pad-trail but applied to a tuple of strings
-(: pad-trails (-> Expression Char Number Expression))
-(= (pad-trails $strs $c $n)
-   (let* (($head (car-atom $strs))
-          ($tail (cdr-atom $strs))
-          ($padded-head (pad-trail $head $c $n))
 
 ;; Given two tuples of lines, draw them side by side, as if they were
 ;; both standing on the ground, with a given margin separating them.
