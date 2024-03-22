@@ -203,18 +203,18 @@
 
 ;; Base case
 (: bc (-> $a Nat $a))
-(= (bc (: $prf $ccln) $_)
+(= (bc $kb (: $prf $ccln) $_)
    ;; Query the knowledge for a rule or a fact
-   (match &kb (: $prf $ccln) (: $prf $ccln)))
+   (match $kb (: $prf $ccln) (: $prf $ccln)))
 
 ;; Recursive step
-(= (bc (: ($prfabs $prfarg) $ccln) (S $k))
+(= (bc $kb (: ($prfabs $prfarg) $ccln) (S $k))
    (let* (;; Recurse on proof abstraction
           ((: $prfabs (-> (: $prfarg $prms) $ccln))
-           (bc (: $prfabs (-> (: $prfarg $prms) $ccln)) $k))
+           (bc $kb (: $prfabs (-> (: $prfarg $prms) $ccln)) $k))
           ;; Recurse on proof argument
           ((: $prfarg $prms)
-           (bc (: $prfarg $prms) $k)))
+           (bc $kb (: $prfarg $prms) $k)))
      (: ($prfabs $prfarg) $ccln)))
 
 ;;;;;;;;;;;;;;;
@@ -246,20 +246,20 @@
 ;;;;;;;;;;;
 
 ;; ;; Synthesize natural numbers
-;; !(bc (: $prf Nat) (fromNumber 3))
+;; !(bc &kb (: $prf Nat) (fromNumber 3))
 
 ;; ;; Prove that 0 is even
-;; !(bc (: $prf (Even (fromNumber 0))) (fromNumber 0))
+;; (bc &kb (: $prf (Even (fromNumber 0))) (fromNumber 0))
 
 ;; ;; Prove that 2 is even
-;; !(bc (: $prf (Even (fromNumber 2))) (fromNumber 1))
+;; (bc &kb (: $prf (Even (fromNumber 2))) (fromNumber 1))
 
 ;; ;; Synthesize even numbers
-;; !(bc (: $prf (Σ Nat Even)) (fromNumber 4))
+;; (bc &kb (: $prf (Σ Nat Even)) (fromNumber 4))
 
 ;; ;; Synthesize unary functions over natural numbers, that is
 ;; ;; prove (-> (: $k Nat) Nat).
-;; !(bc (: $prf (-> (: $k Nat) Nat)) (fromNumber 3))
+;; (bc &kb (: $prf (-> (: $k Nat) Nat)) (fromNumber 3))
 
 ;; ;; Synthesize the identity function from AK and AS, that is prove
 ;; ;;
@@ -268,7 +268,7 @@
 ;; ;; Such a proof could be
 ;; ;;
 ;; ;; ((AS AK) AK)
-;; !(bc (: $prf (-> (: $x $a) $a)) (fromNumber 2))
+;; (bc &kb (: $prf (-> (: $x $a) $a)) (fromNumber 2))
 
 ;; ;; Synthesize the composition operator, also corresponding to the B
 ;; ;; combinator, from AK and AS, that is prove
@@ -280,7 +280,7 @@
 ;; ;; such proof could be
 ;; ;;
 ;; ;; ((AS (AK AS)) AK)
-;; !(bc (: $prf (-> (: $g (-> (: $y $b) $c)) (-> (: $f (-> (: $x $a) $b)) (-> (: $x $a) $c))))
+;; (bc &kb (: $prf (-> (: $g (-> (: $y $b) $c)) (-> (: $f (-> (: $x $a) $b)) (-> (: $x $a) $c))))
 ;;      (fromNumber 3))
 
 ;; NEXT: infer the C combinator, such that C = (S (S (K (S (K S) K)) S) (K K)).
@@ -304,12 +304,12 @@
 ;; ;; A possible proof could be
 ;; ;;
 ;; ;; ((AS ((AS (AK AS)) AK)) AS)
-!(bc (: $prf (-> (: $f (-> (: $x $a) (-> (: $y $b) $c))) (-> (: $y $b) (-> (: $x $a) $c))))
+(bc &kb (: $prf (-> (: $f (-> (: $x $a) (-> (: $y $b) $c))) (-> (: $y $b) (-> (: $x $a) $c))))
      (fromNumber 5))
-;; !(bc (: ((AS ((AS (AK AS)) AK)) AS)
+;; (bc &kb (: ((AS ((AS (AK AS)) AK)) AS)
 ;;         (-> (: $f (-> (: $x $a) (-> (: $y $b) $c))) (-> (: $z $b) (-> (: $w $a) $c))))
 ;;      (fromNumber 10))
-;; !(bc (: ((AS ((AS (AK AS)) AK)) AS)
+;; (bc &kb (: ((AS ((AS (AK AS)) AK)) AS)
 ;;         (-> (: $f (-> (: $x $a) (-> (: $y $b) $c))) (-> (: $y $b) (-> (: $x $a) $c))))
 ;;      (fromNumber 20))
 
@@ -329,7 +329,7 @@
 ;; ;; ;; Or in MeTTa format:
 ;; ;; ;;
 ;; ;; ;; (: ((Replace ((((Cong Even) Z) (double Z)) (Sym double_base))) MkEvenZ) (Even (double Z)))
-;; !(bc (: $prf (Even (double Z))) (fromNumber 6))
+;; (bc &kb (: $prf (Even (double Z))) (fromNumber 6))
 
 ;; ;; Prove
 ;; ;;
@@ -392,7 +392,7 @@
 ;; ;; ;;
 ;; ;; ;; though this one is wrong, it should be corrected, maybe using flip,
 ;; ;; ;; composition or such.
-;;   !(bc (: $prf (-> (: $k Nat)
+;;   (bc &kb (: $prf (-> (: $k Nat)
 ;;                    (-> (: $eq (=== (double (S $k)) (S (S (double $k)))))
 ;;                        (=== (Even (double (S $k))) (Even (S (S (double $k))))))))
 ;;        (fromNumber 7))
@@ -402,7 +402,7 @@
 ;; ;; (-> (: $k Nat) (-> (: Even (-> (: $_ Nat) Type)) (-> (: (double (S $k)) Nat) (-> (: (S (S (double $k))) Nat) (-> (: $eq (=== (double (S $k)) (S (S (double $k))))) (=== (Even (double (S $k))) (Even (S (S (double $k))))))))))
 ;; ;;
 ;; ;; (λ $k Cong)
-;; !(bc (: $prf (-> (: $k Nat)
+;; (bc &kb (: $prf (-> (: $k Nat)
 ;;                  (-> (: Even (-> (: $_ Nat) Type))
 ;;                      (-> (: (double (S $k)) Nat)
 ;;                          (-> (: (S (S (double $k))) Nat)
@@ -418,7 +418,7 @@
 ;; ;; 
 ;; ;; ----------------------------------------------------------------------------------------------
 ;; ;; (-> (: $k Nat) (=== (Even (double (S $k))) (Even (S (S (double $k))))))
-;; !(bc (: $prf (-> (: $k Nat) (=== (Even (double (S $k))) (Even (S (S (double $k))))))) (fromNumber 7))
+;; (bc &kb (: $prf (-> (: $k Nat) (=== (Even (double (S $k))) (Even (S (S (double $k))))))) (fromNumber 7))
 
 
 
@@ -426,8 +426,8 @@
 ;; ;;
 ;; ;; (same as above but Sym)
 ;; ;;
-;; !(bc (: $prf (=== (Even (S (S (double $k)))) (Even (double (S $k))))) (fromNumber 5))
-;; !(bc (: $prf (-> (: $k Nat) (=== (Even (S (S (double $k)))) (Even (double (S $k))))) (fromNumber 5)))
+;; (bc &kb (: $prf (=== (Even (S (S (double $k)))) (Even (double (S $k))))) (fromNumber 5))
+;; (bc &kb (: $prf (-> (: $k Nat) (=== (Even (S (S (double $k)))) (Even (double (S $k))))) (fromNumber 5)))
 
 
 ;; Prove that if (double k) is even, then (double (S k)) is even
@@ -464,7 +464,7 @@
 ;; ;; note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ;; ;; fatal runtime error: Rust panics must be rethrown
 ;; ;; Aborted (core dumped)
-;; !(bc (: $prf (-> (: $k Nat) (-> (: $e (Even (double $k))) (Even (double (S $k)))))) (fromNumber 8))
+;; (bc &kb (: $prf (-> (: $k Nat) (-> (: $e (Even (double $k))) (Even (double (S $k)))))) (fromNumber 8))
 
 ;; ;; ;; Prove that for all x, (double x) is even
-;; ;; !(bc (: $prf (-> (: $x Nat) (Even (double $x)))) (fromNumber 3))
+;; ;; (bc &kb (: $prf (-> (: $x Nat) (Even (double $x)))) (fromNumber 3))
