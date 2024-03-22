@@ -340,8 +340,8 @@
 ;; !(((λ $f378 (λ $g379 (λ $x380 (($f378 $x380) ($g379 $x380))))) (((λ $f448 (λ $g449 (λ $x450 (($f448 $x450) ($g449 $x450))))) ((λ $x470 (λ $y471 $x470)) (λ $f482 (λ $g483 (λ $x484 (($f482 $x484) ($g483 $x484))))))) (((λ $f543 (λ $g544 (λ $x545 (($f543 $x545) ($g544 $x545))))) ((λ $x564 (λ $y565 $x564)) (λ $x570 (λ $y571 $x570)))) (λ $x579 $x579)))) ((λ $x604 (λ $y605 $x604)) (λ $x610 $x610)))
 ;; ;; Should reduce to (λ $f (λ $x ($f $x)))
 
-;; Reduction rules for combinatory logic.  We introduce combinators 𝐌,
-;; 𝐍, 𝐓, 𝐖, 𝐁, 𝐂 and 𝐔 in the process.
+;; Reduction rules for combinatory logic.  In the process, we
+;; introduce combinators 𝐌, 𝐍, 𝐓, 𝐖, 𝐁, 𝐂 and 𝐔.
 (= (𝐈 $x) $x)
 (= ((𝐊 $x) $y) $x)
 (= (((𝐒 $x) $y) $z) (($x $z) ($y $z)))
