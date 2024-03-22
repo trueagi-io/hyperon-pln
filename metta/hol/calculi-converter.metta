@@ -477,6 +477,7 @@
        ;; Base cases
        (if (== $term ())
            (trace! (bas-∅ (term $term) (cnt $cnt) (dir $dir)) ())
+           ;; NEXT: try to get rid of as many base cases as possible
            (if (=α $term (λ $x $x))
                (trace! (bas-I (term $term) (cnt $cnt) (dir $dir)) 𝐈)
                (if (=α $term (λ $x (λ $y $x)))
