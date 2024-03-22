@@ -330,6 +330,51 @@
 ;; (= ((λ $x $f) $y) (let $x $y $f))
 ;; (= ((λ $x $f) $y) (let ($νx $νf) (sealed ($x) ($x $f)) (let $νx $y $νf)))
 
+;; ;; Test lambda calculus reduction
+;; !(((λ $f378 (λ $g379 (λ $x380 (($f378 $x380) ($g379 $x380))))) (((λ $f448 (λ $g449 (λ $x450 (($f448 $x450) ($g449 $x450))))) ((λ $x470 (λ $y471 $x470)) (λ $f482 (λ $g483 (λ $x484 (($f482 $x484) ($g483 $x484))))))) (((λ $f543 (λ $g544 (λ $x545 (($f543 $x545) ($g544 $x545))))) ((λ $x564 (λ $y565 $x564)) (λ $x570 (λ $y571 $x570)))) (λ $x579 $x579)))) ((λ $x604 (λ $y605 $x604)) (λ $x610 $x610)))
+;; ;; Should reduce to (λ $f (λ $x ($f $x)))
+
+;; Reduction rules for combinatory logic.  We introduce combinators 𝐌,
+;; 𝐍, 𝐓, 𝐖, 𝐁, 𝐂 and 𝐔 in the process.
+(= (𝐈 $x) $x)
+(= ((𝐊 $x) $y) $x)
+(= (((𝐒 $x) $y) $z) (($x $z) ($y $z)))
+(= (𝐌 $x) ($x $x))
+(= ((𝐍 $x) $y) $y)
+(= ((𝐓 $x) $y) ($y $x))
+(= ((𝐖 $x) $y) (($x $y) $y))
+(= (((𝐁 $x) $y) $z) ($x ($y $z)))
+(= (((𝐂 $x) $y) $z) (($x $z) $y))
+(= ((𝐔 $x) $y) ($y (($x $x) $y)))
+(= ((𝐒 𝐊) 𝐊) 𝐈)
+(= ((𝐒 𝐈) 𝐈) 𝐌)
+(= (𝐊 𝐈) 𝐍)
+(= ((𝐒 (𝐊 (𝐒 𝐈))) 𝐊) 𝐓)
+(= ((𝐒 𝐒) 𝐍) 𝐖)
+(= ((𝐒 (𝐊 𝐒)) 𝐊) 𝐁)
+(= ((𝐒 (𝐁 𝐁 𝐒)) (𝐊 𝐊)) 𝐂)
+(= ((𝐁 (𝐒 𝐈)) (𝐒 𝐈 𝐈)) 𝐔)
+
+;; ;; Test combinatory logic reduction
+;; !(assertEqual
+  ;; !((𝐒 ((𝐒 (𝐊 𝐒)) ((𝐒 (𝐊 𝐊)) 𝐈))) (𝐊 𝐈)) ; Result of converting
+  ;;                                                 ; (lc2cl (λ $f (λ $x ($f $x))))
+  ;;                                                 ; which 1 in lambda calculus
+  ;; ((𝐒 ((𝐒 (𝐊 𝐒)) ((𝐒 (𝐊 𝐊)) 𝐈))) (𝐊 𝐈))) ; Unreducable???
+
+;; !(assertEqual
+;;   (((𝐒 (𝐊 𝐒)) 𝐊) (𝐊 𝐈))  ; 1, obtained by (S Z) in combinatory logic
+;;   (𝐁 𝐍))                 ; NEXT: shouldn't it be ((𝐒 𝐁) 𝐍)?
+
+;; !(assertEqual
+;;   (((𝐒 (𝐊 𝐒)) 𝐊) (((𝐒 (𝐊 𝐒)) 𝐊) (𝐊 𝐈)))  ; 2, obtained by (S (S Z)) in combinatory logic
+;;   (𝐁 (𝐁 𝐍)))
+
+;; ;; !(assertEqual
+;;   !((𝐒 𝐁) 𝐍) ; 3, obtained by (S (S (S Z))) in combinatory logic
+;;   !((𝐒 𝐁) ((𝐒 𝐁) 𝐍)) ; 3, obtained by (S (S (S Z))) in combinatory logic
+;;   ;; (𝐁 (𝐁 (𝐁 𝐍))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Combinatory logic to λ-calculus ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
