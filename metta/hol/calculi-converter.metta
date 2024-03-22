@@ -8,16 +8,22 @@
 ;; combinatory logic, by Wouter Swierstra.
 ;;
 ;; As in the paper, the version of combinatory logic in consideration
-;; is S, K, I.  For now S, the combinator, cannot be confused with S,
-;; the successor function, because Nat is not defined here, however we
-;; may want in the future to represent these combinators as AS, AK, ID
-;; to not be confused with S, the successor function.  Also all
-;; functions are explicitly curried, thus K x y is represented in
-;; MeTTa as ((K x) y).
+;; is S, K, I.  In order not to have S, the combinator, be confused
+;; with with S, the successor, we use the unicode characters 𝐒, 𝐊 and
+;; 𝐈, as well as other similar unicode characters for more
+;; combinators.  Also all functions are explicitly curried, thus 𝐊 x y
+;; is represented in MeTTa as ((𝐊 x) y).
 ;;
 ;; On the lambda-calculus side, the MeTTa representation of a lambda
 ;; abstraction is (λ <VAR> <BODY>).  Applications are explicitly
 ;; curried as well, thus (x y z) is represented ((x y) z).
+;;
+;; An excellent source information about combinatory logic can be
+;; found in this blog series
+;;
+;; https://farrugiamaths.quora.com/Combinatory-logic-Using-math-boldsymbol-mathsf-S-math-and-math-boldsymbol-mathsf-K-math-Part-1
+;;
+;; by Alexander Farrugia
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common functions and types ;;
