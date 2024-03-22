@@ -382,10 +382,11 @@
 ;; Convert combinatory logic term to lambda-calculus
 (: cl2lc (-> Atom Atom))
 ;; Base cases
-(= (cl2lc ID) (λ $x $x))
-(= (cl2lc AK) (λ $x (λ $y $x)))
-(= (cl2lc AS) (λ $f (λ $g (λ $x (($f $x) ($g $x))))))
-(= (cl2lc AM) (λ $x ($x $x)))
+(= (cl2lc 𝐈) (λ $x $x))
+(= (cl2lc 𝐊) (λ $x (λ $y $x)))
+(= (cl2lc 𝐒) (λ $f (λ $g (λ $x (($f $x) ($g $x))))))
+(= (cl2lc 𝐌) (λ $x ($x $x)))
+;; NEXT: add all remaining combinators
 ;; Recursive step
 (= (cl2lc ($f $g)) ((cl2lc $f) (cl2lc $g)))
 
@@ -395,190 +396,209 @@
 ;; no hallucination):
 ;;
 ;; Z (zero) would be represented by
-;; - combinatory logic: (AK ID)
+;; - combinatory logic: (𝐊 𝐈)
 ;; - lambda calculus: (λ $f (λ $x $x))
 ;;
 ;; S (successor) would be represented by (NEXT: is it really the case?)
-;; - combinatory logic: ((AS (AK AS)) AK)
+;; - combinatory logic: ((𝐒 (𝐊 𝐒)) 𝐊)
 ;; - lambda calculus: (λ $n (λ $f (λ $x ($f (($n $f) $x)))))
 ;;
 ;; 1 would be represented by
-;; - combinatory logic: NEXT
+;; - combinatory logic: (𝐒 (𝐊 (𝐊 𝐈)))
 ;; - lambda calculus: (λ $f (λ $x ($f $x)))
 ;;
 ;; 2 would be represented by
-;; - combinatory logic: ((((AS (AK AS)) AK) ((AS (AK AS)) AK)) (AK ID))
+;; - combinatory logic: (𝐒 (𝐊 (𝐒 (𝐊 (𝐊 𝐈)))))
+;;   (or maybe ((((𝐒 (𝐊 𝐒)) 𝐊) ((𝐒 (𝐊 𝐒)) 𝐊)) (𝐊 𝐈)))
 ;; - lambda calculus: (λ $f (λ $x ($f ($f $x))))
 ;;
 ;; plus (addition) would be represented by
-;; - combinatory logic: ((AS (AS AK)) ID)
+;; - combinatory logic: ((𝐒 (𝐒 𝐊)) 𝐈)
 ;; - lambda calculus: ((λ $m) ((λ $n) ((λ $f) ((λ $x) (($m f) (($n $f) $x))))))
 ;;
 ;; times (multiplication) would be represented by
-;; - combinatory logic: ((AS ((AS (AK AS)) AK)) ID)
+;; - combinatory logic: ((𝐒 ((𝐒 (𝐊 𝐒)) 𝐊)) 𝐈)
 ;; - lambda calculus: ((λ $m) ((λ $n) ((λ $f) ((λ $x) (($m ($n $f)) $x)))))
 
-;; ;; Convert (AK ID) to (λ $f (λ $x $x)) (zero in lambda calculus)
-;; ;;
-;; ;; TODO: re-enable assertEqual when it will support alpha-equivalence.
-;; ;; Maybe we should introduce something like assertAlphaEqual.
-;; ;;
-;; ;; !(assertEqual
-;;   !(cl2lc (AK ID))
-;;   ;; (λ $f (λ $x $x)))
+;; Convert (𝐊 𝐈) to (λ $f (λ $x $x)) (zero in lambda calculus)
+;;
+;; TODO: re-enable assertEqual when it will support alpha-equivalence.
+;; Maybe we should introduce something like assertAlphaEqual.
+;;
+;; !(assertEqual
+  ;; !(cl2lc (𝐊 𝐈))
+  ;; (λ $f (λ $x $x)))
 
-;; ;; Convert ((AS ID) ID) to (λ $x ($x $x)) (M, the Mockingbird combinator)
-;; !(cl2lc ((AS ID) ID))
+;; Convert ((𝐒 𝐈) 𝐈) to (λ $x ($x $x)) (M, the Mockingbird combinator)
+;; !(cl2lc ((𝐒 𝐈) 𝐈))
 
-;; ;; Disabled because it does not half, as it should
-;; ;; Convert (AM AM) (reduction should not halt)
-;; ;; !(cl2lc (AM AM))
+;; Disabled because it does not half, as it should
+;; Convert (𝐌 𝐌) (reduction should not halt)
+;; !(cl2lc (𝐌 𝐌))
 
-;; ;; Convert (AS ID) to
-;; !(cl2lc (AS ID))
+;; Convert (𝐒 𝐈) to
+;; !(cl2lc (𝐒 𝐈))
 
-;; ;; NEXT: find out if the following is correct
+;; NEXT: find out if the following is correct
 
-;; ;; Convert ((AS (AK AS)) AK) to
-;; ;; (λ $n (λ $f (λ $x ($f (($n $f) $x))))) (successor in lambda calculus)
-;; !(cl2lc ((AS (AK AS)) AK))
+;; Convert ((𝐒 (𝐊 𝐒)) 𝐊) to
+;; (λ $n (λ $f (λ $x ($f (($n $f) $x))))) (successor in lambda calculus)
+;; !(cl2lc ((𝐒 (𝐊 𝐒)) 𝐊))
 
-;; ;; Convert 1 to lambda calculus
-;; !(cl2lc ((((AS (AK AS)) AK) ((AS (AK AS)) AK)) (AK ID)))
+;; Convert 1 to lambda calculus
+;; !(cl2lc ((((𝐒 (𝐊 𝐒)) 𝐊) ((𝐒 (𝐊 𝐒)) 𝐊)) (𝐊 𝐈)))
 
-;; ;; Convert 2 to lambda calculus
-;; !(cl2lc ((((AS (AK AS)) AK) ((AS (AK AS)) AK)) (AK ID)))
+;; Convert 2 to lambda calculus
+;; !(cl2lc ((((𝐒 (𝐊 𝐒)) 𝐊) ((𝐒 (𝐊 𝐒)) 𝐊)) (𝐊 𝐈)))
+
+;; From (lc2cl (λ $f (λ $x ($f $x)))), corresponding to 1
+;; !(cl2lc ((𝐒 ((𝐒 (𝐊 𝐒)) ((𝐒 (𝐊 𝐊)) 𝐈))) (𝐊 𝐈)))
+;; (((λ $f378 (λ $g379 (λ $x380 (($f378 $x380) ($g379 $x380))))) (((λ $f448 (λ $g449 (λ $x450 (($f448 $x450) ($g449 $x450))))) ((λ $x470 (λ $y471 $x470)) (λ $f482 (λ $g483 (λ $x484 (($f482 $x484) ($g483 $x484))))))) (((λ $f543 (λ $g544 (λ $x545 (($f543 $x545) ($g544 $x545))))) ((λ $x564 (λ $y565 $x564)) (λ $x570 (λ $y571 $x570)))) (λ $x579 $x579)))) ((λ $x604 (λ $y605 $x604)) (λ $x610 $x610)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; λ-calculus to combinatory logic ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Convert lambda-calculus term to combinatory logic term.
-(: lc2cl (-> Atom Atom))
-(= (lc2cl $term)
+(: lc2cl (-> Atom Number Atom Atom))
+(= (lc2cl $term $cnt $dir)
    (if (is-expression $term)
        ;; Base cases
        (if (== $term ())
-           ()
+           (trace! (bas-∅ (term $term) (cnt $cnt) (dir $dir)) ())
            (if (=α $term (λ $x $x))
-               ID
+               (trace! (bas-I (term $term) (cnt $cnt) (dir $dir)) 𝐈)
                (if (=α $term (λ $x (λ $y $x)))
-                   AK
+                   (trace! (bas-K (term $term) (cnt $cnt) (dir $dir)) 𝐊)
                    (if (=α $term (λ $f (λ $g (λ $x (($f $x) ($g $x))))))
-                       AS
+                       (trace! (bas-S (term $term) (cnt $cnt) (dir $dir)) 𝐒)
                        (if (=α $term (λ $x ($x $x)))
-                           AM
+                           (trace! (bas-M (term $term) (cnt $cnt) (dir $dir)) 𝐌)
                            ;; Recursive steps
                            (case $term
                              (((λ $x $f)
                                (if (is-variable $x)
-                                   (let $clf (lc2cl $f)
+                                   (let $clf (lc2cl $f (+ 1 $cnt) λC)
                                      (if (is-subterm-of $x $f)
-                                         ;; Build AS
+                                         ; Build 𝐒
+                                         (trace! (rec-S (term $term) (clf $clf) (cnt $cnt) (dir $dir))
                                          (if (is-expression $clf)
                                              (case $clf
-                                               ((($g $h) ((AS (lc2cl (λ $x $g))) (lc2cl (λ $x $h))))
+                                               ((($g $h) ((𝐒 (lc2cl (λ $x $g) (+ 2 $cnt) λL))
+                                                          (lc2cl (λ $x $h) (+ 2 $cnt) λR)))
                                                 ($_ (empty))))
-                                             $clf)
-                                         ;; Build AK
-                                         (AK $clf)))
+                                             $clf))
+                                         ; Build 𝐊
+                                         (trace! (rec-K (term $term) (clf $clf) (cnt $cnt) (dir $dir))
+                                         (𝐊 $clf))))
                                    (empty)))
-                              (($f $g) ((lc2cl $f) (lc2cl $g))))))))))
-       $term))
+                              (($f $g) (trace! (rec-app (term $term) (cnt $cnt) (dir $dir))
+                                       ((lc2cl $f (+ 1 $cnt) L) (lc2cl $g (+ 1 $cnt) R)))))))))))
+       (trace! (bas-nch (term $term) (cnt $cnt) (dir $dir)) $term)))
 
-;; Test lc2cl
-!(assertEqual
-  (lc2cl $f)
-  $f)
-!(assertEqual
-  (lc2cl ($f $x))
-  ($f $x))
-!(assertEqual
-  (lc2cl ($f ($f $x)))
-  ($f ($f $x)))
-!(assertEqual
-  (lc2cl (λ $x $x))
-  ID)
-!(assertEqual
-  (lc2cl (λ $x (λ $y $x)))
-  AK)
-!(assertEqual
-  (lc2cl (λ $f (λ $g (λ $x (($f $x) ($g $x))))))
-  AS)
-!(assertEqual
-  (lc2cl (λ $x ($x $x)))
-  AM)
-!(assertEqual
-  (lc2cl (λ $x $f))
-  (AK $f))
-!(assertEqual
-  (lc2cl (λ $x ($f $g)))
-  (K ($f $g)))
-!(assertEqual
-  (lc2cl (λ $x ($f ($f $x))))
-  ((AS (K $f)) (K ($f $g))))
-!(assertEqual
-  (lc2cl (λ $f (λ $x $x)))    ; Zero in lambda calculus
-  (AK ID))                    ; Zero in combinatory logic
-!(assertEqual
-  (lc2cl (λ $f (λ $x ($f ($f $x)))))    ; Two in lambda calculus
-  (...))                           ; NEXT: Two in combinatory logic
+;; ;; Test lc2cl
+;; !(assertEqual
+;;   (lc2cl $f)
+;;   $f)
+;; !(assertEqual
+;;   (lc2cl ($f $x))
+;;   ($f $x))
+;; !(assertEqual
+;;   (lc2cl ($f ($f $x)))
+;;   ($f ($f $x)))
+;; !(assertEqual
+;;   (lc2cl (λ $x $x))
+;;   𝐈)
+;; !(assertEqual
+;;   (lc2cl (λ $x (λ $y $x)))
+;;   𝐊)
+;; !(assertEqual
+;;   (lc2cl (λ $f (λ $g (λ $x (($f $x) ($g $x))))))
+;;   𝐒)
+;; !(assertEqual
+;;   (lc2cl (λ $x ($x $x)))
+;;   𝐌)
+;; !(assertEqual
+;;   (lc2cl (λ $x $f))
+;;   (𝐊 $f))
+;; !(assertEqual
+;;   (lc2cl (λ $x ($f $g)))
+;;   (𝐊 ($f $g)))
+;; !(assertEqual
+;;   (lc2cl (λ $x ($f ($f $x))))
+;;   ((𝐒 (𝐊 $f)) ((𝐒 (𝐊 $f)) 𝐈)))     ; NEXT: is it correct?
+;; !(assertEqual
+;;   (lc2cl (λ $f (λ $x $x)))    ; 0 in lambda calculus
+;;   (𝐊 𝐈))                    ; 0 in combinatory logic
+
+
+;; !(assertEqual
+  ;; !(lc2cl (λ $f (λ $x ($f $x))) 0 C)    ; 1 in lambda calculus
+;; ((𝐒 ((𝐒 (𝐊 𝐒)) ((𝐒 (𝐊 𝐊)) 𝐈))) (𝐊 𝐈))) ; NEXT: 1 in combinatory logic? (see calculi-converter.stdout
+;; https://theory.stanford.edu/~blynn/lambda/cl.html finds
+;; K(S(S(K S)(S(K K)(S K K)))(K(S K K)))
+;; Note that https://crypto.stanford.edu/~blynn/lambda/kiselyov.html is newer
+
+
+;; !(assertEqual
+;;   (lc2cl (λ $f (λ $x ($f ($f $x)))))    ; Two in lambda calculus
+;;   (...))                           ; NEXT: Two in combinatory logic
 
 ;; NEXT: find out why the following does not work
 
-;; ;; ;; Convert (λ $g (λ $x ($g $x))) to ?
-;; ;; !(lc2cl (λ $g (λ $x ($g $x))))
+;; Convert (λ $g (λ $x ($g $x))) to ?
+!(lc2cl (λ $g (λ $x ($g $x))))
 
-;; ;; ;; ;; Convert (λ $g (λ $x ($x ($g $x)))) to ?
-;; ;; ;; !(lc2cl (λ $g (λ $x ($x ($g $x)))))
+;; ;; Convert (λ $g (λ $x ($x ($g $x)))) to ?
+;; !(lc2cl (λ $g (λ $x ($x ($g $x)))))
 
-;; ;; ;; ;; Convert ((λ $f (λ $g (λ $x (($f $x) ($g $x))))) (λ $y $y)) to (AS ID)
-;; ;; ;; !(lc2cl ((λ $f (λ $g (λ $x (($f $x) ($g $x))))) (λ $y $y)))
+;; ;; Convert ((λ $f (λ $g (λ $x (($f $x) ($g $x))))) (λ $y $y)) to (𝐒 𝐈)
+;; !(lc2cl ((λ $f (λ $g (λ $x (($f $x) ($g $x))))) (λ $y $y)))
 
-;; ;; ;; ;; Convert S from lambda calculus to combinatory logic.  That is
-;; ;; ;; ;; (λ $n (λ $f (λ $x ($f (($n $f) $x))))) |-> ((AS (AK AS)) AK)
-;; ;; ;; !(lc2cl (λ $n (λ $f (λ $x ($f (($n $f) $x))))))
+;; ;; Convert S from lambda calculus to combinatory logic.  That is
+;; ;; (λ $n (λ $f (λ $x ($f (($n $f) $x))))) |-> ((𝐒 (𝐊 𝐒)) 𝐊)
+;; !(lc2cl (λ $n (λ $f (λ $x ($f (($n $f) $x))))))
 
-;; ;; ;; (λ $n (λ $f (λ $x ($f (($n $f) $x)))))
-;; ;; ;; -->
+;; (λ $n (λ $f (λ $x ($f (($n $f) $x)))))
+;; -->
 
-;; ;; ;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; ;; MeTTa to λ-calculus ;;
-;; ;; ;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; MeTTa to λ-calculus ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; ;; ;; NEXT:
-;; ;; ;; 1. replace LET by let (if possible)
-;; ;; ;; 2. support let*
+;; NEXT:
+;; 1. replace LET by let (if possible)
+;; 2. support let*
 
-;; ;; ;; Convert a MeTTa expression to lambda calculus
-;; ;; (: mt2lc (-> Atom Atom))
-;; ;; (= (mt2lc $expr)
-;; ;;    (if (is-variable $expr)
-;; ;;        $expr
-;; ;;        (case $expr
-;; ;;          (((LET $x $y $f) ((λ $x (mt2lc $f)) (mt2lc $y)))  ; Let
-;; ;;           (($f $x) ((mt2lc $f) (mt2lc $x)))                ; Application
-;; ;;           ($s $s)))))                                      ; Symbol
+;; Convert a MeTTa expression to lambda calculus
+(: mt2lc (-> Atom Atom))
+(= (mt2lc $expr)
+   (if (is-variable $expr)
+       $expr
+       (case $expr
+         (((LET $x $y $f) ((λ $x (mt2lc $f)) (mt2lc $y)))  ; Let
+          (($f $x) ((mt2lc $f) (mt2lc $x)))                ; Application
+          ($s $s)))))                                      ; Symbol
 
-;; ;; ;; !(mt2lc
-;; ;; ;;   (LET $spleeter-output
-;; ;; ;;        (snet.sound-spleeter.spleeter ((snet.sound-spleeter.MkInput "") $input))
-;; ;; ;;        (LET $english-vocals (snet.sound-spleeter.Output.vocals $spleeter-output)
-;; ;; ;;             (LET $chinese-lyrics
-;; ;; ;;                  (naint.machine-translation.Output.translation
-;; ;; ;;                   (naint.machine-translation.translate
-;; ;; ;;                    (((naint.machine-translation.MkInput "English") "Chinese")
-;; ;; ;;                     (snet.speech-recognition.Text.text
-;; ;; ;;                      (snet.speech-recognition.s2t
-;; ;; ;;                       (snet.speech-recognition.MkAudio $english-vocals))))))
-;; ;; ;;                  (LET $midi-notes (tomidi.MIDI.data (tomidi.MkAudio $english-vocals))
-;; ;; ;;                       (LET $chinese-vocals
-;; ;; ;;                            (naint.midi2voice-zh.Answer.output_audio
-;; ;; ;;                             (naint.midi2voice-zh.singingZH
-;; ;; ;;                              (((naint.midi2voice-zh.MkQuery $chinese-lyrics)
-;; ;; ;;                                $midi-notes) 1.0)))
-;; ;; ;;                            (mixer.Audio.data
-;; ;; ;;                             (mixer.mix
-;; ;; ;;                              ((mixer.MkMultiAudio
-;; ;; ;;                                (snet.sound-spleeter.Output.accomp $spleeter-output))
-;; ;; ;;                               $chinese-vocals)))))))))
+;; !(mt2lc
+;;   (LET $spleeter-output
+;;        (snet.sound-spleeter.spleeter ((snet.sound-spleeter.MkInput "") $input))
+;;        (LET $english-vocals (snet.sound-spleeter.Output.vocals $spleeter-output)
+;;             (LET $chinese-lyrics
+;;                  (naint.machine-translation.Output.translation
+;;                   (naint.machine-translation.translate
+;;                    (((naint.machine-translation.MkInput "English") "Chinese")
+;;                     (snet.speech-recognition.Text.text
+;;                      (snet.speech-recognition.s2t
+;;                       (snet.speech-recognition.MkAudio $english-vocals))))))
+;;                  (LET $midi-notes (tomidi.MIDI.data (tomidi.MkAudio $english-vocals))
+;;                       (LET $chinese-vocals
+;;                            (naint.midi2voice-zh.Answer.output_audio
+;;                             (naint.midi2voice-zh.singingZH
+;;                              (((naint.midi2voice-zh.MkQuery $chinese-lyrics)
+;;                                $midi-notes) 1.0)))
+;;                            (mixer.Audio.data
+;;                             (mixer.mix
+;;                              ((mixer.MkMultiAudio
+;;                                (snet.sound-spleeter.Output.accomp $spleeter-output))
+;;                               $chinese-vocals)))))))))
