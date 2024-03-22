@@ -137,17 +137,17 @@
 (: all-variables (-> Expression Bool))
 (= (all-variables $x) (if (== $x ())
                              True
-                             (and (let $head (car-atom $x) (is-variable $head))
+                             (lazy-and (let $head (car-atom $x) (is-variable $head))
                                   (let $tail (cdr-atom $x) (all-variables $tail)))))
 
 ;; Return True iff the expression is a tuple of unique variables.
 ;; Note that it only supports pairs and triples because that is all we
 ;; need here.
 (: uniq-vars (-> Expression Bool))
-(= (uniq-vars ($x $y)) (and (all-variables ($x $y)) (not (== $x $y))))
-(= (uniq-vars ($x $y $z)) (and (all-variables ($x $y $z))
-                               (and (not (== $x $y))
-                                    (and (not (== $y $z))
+(= (uniq-vars ($x $y)) (lazy-and (all-variables ($x $y)) (not (== $x $y))))
+(= (uniq-vars ($x $y $z)) (lazy-and (all-variables ($x $y $z))
+                               (lazy-and (not (== $x $y))
+                                    (lazy-and (not (== $y $z))
                                          (not (== $x $z))))))
 
 ;; Define α-Binding type, that represents a binding from a variable to
