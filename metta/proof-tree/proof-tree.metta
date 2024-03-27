@@ -26,8 +26,12 @@
 ;;   3)
 
 ;; Curry a binary function
-(: curry (-> (-> $a $b $c) (-> $a (-> $b $c))))
-(= (((curry $f) $x) $y) ($f $x $y))
+(: curry2 (-> (-> $a $b $c) (-> $a (-> $b $c))))
+(= (((curry2 $f) $x) $y) ($f $x $y))
+
+;; Curry a trinary function
+(: curry3 (-> (-> $a $b $c $d) (-> $a (-> $b (-> $c $d)))))
+(= ((((curry3 $f) $x) $y) $z) ($f $x $y $z))
 
 ;; Define Nat
 (: Nat Type)
