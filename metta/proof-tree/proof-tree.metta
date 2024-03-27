@@ -55,40 +55,134 @@
 (= (ceil $n) (fromNat (fromNumber $n)))
 
 ;; Apply a given function to every element of a List
-(: map (-> (-> $a $b) (List $a) (List $b)))
-(= (map $f Nil) Nil)
-(= (map $f (Cons $h $t)) (Cons ($f $h) (map $f $t)))
+(: List.map (-> (-> $a $b) (List $a) (List $b)))
+(= (List.map $f Nil) Nil)
+(= (List.map $f (Cons $h $t)) (Cons ($f $h) (List.map $f $t)))
 
 ;; Apply a given function to every element of a tuple
-(: map-tuple (-> (-> $a $b) $c $d))
-(= (map-tuple $f $xs)
+(: map (-> (-> $a $b) $c $d))
+(= (map $f $xs)
    (if (== $xs ())
        ()
        (let* (($h (car-atom $xs))
               ($t (cdr-atom $xs))
               ($fh ($f $h))
-              ($ft (map-tuple $f $t)))
+              ($ft (map $f $t)))
          (cons-atom $fh $ft))))
 
-;; Test map-tuple
+;; Test map
 !(assertEqual
-  (map-tuple repr (1 2 3))
+  (map repr (1 2 3))
   ("1" "2" "3"))
 
+;; Return the location of the first element in a tuple meeting a
+;; certain condition.  If no such element exists return -1.
+(: findIf (-> (-> $a Bool) $b Number))
+(= (findIf $p $t) (findIf-rec $p $t 0))
+
+;; Like findIf but takes the location of the current tail tuple within
+;; the initial tuple.
+(: findIf-rec (-> (-> $a Bool) $b Number Number))
+(= (findIf-rec $p $t $l)
+   (if (== $t ())
+       -1
+       (let $hd (car-atom $t)
+         (if ($p $hd)
+             $l
+             (findIf-rec $p $t (+ 1 $l))))))
+
+;; Return the location of the first character in a string meeting a
+;; certain condition.  If no such character exists return -1.
+(: findIf-str (-> (-> Char Bool) String Number))
+(= (findIf-str $p $s) (findIf $p (stringToChars $s)))
+
+;; Return True iff the given character is a space character.
+(: isSpace (-> Char Bool))
+(= (isSpace $c)
+   (case $c
+     ((' ' True)
+      ('\t' True)
+      ($_ False))))
+
+;; Return True off the given character is not a space character.
+(: isNotSpace (-> Char Bool))
+(= (isNotSpace $c) (not (isSpace $c)))
+
+;; NEXT: test findIf-str
+
+;; Zip two tuples of same arity with a given function.
+;;
+;; TODO: replace type variables by Expression or some other proper
+;; types once Expression and quote has been decoupled.
+(: zipWith (-> (-> $a $b $c) $d $e $f))
+(= (zipWith $f $xs $ys)
+   (if (== $xs ())                      ; We assume (arity $xs) == (arity $ys)
+       ()
+       (let* (($xs-hd (car-atom $xs))
+              ($xs-tl (cdr-atom $xs))
+              ($ys-hd (car-atom $ys))
+              ($ys-tl (cdr-atom $ys))
+              ($head ($f $xs-hd $ys-hd))
+              ($tail (zipWith $f $xs-tl $ys-tl)))
+         (cons-atom $head $tail))))
+
+;; Test zipWith
+!(assertEqual
+  ()
+  ())
+!(assertEqual
+  (zipWith + (1 2 3) (4 5 6))
+  (5 7 9))
+
 ;; Fold a tuple from right to left
-(: foldr-tuple (-> (-> $a $b $b) $b $c $d))
-(= (foldr-tuple $f $i $xs)
+(: foldr (-> (-> $a $b $b) $b $c $d))
+(= (foldr $f $i $xs)
    (if (== $xs ())
        $i
        (let* (($h (car-atom $xs))
               ($t (cdr-atom $xs))
-              ($ft (foldr-tuple $f $i $t)))
+              ($ft (foldr $f $i $t)))
          ($f $h $ft))))
 
-;; Test foldr-tuple
+;; Test foldr
 !(assertEqual
-  (foldr-tuple + 0 (1 2 3))
+  (foldr + 0 (1 2 3))
   6)
+
+;; Generate a tuple by repeating an element n times
+(: repeat (-> $a Number $b))
+(= (repeat $x $n)
+   (if (== $n 0)
+       ()
+       (let $tail (repeat $x (- $n 1))
+         (cons-atom $x $tail))))
+
+;; Test repeat
+!(assertEqual
+  (repeat () 0)
+  ())
+!(assertEqual
+  (repeat () 3)
+  (() () ()))
+
+;; Return the last element of a tuple
+(: last (-> $a $b))
+(= (last $tuple)
+   (if (== $tuple ())
+       (empty)
+       (let* (($head (car-atom $tuple))
+              ($tail (cdr-atom $tuple)))
+         (if (== $tail ())
+             $head
+             (last $tail)))))
+
+;; Test last
+!(assertEqual
+  (last (A))
+  A)
+!(assertEqual
+  (last (A B C))
+  C)
 
 ;; Return True iff $term is an expression
 (: is-expression (-> Atom Bool))
