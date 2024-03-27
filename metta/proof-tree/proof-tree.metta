@@ -194,8 +194,7 @@
 ;;
 ;; (concat-atom (a b) (c d)) returns (a b c d)
 (: concat-atom (-> $a $a $a))
-(= (concat-atom $lhs $rhs) (foldr-tuple cons-atom $rhs $lhs))
-
+(= (concat-atom $lhs $rhs) (foldr cons-atom $rhs $lhs))
 
 ;; Test concat-atom
 !(assertEqual
@@ -205,52 +204,52 @@
   (concat-atom (a b) (c d))
   (a b c d))
 
-;; Split tuple into two tuple from a given position.  For instance
+;; SplitAt tuple into two tuple from a given position.  For instance
 ;;
-;; (split-tuple (a b c) 0) returns (() (a b c))
-;; (split-tuple (a b c) 1) returns ((a) (b c))
-;; (split-tuple (a b c) 2) returns ((a b) (c))
+;; (splitAt (a b c) 0) returns (() (a b c))
+;; (splitAt (a b c) 1) returns ((a) (b c))
+;; (splitAt (a b c) 2) returns ((a b) (c))
 ;;
 ;; If the position exceeds the arity of the tuple, then it behaves as
 ;; if the position was the arity.  For instance
 ;;
-;; (split-tuple (a b c) 4) returns ((a b c) ())
+;; (splitAt (a b c) 4) returns ((a b c) ())
 ;;
 ;; If $position is negative then it does not terminate.
-(: split-tuple (-> $a Number $a))
-(= (split-tuple $tuple $position)
+(: splitAt (-> $a Number $a))
+(= (splitAt $tuple $position)
    (if (== $position 0)
        (() $tuple)
        (if (== $tuple ())
            (() ())
            (let* (($head (car-atom $tuple))
                   ($tail (cdr-atom $tuple))
-                  (($split-head $split-tail) (split-tuple $tail (- $position 1))))
+                  (($split-head $split-tail) (splitAt $tail (- $position 1))))
              ((cons-atom $head $split-head) $split-tail)))))
 
-;; Test split-tuple
+;; Test splitAt
 !(assertEqual
-  (split-tuple (a b c) 0)
+  (splitAt (a b c) 0)
   (() (a b c)))
 !(assertEqual
-  (split-tuple (a b c) 1)
+  (splitAt (a b c) 1)
   ((a) (b c)))
 !(assertEqual
-  (split-tuple (a b c) 2)
+  (splitAt (a b c) 2)
   ((a b) (c)))
 !(assertEqual
-  (split-tuple (a b c) 3)
+  (splitAt (a b c) 3)
   ((a b c) ()))
 !(assertEqual
-  (split-tuple (a b c) 4)
+  (splitAt (a b c) 4)
   ((a b c) ()))
 
-;; Return the arity of an expression
-(= (acc $x $n) (+ 1 $n))
-(: arity (-> $a Number))
-(= (arity $expr) (foldr-tuple acc 0 $expr))
-;; TODO: re-enable when the interpreter is fixed
-;; (= (arity $expr) (foldr-tuple (λ $x $n (+ 1 $n)) 0 $expr))
+;; ;; Return the arity of an expression
+;; (= (acc $x $n) (+ 1 $n))
+;; (: arity (-> $a Number))
+;; (= (arity $expr) (foldr acc 0 $expr))
+;; ;; TODO: re-enable when the interpreter is fixed
+;; ;; (= (arity $expr) (foldr (λ $x $n (+ 1 $n)) 0 $expr))
 
 ;; Test arity
 !(assertEqual
@@ -266,7 +265,7 @@
 
 ;; Given a tuple of numbers, return the maximum, or 0 if empty.
 (: max-element (-> $a Number))
-(= (max-element $expr) (foldr-tuple max 0 $expr))
+(= (max-element $expr) (foldr max 0 $expr))
 
 ;; Test max-element
 !(assertEqual
@@ -309,7 +308,7 @@
 ;; Given a tuple of strings, return the length of the string with
 ;; maximum length.
 (: max-len-strs (-> $a Number))
-(= (max-len-strs $ss) (let $ls (map-tuple len-str $ss) (max-element $ls)))
+(= (max-len-strs $ss) (let $ls (map len-str $ss) (max-element $ls)))
 
 ;; Test max-len-strs
 !(assertEqual (max-len-strs ()) 0)
@@ -331,7 +330,7 @@
    (let $len (len-str $s)
      (if (< $len $n)
          (concat-str $s (repeat-str $c (- $n $len)))
-         $s)))
+         $s))))
 
 ;; Test pad-trail
 !(assertEqual
@@ -340,9 +339,12 @@
 
 ;; Like pad-trail but applied to a tuple of strings
 (: pad-trails (-> String Number $a $b))
-(= (pad-trails $c $n $ss) (map-tuple (((curry pad-trail) $c) $n) $ss)) ; NEXT
+(= (pad-trails $c $n $ss) (map (((curry3 pad-trail) $c) $n) $ss))
 
 ;; Test pad-trails
+!(assertEqual
+  (pad-trails " " 2 ("A"))
+  ("A "))
 !(assertEqual
   (pad-trails " " 5 ("A" "AB" "ABC"))
   ("A    " "AB   " "ABC  "))
@@ -554,6 +556,9 @@
   (flatten (((f a) b) ((g c) d)))
   (f a b (g c d)))
 !(assertEqual
+  (flatten (: ((plus (: 1 Number)) (: 2 Number)) Number))
+  (: (plus (: 1 Number) (: 2 Number)) Number))
+!(assertEqual
   (flatten (: ((ModusPonens (: bc (→ B C)))
                (: ((ModusPonens (: ab (→ A B))) (: a A)) B)) C))
   (: (ModusPonens (: bc (→ B C)) (: (ModusPonens (: ab (→ A B)) (: a A)) B)) C))
@@ -577,23 +582,95 @@
 ;;
 ;; and rhs represents
 ;;
+;; "   /"
 ;; "  /"
 ;; " /"
 ;; "/"
 ;;
 ;; outputs
 ;;
+;; "         /"
 ;; "  / /   /"
 ;; " /-/   /"
 ;; "/ /   /"
-(: draw-side-by-side (-> Expression Expression Number Expression))
+;;
+;; TODO: replace type variables by Expression or some other proper
+;; types once Expression and quote has been decoupled.
+(: draw-side-by-side (-> $a $b Number $c))
 (= (draw-side-by-side $lhs $rhs $margin)
    (let* (($lhs-nlines (arity $lhs))
           ($rhs-nlines (arity $rhs)))
-     (if (< $lhs-nlines $rhs-lines)
-         (let (($lhs-max-len (max-len-strs $lhs))
-               ($lhs-padded (pad-trails $lhs $lhs-max-len " "))
-         (repeat-str " " (pad-lines $lhs $lhs-max-len)
+     (if (< $lhs-nlines $rhs-nlines)
+         (let* (($lhs-max-len (+ (max-len-strs $lhs) $margin))
+                ($lhs-padded (pad-trails " " $lhs-max-len $lhs))
+                ($lhs-blank-line (repeat-str " " $lhs-max-len))
+                ($diff-nlines (- $rhs-nlines $lhs-nlines))
+                ($lhs-blank-lines (repeat $lhs-blank-line $diff-nlines))
+                ($lhs-fully-padded (concat-atom $lhs-blank-lines $lhs-padded)))
+           (zipWith concat-str $lhs-fully-padded $rhs))
+         (let* (($diff-nlines (- $lhs-nlines $rhs-nlines))
+                (($lhs-top $lhs-bottom) (splitAt $lhs $diff-nlines))
+                ($lhs-bottom-max-len (max-len-strs $lhs-bottom))
+                ($lhs-bottom-padded (pad-trails " "
+                                                (+ $lhs-bottom-max-len $margin)
+                                                $lhs-bottom))
+                ($bottom (zipWith concat-str $lhs-bottom-padded $rhs)))
+           (concat-atom $lhs-top $bottom)))))
+
+Test draw-side-by-side
+!(assertEqual
+  (draw-side-by-side () () 1)
+  ())
+!(assertEqual
+  (draw-side-by-side ("1") () 1)
+  ("1"))
+!(assertEqual
+  (draw-side-by-side () ("2") 1)
+  (" 2"))
+!(assertEqual
+  (draw-side-by-side ("1") ("2") 1)
+  ("1 2"))
+!(assertEqual
+  (draw-side-by-side ("1") (" 2" "3") 1)
+  ("   2" "1 3"))
+!(assertEqual
+  (draw-side-by-side ("1" " 2") ("3") 1)
+  ("1" " 2 3"))
+!(assertEqual
+  (draw-side-by-side ("------(2)" "Number") () 2)
+  ("------(2)" "Number"))
+!(assertEqual
+  (draw-side-by-side ("------(1)" "Number") ("------(2)" "Number") 2)
+  ("------(1)  ------(2)" "Number     Number"))
+
+;; Given a tuple of expressions of the form (: PROOF THEOREM), return
+;; an ascii drawing of these proofs in a Gentzen style side by side.
+;; Like for draw, a multi-line string is represented by a tuple of
+;; strings, one on each line.
+;;
+;; For instance
+;;
+;; (draw-tuple ((: bc (→ B C))
+;;              (: (ModusPonens (: ab (→ A B)) (: a A)) B))
+;;
+;; outputs
+;;
+;; "             -------(ab)  -(a)"
+;; "             (→ A B)      A"
+;; "-------(bc)  --------------(ModusPonens)"
+;; "(→ B C)             B"
+;;
+;; TODO: replace type variables by Expression or some other proper
+;; types once Expression and quote has been decoupled.
+(: draw-tuple (-> $a $b))
+(= (draw-tuple $expr)
+   (if (== $expr ())
+       ()
+       (let* (($head (car-atom $expr))
+              ($tail (cdr-atom $expr))
+              ($drawn-head (draw $head))
+              ($drawn-tail (draw-tuple $tail)))
+         (draw-side-by-side $drawn-head $drawn-tail 2))))
 
 ;; Given a fully annotated proof, return a string corresponding to an
 ;; ascii drawing of its proof in a Gentzen style.  For now, due to
@@ -616,7 +693,10 @@
 ;; "(→ B C)             B"
 ;; "---------------------(ModusPonens)"
 ;; "           C"
-(: draw (-> Expression Expression))
+;;
+;; TODO: replace type variables by Expression or some other proper
+;; types once Expression and quote has been decoupled.
+(: draw (-> $a $b))
 (= (draw (: $prf $thrm))
    (if (is-expression $prf)
        ;; The proof is an expression
@@ -627,15 +707,23 @@
                   ($prfabs-str-len (len-str $prfabs))
                   ($prfargs (cdr-atom $prf))
                   ($prfargs-strs (draw-tuple $prfargs))
-                  ($prfargs-strs-len (max-element $prfargs-strs))
+                  ($prfargs-last-line (last $prfargs-strs))
+                  ($prfargs-last-line-len (len $prfargs-last-line))
+                  ;; NEXT: use $prfargs-last-line-len.  The last line
+                  ;; needs to be split into its heading spaces and
+                  ;; tail, then the size of the tail needs to be used
+                  ;; as input for for (repeat-str "-" ...), and then
+                  ;; the result needs to be stuck back to the same
+                  ;; heading spaces.
+                  ($prfargs-strs-lens (map len-str $prfargs-strs))
+                  ($prfargs-strs-max-len (max-element $prfargs-strs-lens))
                   ($thrm-str (repr $thrm))
                   ($thrm-str-len (len-str $thrm-str))
-                  ($line-str-len (max $prfargs-strs-len $thrm-str-len))
+                  ($line-str-len (max $prfargs-strs-max-len $thrm-str-len))
                   ($line-str (repeat-str "-" $line-str-len))
                   ($prfabs-par-str (concat-str (concat-str "(" $prfabs-str) ")"))
                   ($line-prfabs-str (concat-str $line-str $prfabs-par-str))
-                  ($pad-len (ceil (/ (- $line-str-len $thrm-str-len)) 2))
-                  ;; NEXT: can we simplify using pad-trail?
+                  ($pad-len (ceil (/ (- $line-str-len $thrm-str-len) 2)))
                   ($space-pad (repeat-str " " $pad-len))
                   ($padded-thrm-str (concat-str $space-pad $thrm-str)))
              (concat-atom $prfargs-strs ($line-prfabs-str $padded-thrm-str))))
@@ -648,36 +736,28 @@
               ($line-prf-str (concat-str $line-str $prf-par-str)))
          ($line-prf-str $thrm-str))))
 
-;; ;; Given a tuple of expressions of the form (: PROOF THEOREM), return
-;; ;; an ascii drawing of these proofs in a Gentzen style side by side.
-;; ;; Like for draw, a multi-line string is represented by a tuple of
-;; ;; strings, one on each line.
-;; ;;
-;; ;; For instance
-;; ;;
-;; ;; (draw-tuple ((: bc (→ B C))
-;; ;;              (: (ModusPonens (: ab (→ A B)) (: a A)) B))
-;; ;;
-;; ;; outputs
-;; ;;
-;; ;; "             -------(ab)  -(a)"
-;; ;; "             (→ A B)      A"
-;; ;; "-------(bc)  --------------(ModusPonens)"
-;; ;; "(→ B C)             B"
-;; (: draw-tuple (-> Expression Expression))
-;; (= (draw-tuple $expr)
-;;    (if (== $expr ())
-;;        ()
-;;        (let* (($head (car-atom $expr))
-;;               ($tail (cdr-atom $expr))
-;;               ($drawn-head (draw $head))
-;;               ($drawn-tail (draw-tuple $tail))
-;;               ($drawn-head-nlines (arity $drawn-head))
-;;               ($drawn-tail-nlines (arity $drawn-tail)))
-;;          (if (< $drawn-head-nlines $drawn-tail-nlines)
-;;              ;; The tail is taller
-;;              (let* (($head-max-len (max-element (len-str (superpose $drawn-head))
-;;                     ($max-len-top-tail NEXT))))))))
+;; Test draw-tuple
+!(assertEqual
+  (draw-tuple ())
+  ())
+!(assertEqual
+  (draw-tuple ((: 2 Number)))
+  ("------(2)" "Number"))
+!(assertEqual
+  (draw-tuple ((: 1 Number) (: 2 Number)))
+  ("------(1)  ------(2)" "Number     Number"))
 
 ;; Test draw
-!(draw (: Refl (=== $x $x)))
+!(assertEqual
+  (draw (: a A))
+  ("-(a)" "A"))
+!(assertEqual
+  (draw (: 2 Number))
+  ("------(2)" "Number"))
+!(assertEqual
+  (draw (: Refl (=== $x $x)))
+  ("-----------(Refl)" "(=== $x $x)"))
+;; NEXT: create assertEqual tests from the following
+;; !(draw (: (plus (: 1 Number) (: 2 Number)) Number))
+;; !(draw (: ((ModusPonens (: ab (→ A B))) (: a A)) B))
+;; !(draw (: ((ModusPonens (: bc (→ B C))) (: ((ModusPonens (: ab (→ A B))) (: a A)) B)) C))
