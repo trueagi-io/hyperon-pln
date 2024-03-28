@@ -340,11 +340,7 @@
 ;; Reduction rules ;;
 ;;;;;;;;;;;;;;;;;;;;;
 
-;; NEXT: fix lambda application reduction, see
-;; https://github.com/trueagi-io/metta-examples/issues/39
-
-;; Reduce lambda application
-;; (= ((λ $x $f) $y) (let $x $y $f))
+;; ;; Reduce lambda application
 ;; (= ((λ $x $f) $y) (let ($νx $νf) (sealed ($x) ($x $f)) (let $νx $y $νf)))
 
 ;; ;; Test lambda calculus reduction
