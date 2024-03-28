@@ -443,45 +443,56 @@
                          ($_ $term))))))))
 
 ;; Test cl2lc
-;;
-;; times (multiplication) would be represented by
-;; - combinatory logic: ((𝐒 ((𝐒 (𝐊 𝐒)) 𝐊)) 𝐈)
-;; - lambda calculus: ((λ $m) ((λ $n) ((λ $f) ((λ $x) (($m ($n $f)) $x)))))
-
-;; Convert (𝐊 𝐈) to (λ $f (λ $x $x)) (zero in lambda calculus)
-;;
-;; TODO: re-enable assertEqual when it will support alpha-equivalence.
-;; Maybe we should introduce something like assertAlphaEqual.
-;;
 ;; !(assertEqual
-  ;; !(cl2lc (𝐊 𝐈))
-  ;; (λ $f (λ $x $x)))
+;;   (=α (cl2lc 𝐍) (λ $x (λ $y $y)))
+;;   True)
+;; !(cl2lc 𝐒)
+;; !(cl2lc 𝐁)
+;; !($f $x)
 
-;; Convert ((𝐒 𝐈) 𝐈) to (λ $x ($x $x)) (M, the Mockingbird combinator)
-;; !(cl2lc ((𝐒 𝐈) 𝐈))
+;; NEXT: get that fixed, see issue
+;; https://github.com/trueagi-io/hyperon-experimental/issues/642
+;;
+;; !(($f $x) ($g $x))
 
-;; Disabled because it does not half, as it should
-;; Convert (𝐌 𝐌) (reduction should not halt)
-;; !(cl2lc (𝐌 𝐌))
+;; !(λ $f (λ $g (λ $x (($f $x) ($g $x)))))
+;; !(assertEqual
+;; !(cl2lc (𝐒 𝐁))
+;; !(=α (cl2lc (𝐒 𝐁)) (λ $n (λ $f (λ $x ($f (($n $f) $x))))))
+;; ;; Convert (𝐊 𝐈) to (λ $f (λ $x $x)) (zero in lambda calculus)
+;; ;;
+;; ;; TODO: re-enable assertEqual when it will support alpha-equivalence.
+;; ;; Maybe we should introduce something like assertAlphaEqual.
+;; ;;
+;; ;; !(assertEqual
+;;   ;; !(cl2lc (𝐊 𝐈))
+;;   ;; (λ $f (λ $x $x)))
 
-;; Convert (𝐒 𝐈) to
-;; !(cl2lc (𝐒 𝐈))
+;; ;; Convert ((𝐒 𝐈) 𝐈) to (λ $x ($x $x)) (M, the Mockingbird combinator)
+;; ;; !(cl2lc ((𝐒 𝐈) 𝐈))
 
-;; NEXT: find out if the following is correct
+;; ;; Disabled because it does not half, as it should
+;; ;; Convert (𝐌 𝐌) (reduction should not halt)
+;; ;; !(cl2lc (𝐌 𝐌))
 
-;; Convert ((𝐒 (𝐊 𝐒)) 𝐊) to
-;; (λ $n (λ $f (λ $x ($f (($n $f) $x))))) (successor in lambda calculus)
-;; !(cl2lc ((𝐒 (𝐊 𝐒)) 𝐊))
+;; ;; Convert (𝐒 𝐈) to
+;; ;; !(cl2lc (𝐒 𝐈))
 
-;; Convert 1 to lambda calculus
-;; !(cl2lc ((((𝐒 (𝐊 𝐒)) 𝐊) ((𝐒 (𝐊 𝐒)) 𝐊)) (𝐊 𝐈)))
+;; ;; NEXT: find out if the following is correct
 
-;; Convert 2 to lambda calculus
-;; !(cl2lc ((((𝐒 (𝐊 𝐒)) 𝐊) ((𝐒 (𝐊 𝐒)) 𝐊)) (𝐊 𝐈)))
+;; ;; Convert ((𝐒 (𝐊 𝐒)) 𝐊) to
+;; ;; (λ $n (λ $f (λ $x ($f (($n $f) $x))))) (successor in lambda calculus)
+;; ;; !(cl2lc ((𝐒 (𝐊 𝐒)) 𝐊))
 
-;; From (lc2cl (λ $f (λ $x ($f $x)))), corresponding to 1
-;; !(cl2lc ((𝐒 ((𝐒 (𝐊 𝐒)) ((𝐒 (𝐊 𝐊)) 𝐈))) (𝐊 𝐈)))
-;; (((λ $f378 (λ $g379 (λ $x380 (($f378 $x380) ($g379 $x380))))) (((λ $f448 (λ $g449 (λ $x450 (($f448 $x450) ($g449 $x450))))) ((λ $x470 (λ $y471 $x470)) (λ $f482 (λ $g483 (λ $x484 (($f482 $x484) ($g483 $x484))))))) (((λ $f543 (λ $g544 (λ $x545 (($f543 $x545) ($g544 $x545))))) ((λ $x564 (λ $y565 $x564)) (λ $x570 (λ $y571 $x570)))) (λ $x579 $x579)))) ((λ $x604 (λ $y605 $x604)) (λ $x610 $x610)))
+;; ;; Convert 1 to lambda calculus
+;; ;; !(cl2lc ((((𝐒 (𝐊 𝐒)) 𝐊) ((𝐒 (𝐊 𝐒)) 𝐊)) (𝐊 𝐈)))
+
+;; ;; Convert 2 to lambda calculus
+;; ;; !(cl2lc ((((𝐒 (𝐊 𝐒)) 𝐊) ((𝐒 (𝐊 𝐒)) 𝐊)) (𝐊 𝐈)))
+
+;; ;; From (lc2cl (λ $f (λ $x ($f $x)))), corresponding to 1
+;; ;; !(cl2lc ((𝐒 ((𝐒 (𝐊 𝐒)) ((𝐒 (𝐊 𝐊)) 𝐈))) (𝐊 𝐈)))
+;; ;; (((λ $f378 (λ $g379 (λ $x380 (($f378 $x380) ($g379 $x380))))) (((λ $f448 (λ $g449 (λ $x450 (($f448 $x450) ($g449 $x450))))) ((λ $x470 (λ $y471 $x470)) (λ $f482 (λ $g483 (λ $x484 (($f482 $x484) ($g483 $x484))))))) (((λ $f543 (λ $g544 (λ $x545 (($f543 $x545) ($g544 $x545))))) ((λ $x564 (λ $y565 $x564)) (λ $x570 (λ $y571 $x570)))) (λ $x579 $x579)))) ((λ $x604 (λ $y605 $x604)) (λ $x610 $x610)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; λ-calculus to combinatory logic ;;
