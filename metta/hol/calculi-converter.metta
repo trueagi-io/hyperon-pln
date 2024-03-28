@@ -321,7 +321,7 @@
 ;; Return True iff two given terms are alpha-equivalent.  For now all
 ;; variables are assumed to be free, the notion of scope is not
 ;; implemented.
-(: =α (-> Atom Atom Bool))
+(: =α (-> $a $b Bool))
 (= (=α $lhs $rhs) (case (α-bindings $lhs $rhs)
                     ((Nothing False)
                      ((Just $_) True))))
