@@ -418,20 +418,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Convert combinatory logic term to lambda-calculus
-(: cl2lc (-> Atom Atom))
+(: cl2lc (-> $a $a))
 ;; Base cases
-(= (cl2lc 𝐈) (λ $x $x))
-(= (cl2lc 𝐊) (λ $x (λ $y $x)))
-(= (cl2lc 𝐒) (λ $f (λ $g (λ $x (($f $x) ($g $x))))))
-(= (cl2lc 𝐌) (λ $x ($x $x)))
-(= (cl2lc 𝐍) (λ $x (λ $y $y)))
-(= (cl2lc 𝐓) (λ $x (λ $y ($y $x))))
-(= (cl2lc 𝐖) (λ $x (λ $y (($x $y) $y))))
-(= (cl2lc 𝐁) (λ $x (λ $y (λ $z ($x ($y $z))))))
-(= (cl2lc 𝐂) (λ $x (λ $y (λ $z (($x $z) $y)))))
-(= (cl2lc 𝐔) (λ $x (λ $y ($y (($x $x) $y)))))
-;; Recursive step
-(= (cl2lc ($f $g)) ((cl2lc $f) (cl2lc $g)))
+(= (cl2lc $term)
+   (case (get-metatype $term)
+     ((Symbol (case $term
+                ((𝐈 (λ $x $x))
+                 (𝐊 (λ $x (λ $y $x)))
+                 (𝐒 (λ $f (λ $g (λ $x (($f $x) ($g $x))))))
+                 (𝐌 (λ $x ($x $x)))
+                 (𝐍 (λ $x (λ $y $y)))
+                 (𝐓 (λ $x (λ $y ($y $x))))
+                 (𝐖 (λ $x (λ $y (($x $y) $y))))
+                 (𝐁 (λ $x (λ $y (λ $z ($x ($y $z))))))
+                 (𝐂 (λ $x (λ $y (λ $z (($x $z) $y)))))
+                 (𝐔 (λ $x (λ $y ($y (($x $x) $y)))))
+                 ($_ $term))))
+      (Variable $term)
+      (Grounded $term)
+      (Expression (if (== $term ())
+                      ()
+                      (case $term
+                        ((($f $g) ((cl2lc $f) (cl2lc $g)))
+                         ($_ $term))))))))
 
 ;; Test cl2lc
 
