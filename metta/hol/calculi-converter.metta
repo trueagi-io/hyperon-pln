@@ -368,6 +368,27 @@
 (= ((𝐒 (𝐁 𝐁 𝐒)) (𝐊 𝐊)) 𝐂)
 (= ((𝐁 (𝐒 𝐈)) (𝐒 𝐈 𝐈)) 𝐔)
 
+!(assertEqual
+  (𝐊 𝐈)
+  𝐍)
+!(assertEqual
+  ((𝐒 (𝐊 𝐒)) 𝐊)
+  𝐁)
+!(assertEqual
+  ((𝐒 𝐒) (𝐊 𝐈))
+  𝐖)
+!(assertEqual
+  ((𝐒 𝐒) 𝐍)
+  𝐖)
+!(assertEqual
+  ((𝐒 ((𝐒 (𝐊 𝐒)) 𝐊)) (𝐊 𝐈))            ; 1 as (S Z) in combinatory logic
+  ((𝐒 𝐁) 𝐍))
+!(assertEqual
+  ((𝐒 𝐁) 𝐍)                             ; 1 as (S Z) in combinatory logic
+  ((𝐒 𝐁) 𝐍))
+
+;; NEXT: sort out
+
 ;; ;; Test combinatory logic reduction
 ;; !(assertEqual
   ;; !((𝐒 ((𝐒 (𝐊 𝐒)) ((𝐒 (𝐊 𝐊)) 𝐈))) (𝐊 𝐈)) ; Result of converting
@@ -376,8 +397,12 @@
   ;; ((𝐒 ((𝐒 (𝐊 𝐒)) ((𝐒 (𝐊 𝐊)) 𝐈))) (𝐊 𝐈))) ; Unreducable???
 
 ;; !(assertEqual
-;;   (((𝐒 (𝐊 𝐒)) 𝐊) (𝐊 𝐈))  ; 1, obtained by (S Z) in combinatory logic
+   ;; !(((𝐒 (𝐊 𝐒)) 𝐊) (𝐊 𝐈))  ; 1, obtained by (S Z) in combinatory logic
 ;;   (𝐁 𝐍))                 ; NEXT: shouldn't it be ((𝐒 𝐁) 𝐍)?
+
+;; !((𝐒 𝐁) ((𝐒 𝐁) 𝐍))
+
+;; !((𝐒 𝐁) 𝐍)
 
 ;; !(assertEqual
 ;;   (((𝐒 (𝐊 𝐒)) 𝐊) (((𝐒 (𝐊 𝐒)) 𝐊) (𝐊 𝐈)))  ; 2, obtained by (S (S Z)) in combinatory logic
