@@ -24,6 +24,17 @@
 ;; https://farrugiamaths.quora.com/Combinatory-logic-Using-math-boldsymbol-mathsf-S-math-and-math-boldsymbol-mathsf-K-math-Part-1
 ;;
 ;; by Alexander Farrugia
+;;
+;; To test if our reduction rules and convertion algorithms between
+;; lambda calculus and combinatory logic are correct we use arithmetic.
+;;
+;; For arithmetic in combinatory logic, see
+;;
+;; https://farrugiamaths.quora.com/Combinatory-logic-Natural-numbers-and-predicates-Part-6
+;;
+;; For arithmetic in lambda calculus, see
+;;
+;; https://en.wikipedia.org/wiki/Lambda_calculus#Arithmetic_in_lambda_calculus
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common functions and types ;;
