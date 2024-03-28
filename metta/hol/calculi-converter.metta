@@ -443,30 +443,6 @@
                          ($_ $term))))))))
 
 ;; Test cl2lc
-
-;; According to ChatGPT the following holds (NEXT: make sure there are
-;; no hallucination):
-;;
-;; Z (zero) would be represented by
-;; - combinatory logic: (𝐊 𝐈)
-;; - lambda calculus: (λ $f (λ $x $x))
-;;
-;; S (successor) would be represented by (NEXT: is it really the case?)
-;; - combinatory logic: ((𝐒 (𝐊 𝐒)) 𝐊)
-;; - lambda calculus: (λ $n (λ $f (λ $x ($f (($n $f) $x)))))
-;;
-;; 1 would be represented by
-;; - combinatory logic: (𝐒 (𝐊 (𝐊 𝐈)))
-;; - lambda calculus: (λ $f (λ $x ($f $x)))
-;;
-;; 2 would be represented by
-;; - combinatory logic: (𝐒 (𝐊 (𝐒 (𝐊 (𝐊 𝐈)))))
-;;   (or maybe ((((𝐒 (𝐊 𝐒)) 𝐊) ((𝐒 (𝐊 𝐒)) 𝐊)) (𝐊 𝐈)))
-;; - lambda calculus: (λ $f (λ $x ($f ($f $x))))
-;;
-;; plus (addition) would be represented by
-;; - combinatory logic: ((𝐒 (𝐒 𝐊)) 𝐈)
-;; - lambda calculus: ((λ $m) ((λ $n) ((λ $f) ((λ $x) (($m f) (($n $f) $x))))))
 ;;
 ;; times (multiplication) would be represented by
 ;; - combinatory logic: ((𝐒 ((𝐒 (𝐊 𝐒)) 𝐊)) 𝐈)
