@@ -74,12 +74,12 @@ version of the curried backward chainer recalled below
           $b))  ; Query result
 
 ;; Base case
-(= (bc $kb (: $prf $ccln) $_) (match &kb (: $prf $ccln) (: $prf $ccln)))
+(= (bc $kb (: $prf $ccln) $_) (match $kb (: $prf $ccln) (: $prf $ccln)))
 
 ;; Recursive step
-(= (bc (: ($prfabs $prfarg) $ccln) (S $k))
-   (let* (((: $prfabs (-> $prms $ccln)) (bc (: $prfabs (-> $prms $ccln)) $k))
-          ((: $prfarg $prms) (bc (: $prfarg $prms) $k)))
+(= (bc $kb (: ($prfabs $prfarg) $ccln) (S $k))
+   (let* (((: $prfabs (-> $prms $ccln)) (bc $kb (: $prfabs (-> $prms $ccln)) $k))
+          ((: $prfarg $prms) (bc $kb (: $prfarg $prms) $k)))
      (: ($prfabs $prfarg) $ccln)))
 ```
 
