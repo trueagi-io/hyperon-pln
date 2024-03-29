@@ -182,7 +182,9 @@ as well as context updater functions.  In order to hold the predicates
 and updater functions we defined the following control structure
 
 ```
-(: Control (-> $b $c Type))
+(: Control (-> $b                   ; Query type
+               $c                   ; Context type
+               Type))
 (: MkControl (-> (-> $b $c $c)      ; Abstraction context updater
                  (-> $b $c $c)      ; Argument context updater
                  (-> $b $c Bool)    ; Base case continuation predicate
@@ -311,11 +313,11 @@ is to use the maximum depth as context, thus the control structure is
 defined as follows
 
 ```
-!(bind! &md-ctl (MkControl depth-updater    ; Abstraction context updater
-                           depth-updater    ; Argument context updater
-                           top-continuor    ; Base case continuor
-                           gtz-continuor    ; Recursive step continuor
-                           top-continuor))  ; Match continuor
+(MkControl depth-updater    ; Abstraction context updater
+           depth-updater    ; Argument context updater
+           top-continuor    ; Base case continuor
+           gtz-continuor    ; Recursive step continuor
+           top-continuor))  ; Match continuor
 ```
 
 where `depth-updater` is defined as follows
@@ -370,7 +372,7 @@ control.  Indeed, the continuation predicates are not simply checking
 whether a depth is above zero.  Instead, they consider a broader
 context, specifically syntactic elements of the target theorem
 expressed in the initial query, as well as the state of the current
-query as it exists along the trace of the inference.  Moreover, these
+query as it evolves alongside the inference trace.  Moreover, these
 considerations are themselves expressed as a theory.  Thus, they are
 two theories, one theory about the problem to be solved, the *problem
 theory*, and another theory about the inference control that should be
@@ -380,22 +382,23 @@ particular branch should be continued or not, calls the backward
 chainer on the control theory.  If a proof of continuation is found,
 then, the continuation predicate returns True, otherwise, if no such
 proof is found then the continuation predicate returns False and the
-branch is pruned.  The backward chainer used to proof theorems in the
-control theory has itself no proper inference control, thus the
-recursion stops here, in that experiment anyway.
+branch gets pruned.  The backward chainer used to proof theorems in
+the control theory has itself no proper inference control beside a
+maximum depth, thus the decisional recursion stops here, in that
+experiment anyway.
 
 Before explaining how it all works, let us describe the problem and
 control theories used in that experiment.
 
 #### Problem Theory
 
-The problem theory merely describes the ordering relationship between
-the months of the year.  Thus, the objects are the 12 months of the
-year, `Jan` to `Dec` equipped with a non-strict total order, `≼`.
-Theorems are statements like `(≼ Jun Nov)` expressing that June
-non-strictly preceeds November.  Axioms are the precedence
-relationships between every contiguous months, expressed as a typing
-relationship such as
+The problem theory considered here merely describes the ordering
+relationship between the months of the year.  Thus, the objects are
+the 12 months of the year, `Jan` to `Dec` equipped with a non-strict
+total order, `≼`.  Theorems are statements like `(≼ Jun Nov)`
+expressing that June non-strictly preceeds November.  Axioms are the
+precedence relationships between every contiguous months, expressed as
+a typing relationship such as
 
 ```
 (: JF (≼ Jan Feb))
@@ -411,13 +414,13 @@ specifically the reflexivity of `≼`
 (: Refl (≼ $x $x))
 ```
 
-its transitivity
+Its transitivity
 
 ```
 (: Trans (-> (≼ $x $y) (-> (≼ $y $z) (≼ $x $z))))
 ```
 
-as well as an extra rule expressing that January non-strictly preceeds
+As well as an extra rule expressing that January non-strictly preceeds
 every other month
 
 ```
@@ -426,8 +429,9 @@ every other month
 
 This last rule can create a shortcut in the proofs for a subset of
 theorems, all the ones involving comparing January to a following
-month.  For other theorems, the only way to prove them is to apply the
-transitivity rule as many times as necessary.
+month.  For other theorems, other than reflexive ones, the only way to
+prove them is to apply the transitivity rule as many times as
+necessary.
 
 The idea is that the control theory should be able to express that
 shortcut and therefor speed up reasoning for that particular subset of
@@ -499,7 +503,7 @@ following typing relationships
 
 where `$rn` ranges `Trans` as well as other axiom names corresponding
 to contiguous precedence, and `$rc` is left free.  In all three rules,
-`$k` the depth is left free as well, since inference control based on
+`$k`, the depth is left free as well, since inference control based on
 maximum depth is left to the base case and recursive step continuation
 predicates.
 
@@ -537,7 +541,7 @@ the boxed comment
 This work is only scratching the surface.  Below are a few suggestions
 for improvements and futher exploration.
 
-First, the problem and control theories should be made more intricate.
+First, the problem and control theories should be more intricate.
 Problem theories could cover more traditional mathematical theories,
 or real world situations, such as controlling an agent in an
 environment.  As for the control theory, it should capture more
@@ -565,7 +569,7 @@ Greg Meredith's words), also making such control not amenable to
 concurrent processing.
 
 Fifth, as previously discussed in various calls, the inference control
-mechanics does not need to exist only as MeTTa code.  It could exist
+mechanics do not need to exist only as MeTTa code.  It could exist
 below MeTTa, as Minimal MeTTa code.  Or even below Minimal MeTTa, as
 foreign function code.  In fact there may be ways for these multiple
 levels to co-exist as embodying particular implementations of the same
@@ -581,12 +585,12 @@ Seventh, inference control may also exist at a higher level, going
 beyond directly pruning or selecting the most likely branch.  For
 instance by expressing the process of searching proofs in more
 abstract or compositional ways.  Higher level inference control rules
-could for instance describe how to decompose certain problems or how
+could for instance describe how to decompose certain problems or when
 to apply certain tatics.
 
 Eighth, in these experiments, the problem and control theories have no
-overlap.  In future versions such theories may overlap, or may even be
-the same.  What it would mean is that any knowledge gained about
+overlap.  In future experiments such theories may overlap, or may even
+be the same.  What it would mean is that any knowledge gained about
 solving problems would potentially be transferable to the problems of
 inference control, allowing the possibility of a virtuous feedback
 loop to emerge.  As such, as the backward chainer would become smarter
