@@ -137,11 +137,12 @@ are, the backward chainer may behave differently, such as
 
 4. any combination thereof.
 
-More variations of such backward chainer exist, such as one producing
-fully annotated proofs (see [proof-tree](../proof-tree)), or one more
-amenable to build constructive proofs (see [hol](../hol)).  However,
-we choose the particular variation presented above to experiment with
-inference control because it is the simplest one.
+More variations of the curried backward chainer exist, such as one
+producing fully annotated proofs, under the
+[../proof-tree](../proof-tree) folder, or one amenable to build
+constructive proofs, under the [../hol](../hol) folder.  However, we
+choose this particular variation to experiment with inference control
+because it is the simplest.
 
 ### Controlled Backward Chainer
 
@@ -337,7 +338,9 @@ The effect of running the controlled backward chainer with that
 control structure is to reproduce the original backward chainer code
 without inference control.
 
-The corresponding code can be found after the boxed comment
+The corresponding code and tests can be found in
+[inf-ctl-month-bc-cont-xp.metta](inf-ctl-month-bc-cont-xp.metta) after
+the boxed comment
 
 ```
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -345,13 +348,168 @@ The corresponding code can be found after the boxed comment
 ;;;;;;;;;;;;;;;;;;;;;;
 ```
 
-in [inf-ctl-month-bc-cont-xp.metta](inf-ctl-month-bc-cont-xp.metta).
-
 ### Reasoning-base Controlled Backward Chainer
 
-NEXT
+This experiment brings us closer to a proper form of inference
+control.  Indeed, the continuation predicates are not simply checking
+whether a depth is above zero.  Instead, they consider a broader
+context, specifically syntactic elements of the target theorem
+expressed in the initial query, as well as the state of the current
+query as it exists along the trace of the inference.  Moreover, these
+considerations are themselves expressed as a theory.  Thus, they are
+two theories, one theory about the problem to be solved, the *problem
+theory*, and another theory about the inference control that should be
+adopted to efficiently solve that problem, the *control theory*.  A
+continuation predicate then, in order to determine whether a
+particular branch should be continued or not, calls the backward
+chainer on the control theory.  If a proof of continuation is found,
+then, the continuation predicate returns True, otherwise, if no such
+proof is found then the continuation predicate returns False and the
+branch is pruned.  The backward chainer used to proof theorems in the
+control theory has itself no proper inference control, thus the
+recursion stops here, in that experiment anyway.
 
-The corresponding code can be found after the boxed comment
+Before explaining how it all works, let us describe the problem and
+control theories used in that experiment.
+
+#### Problem Theory
+
+The problem theory merely describes the ordering relationship between
+the months of the year.  Thus, the objects are the 12 months of the
+year, `Jan` to `Dec` equipped with a non-strict total order, `≼`.
+Theorems are statements like `(≼ Jun Nov)` expressing that June
+non-strictly preceeds November.  Axioms are the precedence
+relationships between every contiguous months, expressed as a typing
+relationship such as
+
+```
+(: JF (≼ Jan Feb))
+```
+
+`JF` can be understood as the name of the axiom and `(≼ Jan Feb)` its
+content.
+
+Likewise, inference rules are expressed as typing relationship,
+specifically the reflexivity of `≼`
+
+```
+(: Refl (≼ $x $x))
+```
+
+its transitivity
+
+```
+(: Trans (-> (≼ $x $y) (-> (≼ $y $z) (≼ $x $z))))
+```
+
+as well as an extra rule expressing that January non-strictly preceeds
+every other month
+
+```
+(: JPA (≼ Jan $x))
+```
+
+This last rule can create a shortcut in the proofs for a subset of
+theorems, all the ones involving comparing January to a following
+month.  For other theorems, the only way to prove them is to apply the
+transitivity rule as many times as necessary.
+
+The idea is that the control theory should be able to express that
+shortcut and therefor speed up reasoning for that particular subset of
+theorems.
+
+#### Control Theory
+
+Before providing the control theory, let us define the context used by
+the control structure.
+
+```
+(: Context Type)
+(: MkContext (-> $a                     ; Target theorem
+                 Nat                    ; Maximum depth
+                 Context))
+```
+
+Thus the context captures the maximum depth as before, as well as the
+target theorem.  For instance if the initial query provided to the
+backward chainer is
+
+```
+(: $prf (≼ Jan Jan))
+```
+
+the target theorem is `(≼ Jan Jan)`.
+
+As shown further above, the control structure contains three
+continuation predicates, one for the base case, one for the recursive
+step and one for the match operation.  The control theory here only
+concerns the third one, the continuation predicate for the match
+operation.  The two other predicates are controlled by the maximum
+depth as before.  As for the third one, the control theory consists of
+a single a parametric type, `Continue`, emulating a relationship
+between the current query and the context.  If control rules can be
+combined to construct such `Continue` type, then we have a proof of
+continuation.
+
+The control theory is formalized by three control rules.
+
+The first control rule expresses that if the target theorem is of the
+form `(≼ x x)` and the current proof is `Refl`, then it should
+continue.  This is formalized by the following typing relationship
+
+```
+(: RS (Continue (: Refl $r) (MkContext (≼ $x $x) $k)))
+```
+
+The second control rule expresses that if the target theorem is of the
+form `(≼ Jan x)` and the current proof is `JPA` then it should
+continue.  This is formalized by the following typing relationship
+
+```
+(: JS (Continue (: JPA $r) (MkContext (≼ Jan $x) $k)))
+```
+
+The third control rule expresses that if the target theorem is of the
+form `(≼ x y)` such that `x` is different than `Jan` and `x` is
+different than `y`, and the current proof is `Trans` or any of the
+axioms relating the precedence relationship between contiguous months,
+`Jan` excluded, then it should continue.  This is formalized by the
+following typing relationships
+
+```
+(: TS (-> (≠ Jan $x)
+          (-> (≠ $x $y)
+              (Continue (: $rn $rc) (MkControl (≼ $x $y) $k)))))
+```
+
+where `$rn` ranges `Trans` as well as other axiom names corresponding
+to contiguous precedence, and `$rc` is left free.  In all three rules,
+`$k` the depth is left free as well, since inference control based on
+maximum depth is left to the base case and recursive step continuation
+predicates.
+
+One may consider such `Continue` type somewhat artificial.  It would
+be better to formalize what it means to carry inference efficiently,
+and reason based on such formalization about the adequacy of
+continuing.  Here, however for now, we are merely attempting to
+produce a minimal viable way to realize the idea of carrying inference
+control based on reasoning, even if that means greatly over
+simplifying the task.
+
+As far the context updaters are concerned, they only need to update
+the depth, indeed the target theorem should be left unchanged, and the
+current query needs no update because it is automatically passed to
+the continuation predicates.
+
+By running the same inference tests on the problem theory, first
+solely based on maximum depth control, then based on the control
+theory described above, we can observe subtantial speed-ups, ranging
+from no speed-up when the theorem is easy to proof to many fold
+speed-up when the theorem is hard to prove.
+
+The corresponding code and tests can be found in
+[inf-ctl-month-bc-cont-xp.metta](inf-ctl-month-bc-cont-xp.metta) after
+the boxed comment
 
 ```
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -359,63 +517,63 @@ The corresponding code can be found after the boxed comment
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ```
 
-in [inf-ctl-month-bc-cont-xp.metta](inf-ctl-month-bc-cont-xp.metta).
-
 ## Conclusion
 
 This work is only scratching the surface.  Below are a few suggestions
 for improvements and futher exploration.
 
-1. The post-filtering conditional in the base case should be replaced
-   by a proper attentional focus mechanism.  This would save
-   computation spent by over-retreaving results which are then lost by
-   filtering.  Instead the `match` call should be able to restrict its
-   attention to reflect the predicate of that conditional.
+First, the problem and control theories should be made more intricate.
+Problem theories could cover more traditional mathematical theories,
+or real world situations, such as controlling an agent in an
+environment.  As for the control theory, it should capture more
+broadly the notion of efficient inference control as to be reusable
+across problem theories.
 
-2. The code of the controlled backward chainer could be automatically
-   generated from the vanilla backward chainer code, possibly applying
-   some optimizations during the rewrite as to pay up-front some of
-   the cost instead of at run-time.  This could be applied to any
-   non-deterministic MeTTa program as well and relates to the broader
-   notion of program specialization, as per Alexey Potapov et al's
-   work in other contexts.
+Second, the post-filtering conditional in the base case should be
+replaced by a proper attentional focus mechanism.  This would save
+computation spent by over-retreaving results which are then lost by
+filtering.  Instead the `match` call should be able to restrict its
+attention to reflect the predicate of that conditional.
 
-3. In the current design, the control mechanism is centralized and
-   systematic, which incurs a considerable overhead.  Each and every
-   step needs to go through the approval of the "global police" (in
-   Greg Meredith's words), also making such control not amenable to
-   concurrent processing.
+Third, the code of the controlled backward chainer could be
+automatically generated from the vanilla backward chainer code,
+possibly applying some optimizations during the rewrite as to pay
+up-front some of the cost instead of at run-time.  Note that this
+potentially applies to any non-deterministic MeTTa program and relates
+to the broader notion of program specialization, as per the work of
+Alexey Potapov et al in other contexts.
 
-4. As previously discussed in various calls, the inference control
-   mechanics need not to exist only as MeTTa code.  It could exist
-   below MeTTa, as Minimal MeTTa code.  Or even below Minimal MeTTa,
-   as foreign function code.  In fact there may be ways for these
-   multiple levels to co-exist as particular implementations of the
-   same specification, maybe expressed with the help of type
-   primitives over abstract program traces, as suggested by Ben
-   Goertzel.
+Fourth, in the current design, the control mechanism is centralized
+and systematic, which likely incurs a considerable overhead.  Each and
+every step needs to go through the approval of the "global police" (in
+Greg Meredith's words), also making such control not amenable to
+concurrent processing.
 
-5. The idea of using the backward chainer to control the backward
-   chainer can be pushed much further.  Inference control rules could
-   be discovered via mining, evolutionary programming, reasoning or
-   combinations thereof.
+Fifth, as previously discussed in various calls, the inference control
+mechanics does not need to exist only as MeTTa code.  It could exist
+below MeTTa, as Minimal MeTTa code.  Or even below Minimal MeTTa, as
+foreign function code.  In fact there may be ways for these multiple
+levels to co-exist as embodying particular implementations of the same
+specification, maybe expressed with the help of type primitives over
+abstract program traces, as suggested by Ben Goertzel.
 
-6. Inference control may also exist at a higher level, going beyond
-   directly pruning or selecting the most likely branch.  For instance
-   by expressing the process of searching proofs in more abstract and
-   compositional ways.  Higher level inference control rules could for
-   instance express how to decompose certain problems or how to apply
-   certain tatics.
+Sixth, the control theory should incorporate evidence based aspects,
+like PLN or NAL, as to be able to automatically discover control rules
+via mining, evolutionary programming, or more generally abstract and
+emprical reasoning.
 
-7. In the experiment of using the backward chainer to control the
-   backward chainer, the knowledge base of the controlled backward
-   chainer is different than that of the knowledge base of the
-   controlling backward chainer.  In future versions such knowledge
-   bases could be the same.  This is certainly feasible with an
-   efficient attentional focus mechanism.  Meaning that any knowledge
-   gained about solving problems in general would potentially be
-   transferable to the problems of controlling the backward chainer,
-   enabling the possibility of a virtuous feedback loop.  Thus, as the
-   backward chainer would get smarter at solving problems in the outer
-   world, it would also get smarter at solving problems in the inner
-   world.
+Seventh, inference control may also exist at a higher level, going
+beyond directly pruning or selecting the most likely branch.  For
+instance by expressing the process of searching proofs in more
+abstract or compositional ways.  Higher level inference control rules
+could for instance describe how to decompose certain problems or how
+to apply certain tatics.
+
+Eighth, in these experiments, the problem and control theories have no
+overlap.  In future versions such theories may overlap, or may even be
+the same.  What it would mean is that any knowledge gained about
+solving problems would potentially be transferable to the problems of
+inference control, allowing the possibility of a virtuous feedback
+loop to emerge.  As such, as the backward chainer would become smarter
+at solving problems in the outer world, it would also get smarter at
+solving problems in the inner world.
