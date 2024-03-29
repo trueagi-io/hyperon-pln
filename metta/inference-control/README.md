@@ -4,42 +4,44 @@ This folder contains a number of experiments on backward chaining
 inference control.
 
 Each experiment is realized as a variation of the curried backward
-chainer defined under the `metta/curried-chaining` folder.  All
-variations follow the same basic idea, which is to place termination
-or continuation conditionals at the start of each non-deterministic
-branch.  Thus the branch can only continue if it is evaluated to do
-so.
+chainer defined under the [../curried-chaining](../curried-chaining)
+folder.  All variations follow the same basic idea, which is to place
+termination or continuation conditionals at the start of each
+non-deterministic branch.  Thus the branch can only continue if it is
+evaluated to do so.
 
 ## Overview
 
 A short overview of each experiment is provided below, followed by a
 more detailed description of our last most successful experiment.
 
-- `inf-ctl-xp.metta` was the first attempt.  All places in the
-  backward chainer code that create of a non-deterministic branch are
-  wrapped around a termination conditional.  These places are the base
-  case, the recursive step and the match query.  The termination
-  condition is passed as a termination predicate to the backward
-  chainer, alongside a context and a context updater.  Two tests are
-  carried out:
+- [inf-ctl-xp.metta](inf-ctl-xp.metta) was the first attempt.  All
+  places in the backward chainer code that create of a
+  non-deterministic branch are wrapped around a termination
+  conditional.  These places are the base case, the recursive step and
+  the match query.  The termination condition is passed as a
+  termination predicate to the backward chainer, alongside a context
+  and a context updater.  Two tests are carried out:
   1. Reproduce the maximum depth behavior of the regular curried
      backward chainer.
   2. Provide a user programmed termination predicate to prune the
      non-deterministic evaluation and find proofs sooner.
 
-- `inf-ctl-month-xp.metta` was the second attempt.  It is almost
-  identical to `inf-ctl-xp.metta` but tested over another knowledge
-  base, that of the chronological order of the months, with a shortcut
-  for January, as it preceeds all other months.
+- [inf-ctl-month-xp.metta](inf-ctl-month-xp.metta) was the second
+  attempt.  It is almost identical to
+  [inf-ctl-xp.metta](inf-ctl-xp.metta) but tested over another
+  knowledge base, that of the chronological order of the months, with
+  a shortcut for January, as it preceeds all other months.
 
-- `inf-ctl-month-bc-xp.metta` was the third attempt.  It is almost
-  identical to `inf-ctl-month-xp.metta` but instead of providing a
-  user defined termination predicate, it provides a user defined
-  theory about inference control and calls the backward chainer to
-  evaluate termination.  Thus in order to terminate a backward
-  chaining branch, the termination condition calls yet another
-  instance of the backward chainer, if it manages to find a proof of
-  termination, then it terminates, otherwise continues.  That
+- [inf-ctl-month-bc-xp.metta](inf-ctl-month-bc-xp.metta) was the third
+  attempt.  It is almost identical to
+  [inf-ctl-month-xp.metta](inf-ctl-month-xp.metta) but instead of
+  providing a user defined termination predicate, it provides a user
+  defined theory about inference control and calls the backward
+  chainer to evaluate termination.  Thus in order to terminate a
+  backward chaining branch, the termination condition calls yet
+  another instance of the backward chainer, if it manages to find a
+  proof of termination, then it terminates, otherwise continues.  That
   experiment failed because it is difficult in MeTTa to reason about
   terms with free variables without systematically altering them with
   unification and subtitution, which is required to reason about the
@@ -47,9 +49,10 @@ more detailed description of our last most successful experiment.
   beyond the scope of that experiment we decided to work around that
   limitation as described in the next and final experiment.
 
-- `inf-ctl-month-bc-cont-xp.metta` was the fourth and final attempt.
-  It is derived from `inf-ctl-month-bc-xp.metta` but with a number of
-  differences.
+- [inf-ctl-month-bc-cont-xp.metta](inf-ctl-month-bc-cont-xp.metta) was
+  the fourth and final attempt.  It is derived from
+  [inf-ctl-month-bc-xp.metta](inf-ctl-month-bc-xp.metta) but with a
+  number of differences.
   1. Termination conditionals are replaced by continuation
      conditionals.
   2. A dedicated control structure containing the continuation
@@ -74,16 +77,28 @@ version of the curried backward chainer recalled below
           $b))  ; Query result
 
 ;; Base case
-(= (bc $kb (: $prf $ccln) $_) (match &kb (: $prf $ccln) (: $prf $ccln)))
+(= (bc $kb (: $prf $ccln) $_) (match $kb (: $prf $ccln) (: $prf $ccln)))
 
 ;; Recursive step
-(= (bc (: ($prfabs $prfarg) $ccln) (S $k))
-   (let* (((: $prfabs (-> $prms $ccln)) (bc (: $prfabs (-> $prms $ccln)) $k))
-          ((: $prfarg $prms) (bc (: $prfarg $prms) $k)))
+(= (bc $kb (: ($prfabs $prfarg) $ccln) (S $k))
+   (let* (((: $prfabs (-> $prms $ccln)) (bc $kb (: $prfabs (-> $prms $ccln)) $k))
+          ((: $prfarg $prms) (bc $kb (: $prfarg $prms) $k)))
      (: ($prfabs $prfarg) $ccln)))
 ```
 
-The curried backward chainer works as follows:
+Given a knowledge base, the backward chainer takes a typing
+relationship query of the form
+
+```
+(: <PROOF> <THEOREM>)
+```
+
+where `<PROOF>` and `<THEOREM>` are MeTTa terms, potentially
+containing free variables interpreted as holes to be filled by the
+backward chainer and returned as a superposition of grounded terms,
+each representing a possible way to relate a proof to a theorem.
+
+The algorithm works as follows:
 
 1. Base case: the proof of a conclusion, expressed as `(: $prf $ccln)`
    is already present in the knowledge base.  A mere `match` query may
@@ -118,31 +133,31 @@ instead of
 (: Trans (-> (=== $x $y) (=== $y $z) (=== $x $z)))
 ```
 
-This can however be worked around either by preprocessing rules or
+This can however be circumvented either by preprocessing rules or
 adding a currying inferrence rule that does that on the fly.
 
 Finally, note that all unifications that are taking place during
 backward chaining (via `match` or `let*`) may be further constrained
-by providing `$prf` and `$ccln` as partially or wholly grounded
-expressions instead of variables.  Depending on how constrained they
-are, the backward chainer may behave differently, such as
+since `$prf` and `$ccln` be may partially grounded expressions instead
+of mere variables.  Depending on how constrained they are, the
+backward chainer may behave differently, such as
 
-1. regular backward chaining, if `$ccln` is partially grounded and
+1. a regular backward chainer, if `$ccln` is partially grounded and
    `$prf` is a variable;
 
-2. proof checking, if both `$prf` and `$ccln` are fully grounded;
+2. a proof checker, if both `$prf` and `$ccln` are fully grounded;
 
-3. even forward chaining, if `$prf` is partially grounded and `$ccln`
+3. even a forward chainer, if `$prf` is partially grounded and `$ccln`
    is a variable;
 
-4. any combination thereof.
+4. or anything in between.
 
-More variations of the curried backward chainer exist, such as one
-producing fully annotated proofs, under the
-[../proof-tree](../proof-tree) folder, or one amenable to build
-constructive proofs, under the [../hol](../hol) folder.  However, we
-choose this particular variation to experiment with inference control
-because it is the simplest.
+More variations of the curried backward chainer also exist, such as
+one producing fully annotated proofs (which can be found under the
+[../proof-tree](../proof-tree) folder), or one amenable to build
+constructive proofs (which can be found under the [../hol](../hol)
+folder).  However, we choose this particular variation to experiment
+with inference control because it is the simplest.
 
 ### Controlled Backward Chainer
 
@@ -221,7 +236,7 @@ Meaning, it takes in arguments
 
 3. A user defined context.
 
-4. A query of the form `(: PROOF THEOREM)`.
+4. A query of the form `(: <PROOF> <THEOREM>)`.
 
 You may notice that the maximum depth argument has been removed.  It
 is no longer required since it can be emulated with the proper control
