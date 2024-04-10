@@ -368,8 +368,9 @@
 (= ((𝐒 (𝐁 𝐁 𝐒)) (𝐊 𝐊)) 𝐂)
 (= ((𝐁 (𝐒 𝐈)) (𝐒 𝐈 𝐈)) 𝐔)
 
+;; Test combinatory logic reduction
 !(assertEqual
-  (𝐊 𝐈)
+  (𝐊 𝐈)                                 ; 0
   𝐍)
 !(assertEqual
   ((𝐒 (𝐊 𝐒)) 𝐊)
@@ -381,43 +382,30 @@
   ((𝐒 𝐒) 𝐍)
   𝐖)
 !(assertEqual
-  ((𝐒 ((𝐒 (𝐊 𝐒)) 𝐊)) (𝐊 𝐈))            ; 1 as (S Z) in combinatory logic
+  (𝐒 ((𝐒 (𝐊 𝐒)) 𝐊))                    ; Successor
+  (𝐒 𝐁))
+!(assertEqual
+  ((𝐒 ((𝐒 (𝐊 𝐒)) 𝐊)) (𝐊 𝐈))            ; 1, as (Successor 0)
   ((𝐒 𝐁) 𝐍))
 !(assertEqual
-  ((𝐒 𝐁) 𝐍)                             ; 1 as (S Z) in combinatory logic
-  ((𝐒 𝐁) 𝐍))
-
-;; NEXT: sort out
-
-;; ;; Test combinatory logic reduction
-;; !(assertEqual
-  ;; !((𝐒 ((𝐒 (𝐊 𝐒)) ((𝐒 (𝐊 𝐊)) 𝐈))) (𝐊 𝐈)) ; Result of converting
-  ;;                                                 ; (lc2cl (λ $f (λ $x ($f $x))))
-  ;;                                                 ; which 1 in lambda calculus
-  ;; ((𝐒 ((𝐒 (𝐊 𝐒)) ((𝐒 (𝐊 𝐊)) 𝐈))) (𝐊 𝐈))) ; Unreducable???
-
-;; !(assertEqual
-   ;; !(((𝐒 (𝐊 𝐒)) 𝐊) (𝐊 𝐈))  ; 1, obtained by (S Z) in combinatory logic
-;;   (𝐁 𝐍))                 ; NEXT: shouldn't it be ((𝐒 𝐁) 𝐍)?
-
-;; !((𝐒 𝐁) ((𝐒 𝐁) 𝐍))
-
-;; !((𝐒 𝐁) 𝐍)
-
-;; !(assertEqual
-;;   (((𝐒 (𝐊 𝐒)) 𝐊) (((𝐒 (𝐊 𝐒)) 𝐊) (𝐊 𝐈)))  ; 2, obtained by (S (S Z)) in combinatory logic
-;;   (𝐁 (𝐁 𝐍)))
-
-;; ;; !(assertEqual
-;;   !((𝐒 𝐁) 𝐍) ; 3, obtained by (S (S (S Z))) in combinatory logic
-;;   !((𝐒 𝐁) ((𝐒 𝐁) 𝐍)) ; 3, obtained by (S (S (S Z))) in combinatory logic
-;;   ;; (𝐁 (𝐁 (𝐁 𝐍))))
+  ((𝐒 ((𝐒 (𝐊 𝐒)) 𝐊)) ((𝐒 ((𝐒 (𝐊 𝐒)) 𝐊)) (𝐊 𝐈))) ; 2, as (Successor (Successor 0))
+  ((𝐒 𝐁) ((𝐒 𝐁) 𝐍)))
+!(assertEqual
+  (((𝐒 (𝐊 (𝐒 𝐈))) 𝐊) (𝐒 ((𝐒 (𝐊 𝐒)) 𝐊))) ; Plus
+  (𝐓 (𝐒 𝐁)))
+!(assertEqual
+  (((((𝐒 (𝐊 (𝐒 𝐈))) 𝐊) (𝐒 ((𝐒 (𝐊 𝐒)) 𝐊))) (𝐊 𝐈)) (𝐊 𝐈)) ; 0, as (Plus 0 0)
+  𝐍)
+!(assertEqual
+  (((((𝐒 (𝐊 (𝐒 𝐈))) 𝐊) (𝐒 ((𝐒 (𝐊 𝐒)) 𝐊))) ((𝐒 ((𝐒 (𝐊 𝐒)) 𝐊)) (𝐊 𝐈)))
+   ((𝐒 ((𝐒 (𝐊 𝐒)) 𝐊)) ((𝐒 ((𝐒 (𝐊 𝐒)) 𝐊)) (𝐊 𝐈)))) ; 3, as (Plus 1 2)
+  ((𝐒 𝐁) ((𝐒 𝐁) ((𝐒 𝐁) 𝐍))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Combinatory logic to λ-calculus ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Convert combinatory logic term to lambda-calculus
+;; Convert combinatory logic to lambda-calculus
 (: cl2lc (-> $a $a))
 ;; Base cases
 (= (cl2lc $term)
@@ -442,7 +430,7 @@
                         ((($f $g) ((cl2lc $f) (cl2lc $g)))
                          ($_ $term))))))))
 
-;; Test cl2lc
+;; ;; Test cl2lc
 ;; !(assertEqual
 ;;   (=α (cl2lc 𝐍) (λ $x (λ $y $y)))
 ;;   True)
@@ -498,7 +486,7 @@
 ;; λ-calculus to combinatory logic ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Convert lambda-calculus term to combinatory logic term.
+;; Convert lambda-calculus to combinatory logic
 (: lc2cl (-> Atom Number Atom Atom))
 (= (lc2cl $term $cnt $dir)
    (if (is-expression $term)
@@ -586,8 +574,8 @@
 
 ;; NEXT: find out why the following does not work
 
-;; Convert (λ $g (λ $x ($g $x))) to ?
-!(lc2cl (λ $g (λ $x ($g $x))))
+;; ;; Convert (λ $g (λ $x ($g $x))) to ?
+;; !(lc2cl (λ $g (λ $x ($g $x))))
 
 ;; ;; Convert (λ $g (λ $x ($x ($g $x)))) to ?
 ;; !(lc2cl (λ $g (λ $x ($x ($g $x)))))
