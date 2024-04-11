@@ -39,9 +39,9 @@
 !(add-atom &kb (: ab (→ A B)))
 !(add-atom &kb (: bc (→ B C)))
 !(add-atom &kb (: ModusPonens
-                (-> (→ $p $q)
-                    (-> $p
-                        $q))))
+                (-> (→ $p $q)           ; Premise 1
+                    (-> $p              ; Premise 2
+                        $q))))          ; Conclusion
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; Backward chainer ;;

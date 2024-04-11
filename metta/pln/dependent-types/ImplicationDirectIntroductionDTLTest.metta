@@ -2,7 +2,7 @@
 
 ;; Import modules
 !(import! &self ImplicationDirectIntroductionDTL.metta)
-!(import! &self ../synthesis/Synthesize.metta)
+!(import! &self ../../synthesis/Synthesize.metta)
 
 ;; Knowledge base
 (: kb (-> Atom))
