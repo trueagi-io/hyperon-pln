@@ -1,6 +1,6 @@
 ;; Import modules
-!(import! &self Num.metta)
-!(import! &self ../synthesis/Synthesize.metta)
+!(import! &self metta:common:Num)
+!(import! &self metta:synthesis:Synthesize)
 
 ;; Test elementary functions
 !(assertEqual (fromNumber 1) (S Z))

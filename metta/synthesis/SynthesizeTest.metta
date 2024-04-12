@@ -1,8 +1,8 @@
 ;; Setting up a simple knowledge base and rule base for demoing reasoning in MeTTa.
 
 ;; Import modules
-!(import! &self Synthesize.metta)
-!(import! &self ../common/Record.metta)
+!(import! &self metta:synthesis:Synthesize)
+!(import! &self metta:common:Record)
 
 ;; Knowledge base
 (: kb (-> Atom))

@@ -1,8 +1,8 @@
 ;; Evidential truth value type. Represent a truth value alongside its
 ;; evidence.
 
-!(import! &self TruthValue.metta)
-!(import! &self ../OrderedSet.metta)
+!(import! &self metta:common:truthvalue:TruthValue)
+!(import! &self metta:common:OrderedSet)
 
 ;;;;;;;;;;
 ;; Type ;;
