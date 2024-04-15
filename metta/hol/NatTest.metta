@@ -9,7 +9,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Import synthesizer (Nat is already defined in it)
-!(import! &self ../synthesis/Synthesize.metta)
+!(import! &self metta:synthesis:Synthesize)
 
 ;; Knowledge base
 (: kb (-> Atom))

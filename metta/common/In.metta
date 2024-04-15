@@ -1,8 +1,8 @@
 ;; Definitions of ∈ and ∉ types including axioms and rules
 
 ;; Import modules
-!(import! &self Num.metta)
-!(import! &self OrderedSet.metta)
+!(import! &self metta:common:Num)
+!(import! &self metta:common:OrderedSet)
 
 ;; Type representing whether an element is or not in a set
 (: ∈ (-> $a (OrderedSet $a) Type))

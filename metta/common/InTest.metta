@@ -1,9 +1,9 @@
 ;; Test ∉
 
 ;; Import modules
-!(import! &self In.metta)
-!(import! &self Num.metta)
-!(import! &self ../synthesis/Synthesize.metta)
+!(import! &self metta:common:In)
+!(import! &self metta:common:Num)
+!(import! &self metta:synthesis:Synthesize)
 
 ;; Define knowledge and rule bases to reason about ∉.  This requires
 ;; reasoning about order as well (Natural for now).

@@ -1,5 +1,5 @@
 ;; Import synthesizer
-!(import! ../synthesis/Synthesize.metta)
+!(import! &self metta:synthesis:Synthesize)
 
 ;; Define List data type and constructors
 (: List (-> $a Type))

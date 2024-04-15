@@ -1,8 +1,8 @@
 ;; Formula for the modus ponens rule
 
 ;; Import modules
-!(import! &self ../truthvalue/TruthValue.metta)
-!(import! &self ../Num.metta)
+!(import! &self metta:common:truthvalue:TruthValue)
+!(import! &self metta:common:Num)
 
 (= (modus-ponens-formula (STV $As $Ac)
                          (STV $ABs $ABc))

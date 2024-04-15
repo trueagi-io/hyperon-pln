@@ -1,5 +1,5 @@
 ;; Import TruthValue
-!(import! &self EvidentialTruthValue.metta)
+!(import! &self metta:common:truthvalue:EvidentialTruthValue)
 
 !(mode (ETV (Singleton 42) (STV 0.1 0.2)))        ; 0.1
 !(mean (ETV (Singleton 42) (STV 0.1 0.9)))        ; 0.14
